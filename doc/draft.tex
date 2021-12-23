@@ -1,0 +1,197 @@
+\documentclass{article}
+
+\usepackage{amsmath}
+\usepackage{syntax}
+\usepackage{fancyhdr}
+\usepackage{array}
+
+\newcolumntype{L}[1]{>{\raggedright\let\newline\\\arraybackslash\hspace{0pt}}m{#1}}
+\newcolumntype{C}[1]{>{\centering\let\newline\\\arraybackslash\hspace{0pt}}m{#1}}
+\newcolumntype{R}[1]{>{\raggedleft\let\newline\\\arraybackslash\hspace{0pt}}m{#1}}
+
+\title{Weak language draft}
+\author{epoll-reactor}
+\date{December 2021}
+
+\begin{document}
+	\pagestyle{fancy}
+	\rhead{\leftmark}
+	\lhead{Weak language}
+	
+	\maketitle
+	\tableofcontents
+	
+	\newpage
+	
+	\section{Scope}
+		This document describes requirements for implementation of weak
+		programming language.
+		
+	\section{Lexical elements}
+		\upshape
+		
+		\subsection{Keywords}
+			\begin{tabular}{ R{3cm} R{3cm} R{3cm} }
+				\textbf{boolean}  & \textbf{break}  & \textbf{char}   \\
+				\textbf{continue} & \textbf{do }    & \textbf{false}  \\
+				\textbf{for}      & \textbf{if}     & \textbf{int}    \\
+				\textbf{return}   & \textbf{string} & \textbf{true}   \\
+				\textbf{void}     & \textbf{while}  &                 \\
+			\end{tabular}
+		
+		\subsection{Operators and punctuators}
+			\begin{tabular}{ R{1.5cm} R{1.5cm} R{1.5cm} R{1.5cm} R{1.5cm} R{1.5cm} R{1.5cm} }
+				\tt{=}   & \tt{*=}     & \tt{/=}  & \tt{\%=} & \tt{+=}  & \tt{-=}   \\
+				\tt{<<=} & \tt{>>=}    & \tt{\&=} & \tt{|=}  & \tt{\^=} & \tt{\&\&} \\
+				\tt{|}   & \textbf{\^} & \tt{\&}  & \tt{==}  & \tt{!=}  & \tt{>}    \\
+				\tt{<}   & \tt{>=}     & \tt{<=}  & \tt{<<}  & \tt{>>}  & \tt{+}    \\
+				\tt{-}   & \tt{*}      & \tt{/}   & \tt{\%}  & \tt{++}  & \tt{--}   \\
+				\tt{[}   & \tt{]}      & \tt{\&}  & \tt{==}  & \tt{!=}  & \tt{>}    \\
+				\tt{(}   & \tt{)}      & \tt{\{}  & \tt{\}}  &          &           \\
+			\end{tabular}
+		
+	\section{Grammar summary}
+		\itshape
+		\setlength{\grammarindent}{12em}
+
+		\begin{grammar}
+			<program> ::= <function-declaration>*
+			
+			<function-declaration> ::= <ret-type> <id> \textbf{(} <parameter-list-opt> \textbf{)} \textbf{\{} <stmt>* \textbf{\}}
+
+			<ret-type> ::= <type>
+			\alt <void-type>
+			
+			<type> ::= \textbf{int}
+			\alt \textbf{char}
+			\alt \textbf{string}
+			\alt \textbf{boolean}
+			
+			<void-type> ::= \textbf{void}
+						
+			<constant> ::= <integral-literal>
+			\alt <floating-literal>
+			\alt <string-literal>
+			\alt <boolean-literal>
+			
+			<integral-literal> ::= <digit>*
+			
+			<floating-literal> ::= <digit>* \textbf{.} <digit>*
+			
+			<string-literal> ::= \textbf{\"} ( "\\x00000000-\\x0010FFFF" )*  \textbf{\"}
+			
+			<boolean-literal> ::= \textbf{true}
+			\alt \textbf{false}
+			
+			<alpha> ::= \textbf{a} | \textbf{b} | ... | \textbf{z} | \textbf{_}
+
+			<digit> ::= \textbf{0} | \textbf{1} | ... | \textbf{9}
+
+	
+			<id> ::= <alpha> ( <alpha> | <digit> )*
+			
+			<parameter> ::= <type> <id>
+			
+			<parameter-list> ::= <parameter> \textbf{,} <parameter-list>
+			\alt <parameter>
+			
+			<parameter-list-opt> ::= <parameter-list> | $\epsilon$
+			
+			<stmt> ::= <selection-stmt>
+			\alt <iteration-stmt>
+			\alt <jump-stmt>
+			\alt <expr>
+			
+			<iteration-stmt> ::= <stmt>
+			\alt \textbf{break};
+			\alt \textbf{continue};
+			
+			<selection-stmt> ::= \textbf{if} \textbf{(} <expr> \textbf{)} \textbf{\{} <stmt>* \textbf{\}}
+			\alt \textbf{if} \textbf{(} <expr> \textbf{)} \textbf{\{} <stmt>* \textbf{\}} \textbf{else} \textbf{\{} <stmt>* \textbf{\}}
+			
+			<iteration-stmt> ::= \textbf{for} \textbf{(} <expr-opt> \textbf{;} <expr-opt> \textbf{;} <expr-opt> \textbf{)} \textbf{\{} <iteration-stmt>* \textbf{\}}
+			\alt \textbf{while} \textbf{(} <expr> \textbf{)} \textbf{\{} <iteration-stmt>* \textbf{\}}
+			\alt \textbf{do} \textbf{\{} <iteration-stmt>* \textbf{\}} \textbf{while} \textbf{(} <expr> \textbf{)} 
+			
+			<jump-stmt> ::= \textbf{return} <expr>? \textbf{;}
+			
+			<assignment-op> ::= \tt{"="}
+			\alt \tt{"*="}
+			\alt \tt{"/="}
+			\alt \tt{"%="}
+			\alt \tt{"+="}
+			\alt \tt{"-="}
+			\alt \tt{"<<="}
+			\alt \tt{">>="}
+			\alt \tt{"&="}
+			\alt \tt{"|="}
+			\alt \tt{"^="}
+			
+			<expr> ::= <assignment-expr>
+			
+			<expr-opt> ::= <expr> | $\epsilon$
+			
+			<assignment-expr> ::= <logical-or-expr>
+			\alt <unary-expr> <assignment-op> <assignment-expr>
+			
+			<logical-or-expr> ::= <logical-and-expr>
+			\alt <logical-or-expr> \textbf{||} <logical-and-expr>
+			
+			<logical-and-expr> ::= <inclusive-or-expr>
+			\alt <logical-and-expr> \textbf{\&\&} <inclusive-or-expr>
+			
+			<inclusive-or-expr> ::= <exclusive-or-expr>
+			\alt <inclusive-or-expr> \textbf{|} <exclusive-or-expr>
+			
+			<exclusive-or-expr> ::= <and-expr>
+			\alt <exclusive-or-expr> \textbf{\^} <and-expr>
+			
+			<and-expr> ::= <equality-expr>
+			\alt <and-expr> \textbf{\&} <equality-expr>
+			
+			<equality-expr> ::= <relational-expr>
+			\alt <equality-expr> \textbf{==} <relational-expr>
+			\alt <equality-expr> \textbf{!=} <relational-expr>
+			
+			<relational-expr> ::= <shift-expr>
+			\alt <relational-expr> \tt{">"} <shift-expr>
+			\alt <relational-expr> \tt{"<"} <shift-expr>
+			\alt <relational-expr> \tt{">="} <shift-expr>
+			\alt <relational-expr> \tt{"<="} <shift-expr>
+			
+			<shift-expr> ::= <additive-expr>
+			\alt <shift-expr> \tt{"<<"} <additive-expr>
+			\alt <shift-expr> \tt{">>"} <additive-expr>
+			
+			<additive-expr> ::= <multiplicative-expr>
+			\alt <additive-expr> \tt{"+"} <multiplicative-expr>
+			\alt <additive-expr> \tt{"-"} <multiplicative-expr>
+			
+			<multiplicative-expr> ::= <unary-expr>
+			\alt <multiplicative-expr> \tt{"*"} <unary-expr>
+			\alt <multiplicative-expr> \tt{"/"} <unary-expr>
+			\alt <multiplicative-expr> \tt{"%"} <unary-expr>
+			
+			<unary-expr> ::= <postfix-expr>
+			\alt \tt{"++"} <unary-expr>
+			\alt \tt{"--"} <unary-expr>
+			
+			<postfix-expr> ::= <primary-expr>
+			\alt <postfix-expr> \tt{"["} <expr> \tt{"]"}
+			\alt <postfix-expr> \tt{"++"}
+			\alt <postfix-expr> \tt{"--"}
+			
+			<primary-expr> ::= <constant>
+			\alt <id>
+			\alt \tt{"("} <expr> \tt{")"}
+			
+		\end{grammar}
+
+	\section{Environment}
+		\upshape
+		
+		\subsection{Translation environment}
+			The whole program must be placed in one file to simplify translation
+			and linking (lack of it as such).
+		
+\end{document}
