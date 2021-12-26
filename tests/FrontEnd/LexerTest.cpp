@@ -11,13 +11,15 @@ void RunLexerTest(std::string_view Input,
                   const std::vector<weak::frontEnd::Token> &ExpectedTokens) {
   auto Tokens = CreateLexer(Input).Analyze();
   if (Tokens.size() != ExpectedTokens.size()) {
-    weak::DiagnosticError() << "Output size mismatch: got " << Tokens.size()
-                            << " but expected " << ExpectedTokens.size();
+    std::cerr << "Output size mismatch: got " << Tokens.size()
+              << " but expected " << ExpectedTokens.size();
+    exit(-1);
   }
   for (size_t I = 0; I < Tokens.size(); ++I) {
     if (Tokens[I] != ExpectedTokens[I]) {
-      weak::DiagnosticError() << "got " << Tokens[I].Data << ", but expected "
-                              << ExpectedTokens[I].Data;
+      std::cerr << "got " << Tokens[I].Data << ", but expected "
+                << ExpectedTokens[I].Data;
+      exit(-1);
     }
   }
 }
@@ -76,9 +78,11 @@ int main() {
     std::vector<weak::frontEnd::Token> Assertion_1 = {
         {"", TokenType::PLUS}, {"", TokenType::MINUS}, {"", TokenType::SLASH}};
     RunLexerTest("+-/", Assertion_1);
-    std::vector<weak::frontEnd::Token> Assertion_2 = {
-        {"", TokenType::INC}, {"", TokenType::INC}, {"", TokenType::PLUS}};
-    RunLexerTest("+++++", Assertion_2);
+    std::vector<weak::frontEnd::Token> Assertion_2 = {{"", TokenType::INC},
+                                                      {"", TokenType::INC},
+                                                      {"", TokenType::INC},
+                                                      {"", TokenType::PLUS}};
+    RunLexerTest("+++++++", Assertion_2);
   }
   SECTION(LexingCompoundInput) {
     std::vector<weak::frontEnd::Token> Assertion = {

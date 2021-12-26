@@ -58,21 +58,13 @@ static const std::unordered_map<std::string_view, TokenType> LexOperators = {
 
 namespace {
 
-struct LexErrorBuilder {
-  static std::string Build(unsigned LineNo, unsigned ColumnNo) {
-    return "At line " + std::to_string(LineNo + 1) + ", column " +
-           std::to_string(ColumnNo + 1) + ": ";
-  }
-};
-
 class LexStringLiteralCheck {
 public:
   explicit LexStringLiteralCheck(char ThePeek) : Peek(ThePeek) {}
 
   void ClosingQuoteCheck(unsigned LineNo, unsigned ColumnNo) const {
     if (Peek == '\n' || Peek == '\0') {
-      weak::DiagnosticError()
-          << LexErrorBuilder::Build(LineNo, ColumnNo) << "Closing \" expected";
+      weak::DiagnosticError(LineNo, ColumnNo) << "Closing \" expected";
     }
   }
 
@@ -87,15 +79,14 @@ public:
 
   void LastDigitRequire(unsigned LineNo, unsigned ColumnNo) const {
     if (std::isalpha(Peek) || !std::isdigit(Digit.back())) {
-      weak::DiagnosticError() << LexErrorBuilder::Build(LineNo, ColumnNo)
-                              << "Digit as last character expected";
+      weak::DiagnosticError(LineNo, ColumnNo)
+          << "Digit as last character expected";
     }
   }
 
   void ExactOneDotRequire(unsigned LineNo, unsigned ColumnNo) const {
     if (DotsReached > 1) {
-      weak::DiagnosticError()
-          << LexErrorBuilder::Build(LineNo, ColumnNo) << "Extra \".\" in digit";
+      weak::DiagnosticError(LineNo, ColumnNo) << "Extra \".\" in digit";
     }
   }
 
@@ -216,6 +207,9 @@ Token Lexer::AnalyzeOperator() {
       Operator.pop_back();
       --CurrentBufferPtr;
       --CurrentColumnNo;
+      if (PeekCurrent() == '\n') {
+        --CurrentLineNo;
+      }
       break;
     }
   }
@@ -224,8 +218,8 @@ Token Lexer::AnalyzeOperator() {
     return Token("", LexOperators.at(Operator));
   } else {
     --CurrentColumnNo;
-    DiagnosticError() << LexErrorBuilder::Build(CurrentLineNo, CurrentColumnNo)
-                      << "Unknown operator " << Operator;
+    DiagnosticError(CurrentLineNo, CurrentColumnNo)
+        << "Unknown character sequence " << Operator;
     return Token("", LexOperators.at(Operator));
   }
 }
