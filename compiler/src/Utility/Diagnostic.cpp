@@ -3,7 +3,9 @@
 
 namespace weak {
 
-Diagnostic::Diagnostic(DiagType TheType) : Type(TheType) {
+Diagnostic::Diagnostic(DiagType TheType, unsigned TheLineNo,
+                       unsigned TheColumnNo)
+    : Type(TheType), LineNo(TheLineNo), ColumnNo(TheColumnNo) {
   EmitLabel();
 }
 
@@ -46,19 +48,20 @@ Diagnostic &Diagnostic::operator<<(unsigned long int Data) {
 
 void Diagnostic::EmitLabel() const {
   if (Type == DiagType::ERROR) {
-    std::cerr << "ERROR: ";
+    std::cerr << "ERROR - at line " << LineNo + 1 << ", column " << ColumnNo + 1
+              << ": ";
   } else {
-    std::cerr << "WARN: ";
+    std::cerr << "WARN - at line " << LineNo + 1 << ", column " << ColumnNo + 1
+              << ": ";
   }
 }
 
-Diagnostic DiagnosticWarning() {
-  return Diagnostic{Diagnostic::DiagType::WARN};
+Diagnostic DiagnosticWarning(unsigned LineNo, unsigned ColumnNo) {
+  return Diagnostic(Diagnostic::DiagType::WARN, LineNo, ColumnNo);
 }
 
-
-Diagnostic DiagnosticError() {
-  return Diagnostic{Diagnostic::DiagType::ERROR};
+Diagnostic DiagnosticError(unsigned LineNo, unsigned ColumnNo) {
+  return Diagnostic(Diagnostic::DiagType::ERROR, LineNo, ColumnNo);
 }
 
 } // namespace weak
