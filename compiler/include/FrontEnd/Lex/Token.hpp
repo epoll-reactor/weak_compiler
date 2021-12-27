@@ -81,7 +81,7 @@ struct Token {
   bool operator==(const Token &rhs) const;
 
   bool operator!=(const Token &rhs) const;
-  
+
   /// Data if any (digits, symbols, literals).
   std::string Data;
 
