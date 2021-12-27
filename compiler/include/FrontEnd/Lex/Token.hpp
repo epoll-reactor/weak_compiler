@@ -214,11 +214,11 @@ struct Token {
   }
 
   bool operator==(const Token &rhs) const {
-    return Data == rhs.Data && Type == rhs.Type;
+    return (Data == rhs.Data) && (Type == rhs.Type);
   }
 
   bool operator!=(const Token &rhs) const {
-    return Data != rhs.Data && Type != rhs.Type;
+    return (Data != rhs.Data) || (Type != rhs.Type);
   }
 };
 

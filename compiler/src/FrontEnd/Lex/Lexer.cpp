@@ -100,6 +100,35 @@ private:
 
 static bool IsAlphanumeric(char C) { return isalpha(C) || C == '_'; }
 
+static void NormalizeColumnPosition(std::string_view Data,
+                                    weak::frontEnd::TokenType Type,
+                                    unsigned &ColumnNo) {
+  using weak::frontEnd::TokenType;
+  using namespace std::string_view_literals;
+  std::unordered_map<weak::frontEnd::TokenType, int> TokenLengths = {
+      {TokenType::BOOLEAN, "bool"sv.length()},
+      {TokenType::BREAK, "break"sv.length()},
+      {TokenType::CHAR, "char"sv.length()},
+      {TokenType::CONTINUE, "continue"sv.length()},
+      {TokenType::DO, "do"sv.length()},
+      {TokenType::FALSE, "false"sv.length()},
+      {TokenType::FOR, "for"sv.length()},
+      {TokenType::IF, "if"sv.length()},
+      {TokenType::INT, "int"sv.length()},
+      {TokenType::RETURN, "return"sv.length()},
+      {TokenType::STRING, "string"sv.length()},
+      {TokenType::TRUE, "true"sv.length()},
+      {TokenType::VOID, "void"sv.length()},
+      {TokenType::WHILE, "while"sv.length()},
+
+      {TokenType::INTEGRAL_LITERAL, Data.length()},
+      {TokenType::FLOATING_POINT_LITERAL, Data.length()},
+      {TokenType::STRING_LITERAL, Data.length() + 2 /* quotes */},
+      {TokenType::SYMBOL, Data.length()}};
+
+  ColumnNo -= TokenLengths.at(Type);
+}
+
 namespace weak {
 namespace frontEnd {
 
@@ -180,6 +209,7 @@ Token Lexer::AnalyzeStringLiteral() {
   assert(PeekCurrent() == '\"');
 
   PeekNext(); // Eat "
+  --CurrentColumnNo;
 
   return MakeToken(Literal, TokenType::STRING_LITERAL);
 }
@@ -226,12 +256,12 @@ Token Lexer::AnalyzeOperator() {
   }
 
   if (LexOperators.find(Operator) != LexOperators.end()) {
-    return Token("", LexOperators.at(Operator), CurrentLineNo, SavedColumnNo);
+    return Token("", LexOperators.at(Operator), CurrentLineNo + 1,
+                 SavedColumnNo - Operator.length() + 1);
   } else {
     --CurrentColumnNo;
     DiagnosticError(CurrentLineNo, CurrentColumnNo)
         << "Unknown character sequence " << Operator;
-    /// Suppress warning about missing return statement.
     UnreachablePoint();
   }
 }
@@ -240,7 +270,7 @@ char Lexer::PeekNext() {
   char Atom = *CurrentBufferPtr++;
   if (Atom == '\n') {
     CurrentLineNo++;
-    CurrentColumnNo = 1U;
+    CurrentColumnNo = 0U;
   } else {
     CurrentColumnNo++;
   }
@@ -250,9 +280,13 @@ char Lexer::PeekNext() {
 char Lexer::PeekCurrent() const { return *CurrentBufferPtr; }
 
 Token Lexer::MakeToken(std::string_view Data, TokenType Type) const {
-  return {Data, Type, CurrentLineNo,
-          Data.length() == 0 ? unsigned(CurrentColumnNo)
-                             : unsigned(CurrentColumnNo - Data.length())};
+  unsigned LineNo = CurrentLineNo + 1;
+  unsigned ColumnNo = CurrentColumnNo + 1;
+
+  NormalizeColumnPosition(Data, Type, ColumnNo);
+  Token T(Data, Type, LineNo, ColumnNo);
+
+  return T;
 }
 
 } // namespace frontEnd
