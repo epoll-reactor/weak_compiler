@@ -1,6 +1,8 @@
 #include "Utility/Diagnostic.hpp"
 #include <iostream>
 
+void weak::UnreachablePoint() { exit(-1); }
+
 namespace weak {
 
 Diagnostic::Diagnostic(DiagType TheType, unsigned TheLineNo,

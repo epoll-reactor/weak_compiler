@@ -30,6 +30,8 @@ private:
   /// Get current character from input without moving to the next one.
   char PeekCurrent() const;
 
+  Token MakeToken(std::string_view Data, TokenType Type) const;
+
   /// First symbol in buffer.
   const char *BufferStart;
 
