@@ -223,9 +223,9 @@ Token Lexer::AnalyzeSymbol() {
 
   if (LexKeywords.find(Symbol) != LexKeywords.end()) {
     return MakeToken("", LexKeywords.at(Symbol));
-  } else {
-    return MakeToken(std::move(Symbol), TokenType::SYMBOL);
   }
+
+  return MakeToken(std::move(Symbol), TokenType::SYMBOL);
 }
 
 Token Lexer::AnalyzeOperator() {
@@ -258,12 +258,12 @@ Token Lexer::AnalyzeOperator() {
   if (LexOperators.find(Operator) != LexOperators.end()) {
     return Token("", LexOperators.at(Operator), CurrentLineNo + 1,
                  SavedColumnNo - Operator.length() + 1);
-  } else {
-    --CurrentColumnNo;
-    DiagnosticError(CurrentLineNo, CurrentColumnNo)
-        << "Unknown character sequence " << Operator;
-    UnreachablePoint();
   }
+
+  --CurrentColumnNo;
+  DiagnosticError(CurrentLineNo, CurrentColumnNo)
+      << "Unknown character sequence " << Operator;
+  UnreachablePoint();
 }
 
 char Lexer::PeekNext() {
