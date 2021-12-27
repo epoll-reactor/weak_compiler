@@ -1,5 +1,5 @@
-#ifndef WEAK_COMPILER_LEX_TOKEN_HPP
-#define WEAK_COMPILER_LEX_TOKEN_HPP
+#ifndef WEAK_COMPILER_FRONTEND_LEX_TOKEN_HPP
+#define WEAK_COMPILER_FRONTEND_LEX_TOKEN_HPP
 
 #include <string>
 
@@ -98,4 +98,4 @@ struct Token {
 } // namespace frontEnd
 } // namespace weak
 
-#endif // WEAK_COMPILER_LEX_TOKEN_HPP
+#endif // WEAK_COMPILER_FRONTEND_LEX_TOKEN_HPP
