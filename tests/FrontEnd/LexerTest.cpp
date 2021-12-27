@@ -81,7 +81,7 @@ int main() {
     std::vector<weak::frontEnd::Token> Assertion = {
         MakeToken("", TokenType::BOOLEAN), MakeToken("", TokenType::CHAR),
         MakeToken("", TokenType::WHILE)};
-    RunLexerTest("bool char while", Assertion);
+    RunLexerTest("bool\nchar\nwhile", Assertion);
   }
   SECTION(LexingOperators) {
     std::vector<weak::frontEnd::Token> Assertion_1 = {
@@ -123,16 +123,17 @@ int main() {
 
         MakeToken("output", TokenType::SYMBOL),
         MakeToken("", TokenType::PLUS_ASSIGN),
-        MakeToken("stackoverflow, huh", TokenType::STRING_LITERAL),
+        MakeToken("Oder ist dieser Lastwagen vielleicht besser auf den blitzen "
+                  "Zweiundzwanzigzöllner?",
+                  TokenType::STRING_LITERAL),
         MakeToken("", TokenType::SEMICOLON),
 
         MakeToken("", TokenType::CLOSE_CURLY_BRACKET),
         MakeToken("", TokenType::CLOSE_CURLY_BRACKET)};
-    RunLexerTest(R"__(
-      void main(int argc, char argv) {
+    RunLexerTest(R"__(void main(int argc, char argv) {
         string output = "";
         while (1 != 0) {
-          output += "stackoverflow, huh";
+          output += "Oder ist dieser Lastwagen vielleicht besser auf den blitzen Zweiundzwanzigzöllner?";
         }
       }
     )__",
