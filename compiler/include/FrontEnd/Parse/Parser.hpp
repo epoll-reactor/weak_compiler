@@ -1,5 +1,5 @@
-#ifndef WEAK_COMPILER_PARSE_PARSER_HPP
-#define WEAK_COMPILER_PARSE_PARSER_HPP
+#ifndef WEAK_COMPILER_FRONTEND_PARSE_PARSER_HPP
+#define WEAK_COMPILER_FRONTEND_PARSE_PARSER_HPP
 
 #include "FrontEnd/Lex/Token.hpp"
 #include <vector>
@@ -33,4 +33,4 @@ private:
 } // namespace frontEnd
 } // namespace weak
 
-#endif // WEAK_COMPILER_PARSE_PARSER_HPP
+#endif // WEAK_COMPILER_FRONTEND_PARSE_PARSER_HPP

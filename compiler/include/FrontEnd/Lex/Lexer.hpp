@@ -1,5 +1,5 @@
-#ifndef WEAK_COMPILER_LEX_LEXER_HPP
-#define WEAK_COMPILER_LEX_LEXER_HPP
+#ifndef WEAK_COMPILER_FRONTEND_LEX_LEXER_HPP
+#define WEAK_COMPILER_FRONTEND_LEX_LEXER_HPP
 
 #include "FrontEnd/Lex/Token.hpp"
 #include <vector>
@@ -51,4 +51,4 @@ private:
 } // namespace frontEnd
 } // namespace weak
 
-#endif // WEAK_COMPILER_LEX_LEXER_HPP
+#endif // WEAK_COMPILER_FRONTEND_LEX_LEXER_HPP
