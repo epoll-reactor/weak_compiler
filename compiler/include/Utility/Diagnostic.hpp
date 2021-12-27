@@ -5,13 +5,12 @@
 
 namespace weak {
 
+/// Simply terminate process.
 [[noreturn]] void UnreachablePoint();
 
+/// Interface used to construct and print notes when analyzing input data.
 class Diagnostic {
 public:
-  enum struct DiagType { WARN, ERROR } const Type;
-
-  Diagnostic(DiagType TheType, unsigned TheLineNo, unsigned TheColumnNo);
   ~Diagnostic();
 
   Diagnostic() = delete;
@@ -20,25 +19,36 @@ public:
   Diagnostic &operator=(Diagnostic &&) = delete;
   Diagnostic &operator=(const Diagnostic &) = delete;
 
-  Diagnostic &operator<<(const char *);
-  Diagnostic &operator<<(std::string_view);
-  Diagnostic &operator<<(signed int);
-  Diagnostic &operator<<(unsigned int);
-  Diagnostic &operator<<(signed long int);
-  Diagnostic &operator<<(unsigned long int);
+  const Diagnostic &operator<<(const char *) const;
+  const Diagnostic &operator<<(std::string_view) const;
+  const Diagnostic &operator<<(signed int) const;
+  const Diagnostic &operator<<(unsigned int) const;
+  const Diagnostic &operator<<(signed long int) const;
+  const Diagnostic &operator<<(unsigned long int) const;
 
 private:
-  /// Put label with error location (line and column) to stderr
+  enum struct DiagLevel { WARN, ERROR } const Level;
+
+  /// Setup diagnostic level and display prompt.
+  Diagnostic(DiagLevel TheType, unsigned TheLineNo, unsigned TheColumnNo);
+
+  friend Diagnostic DiagnosticWarning(unsigned LineNo, unsigned ColumnNo);
+  friend Diagnostic DiagnosticError(unsigned LineNo, unsigned ColumnNo);
+
+  /// Put label with error location (line and column) to stderr.
   void EmitLabel() const;
 
-  /// Line number (used for error generating).
+  /// The line number displayed in the error/warn message.
   unsigned LineNo;
 
-  /// Column number (used for error generating).
+  /// The column number displayed in the error/warn message.
   unsigned ColumnNo;
 };
 
+/// Print diagnostic message with WARN flag.
 Diagnostic DiagnosticWarning(unsigned LineNo, unsigned ColumnNo);
+
+/// Print diagnostic message with ERROR flag and terminate program.
 Diagnostic DiagnosticError(unsigned LineNo, unsigned ColumnNo);
 
 } // namespace weak
