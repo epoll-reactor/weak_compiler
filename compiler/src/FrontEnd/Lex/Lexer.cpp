@@ -105,7 +105,7 @@ namespace frontEnd {
 
 Lexer::Lexer(const char *TheBufferStart, const char *TheBufferEnd)
     : BufferStart(TheBufferStart), BufferEnd(TheBufferEnd),
-      CurrentBufferPtr(TheBufferStart), CurrentLineNo(0), CurrentColumnNo(0) {
+      CurrentBufferPtr(TheBufferStart), CurrentLineNo(0U), CurrentColumnNo(0U) {
   assert(BufferStart <= BufferEnd);
 }
 
@@ -154,15 +154,15 @@ Token Lexer::AnalyzeDigit() {
   Checker.LastDigitRequire(CurrentLineNo, LexColumnName);
   Checker.ExactOneDotRequire(CurrentLineNo, LexColumnName);
 
-  return Token(Digit, DotsReached == 0 ? TokenType::INTEGRAL_LITERAL
-                                       : TokenType::FLOATING_POINT_LITERAL);
+  return MakeToken(Digit, DotsReached == 0 ? TokenType::INTEGRAL_LITERAL
+                                           : TokenType::FLOATING_POINT_LITERAL);
 }
 
 Token Lexer::AnalyzeStringLiteral() {
   PeekNext(); // Eat "
 
   if (PeekNext() == '\"') {
-    return Token("", TokenType::STRING_LITERAL);
+    return MakeToken("", TokenType::STRING_LITERAL);
   }
   --CurrentBufferPtr;
 
@@ -181,7 +181,7 @@ Token Lexer::AnalyzeStringLiteral() {
 
   PeekNext(); // Eat "
 
-  return Token(Literal, TokenType::STRING_LITERAL);
+  return MakeToken(Literal, TokenType::STRING_LITERAL);
 }
 
 Token Lexer::AnalyzeSymbol() {
@@ -192,21 +192,32 @@ Token Lexer::AnalyzeSymbol() {
   }
 
   if (LexKeywords.find(Symbol) != LexKeywords.end()) {
-    return Token("", LexKeywords.at(Symbol));
+    return MakeToken("", LexKeywords.at(Symbol));
   } else {
-    return Token(std::move(Symbol), TokenType::SYMBOL);
+    return MakeToken(std::move(Symbol), TokenType::SYMBOL);
   }
 }
 
 Token Lexer::AnalyzeOperator() {
   std::string Operator(1, PeekNext());
+  unsigned SavedColumnNo = 0;
 
   while (LexOperators.find(Operator) != LexOperators.end()) {
-    Operator += PeekNext();
+    char Next = *CurrentBufferPtr++;
+    SavedColumnNo = CurrentColumnNo;
+    if (Next == '\n') {
+      CurrentColumnNo = 0;
+      CurrentLineNo++;
+    }
+    ++CurrentColumnNo;
+    Operator += Next;
+
     if (LexOperators.find(Operator) == LexOperators.end()) {
       Operator.pop_back();
       --CurrentBufferPtr;
-      --CurrentColumnNo;
+      if (CurrentColumnNo > 0) {
+        --CurrentColumnNo;
+      }
       if (PeekCurrent() == '\n') {
         --CurrentLineNo;
       }
@@ -215,20 +226,21 @@ Token Lexer::AnalyzeOperator() {
   }
 
   if (LexOperators.find(Operator) != LexOperators.end()) {
-    return Token("", LexOperators.at(Operator));
+    return Token("", LexOperators.at(Operator), CurrentLineNo, SavedColumnNo);
   } else {
     --CurrentColumnNo;
     DiagnosticError(CurrentLineNo, CurrentColumnNo)
         << "Unknown character sequence " << Operator;
-    return Token("", LexOperators.at(Operator));
+    /// Suppress warning about missing return statement.
+    UnreachablePoint();
   }
 }
 
 char Lexer::PeekNext() {
   char Atom = *CurrentBufferPtr++;
   if (Atom == '\n') {
-    CurrentColumnNo = 0;
     CurrentLineNo++;
+    CurrentColumnNo = 1U;
   } else {
     CurrentColumnNo++;
   }
@@ -236,6 +248,12 @@ char Lexer::PeekNext() {
 }
 
 char Lexer::PeekCurrent() const { return *CurrentBufferPtr; }
+
+Token Lexer::MakeToken(std::string_view Data, TokenType Type) const {
+  return {Data, Type, CurrentLineNo,
+          Data.length() == 0 ? unsigned(CurrentColumnNo)
+                             : unsigned(CurrentColumnNo - Data.length())};
+}
 
 } // namespace frontEnd
 } // namespace weak

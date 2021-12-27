@@ -5,6 +5,8 @@
 
 namespace weak {
 
+[[noreturn]] void UnreachablePoint();
+
 class Diagnostic {
 public:
   enum struct DiagType { WARN, ERROR } const Type;
