@@ -9,6 +9,7 @@
     return EXIT_FAILURE;                                                       \
   }
 
-#define SECTION(string) (std::cout << "testing section " << #string << std::endl);
+#define SECTION(string)                                                        \
+  (std::cout << "testing section " << #string << std::endl);
 
 #endif // COMPILER_TEST_HELPERS_HPP
