@@ -9,14 +9,13 @@ namespace frontEnd {
 class ASTNode {
 public:
   virtual ~ASTNode() noexcept = default;
-  virtual ASTType GetASTType() const { return ASTType::BASE_NODE; }
+  virtual ASTType GetASTType() const;
 
-  unsigned GetLineNo() const { return LineNo; }
-  unsigned GetColumnNo() const { return ColumnNo; }
+  unsigned GetLineNo() const;
+  unsigned GetColumnNo() const;
 
 protected:
-  ASTNode(unsigned TheLineNo, unsigned TheColumnNo)
-      : LineNo(TheLineNo), ColumnNo(TheColumnNo) {}
+  ASTNode(unsigned TheLineNo, unsigned TheColumnNo);
 
   unsigned LineNo;
   unsigned ColumnNo;

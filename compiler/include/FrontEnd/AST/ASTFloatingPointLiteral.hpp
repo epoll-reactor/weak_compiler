@@ -8,8 +8,8 @@ namespace frontEnd {
 
 class ASTFloatingPointLiteral : public ASTNode {
 public:
-  ASTFloatingPointLiteral(double TheValue, unsigned TheLineNo = 0,
-                          unsigned TheColumnNo = 0);
+  ASTFloatingPointLiteral(double TheValue, unsigned TheLineNo = 0U,
+                          unsigned TheColumnNo = 0U);
 
   ASTType GetASTType() const override;
 
