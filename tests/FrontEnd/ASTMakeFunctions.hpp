@@ -96,4 +96,11 @@ MakeDoWhile(std::unique_ptr<ASTCompoundStmt> &&Body,
                                           std::move(Condition));
 }
 
+static std::unique_ptr<ASTNode>
+MakeVarDecl(TokenType DataType, std::string &&SymbolName,
+            std::unique_ptr<ASTNode> &&DeclareBody) {
+  return std::make_unique<ASTVarDecl>(DataType, std::move(SymbolName),
+                                      std::move(DeclareBody));
+}
+
 #endif // WEAK_COMPILER_TESTS_FRONTEND_AST_MAKE_FUNCTIONS_HPP

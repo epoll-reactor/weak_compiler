@@ -91,4 +91,13 @@ int main() {
     ASTPrettyPrint(MakeReturn(
         MakeBinary(TokenType::PLUS, MakeInteger(120), MakeInteger(120))));
   }
+
+  SECTION(VarDeclStmt) {
+    ASTPrettyPrint(MakeVarDecl(
+        TokenType::STRING, "Variable_1",
+        MakeBinary(TokenType::PLUS, MakeString("First"),
+                   MakeVarDecl(TokenType::STRING, "Variable_2",
+                               MakeBinary(TokenType::PLUS, MakeString("Second"),
+                                          MakeString("Third"))))));
+  }
 }

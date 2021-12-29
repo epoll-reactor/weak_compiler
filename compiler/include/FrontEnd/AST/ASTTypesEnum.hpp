@@ -15,13 +15,7 @@ enum struct ASTType {
   BOOLEAN_LITERAL,
 
   // Assignments (e.g int Value = 0).
-  INT_DECL,
-  CHAR_DECL,
-  STRING_DECL,
-  BOOLEAN_DECL,
-
-  // Return type.
-  VOID_DECL,
+  VAR_DECL,
 
   // Function parameter (e.g int Value).
   PARAMETER,
