@@ -8,7 +8,7 @@ ASTIntegerLiteral::ASTIntegerLiteral(signed TheValue, unsigned TheLineNo,
     : ASTNode(TheLineNo, TheColumnNo), Value(TheValue) {}
 
 ASTType ASTIntegerLiteral::GetASTType() const {
-  return ASTType::INTEGRAL_LITERAL;
+  return ASTType::INTEGER_LITERAL;
 }
 
 signed ASTIntegerLiteral::GetValue() const { return Value; }

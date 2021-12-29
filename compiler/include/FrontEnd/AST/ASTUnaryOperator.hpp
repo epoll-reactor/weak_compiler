@@ -14,7 +14,7 @@ public:
 
   ASTUnaryOperator(UnaryType ThePrefixOrPostfix, TokenType TheOperation,
                    std::unique_ptr<ASTNode> &&TheOperand,
-                   unsigned TheLineNo = 0, unsigned TheColumnNo = 0);
+                   unsigned TheLineNo = 0U, unsigned TheColumnNo = 0U);
 
   ASTType GetASTType() const override;
 

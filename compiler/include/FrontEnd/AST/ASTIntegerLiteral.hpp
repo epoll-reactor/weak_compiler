@@ -8,8 +8,8 @@ namespace frontEnd {
 
 class ASTIntegerLiteral : public ASTNode {
 public:
-  ASTIntegerLiteral(signed TheValue, unsigned TheLineNo = 0,
-                    unsigned TheColumnNo = 0);
+  ASTIntegerLiteral(signed TheValue, unsigned TheLineNo = 0U,
+                    unsigned TheColumnNo = 0U);
 
   ASTType GetASTType() const override;
 

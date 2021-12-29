@@ -9,7 +9,7 @@ enum struct ASTType {
   BASE_NODE,
 
   // Literals.
-  INTEGRAL_LITERAL,
+  INTEGER_LITERAL,
   FLOATING_POINT_LITERAL,
   STRING_LITERAL,
   BOOLEAN_LITERAL,
@@ -46,7 +46,10 @@ enum struct ASTType {
   DO_WHILE_STMT,
 
   // Jump statements.
-  RETURN_STMT
+  RETURN_STMT,
+
+  // Body for block statements.
+  COMPOUND_STMT,
 };
 
 } // namespace frontEnd

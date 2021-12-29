@@ -8,8 +8,8 @@ namespace frontEnd {
 
 class ASTBooleanLiteral : public ASTNode {
 public:
-  ASTBooleanLiteral(bool TheValue, unsigned TheLineNo = 0,
-                    unsigned TheColumnNo = 0);
+  ASTBooleanLiteral(bool TheValue, unsigned TheLineNo = 0U,
+                    unsigned TheColumnNo = 0U);
 
   ASTType GetASTType() const override;
 

@@ -9,8 +9,8 @@ namespace frontEnd {
 
 class ASTStringLiteral : public ASTNode {
 public:
-  ASTStringLiteral(std::string TheValue, unsigned TheLineNo = 0,
-                   unsigned TheColumnNo = 0);
+  ASTStringLiteral(std::string TheValue, unsigned TheLineNo = 0U,
+                   unsigned TheColumnNo = 0U);
 
   ASTType GetASTType() const override;
 
