@@ -13,7 +13,7 @@
 #include "FrontEnd/AST/ASTReturnStmt.hpp"
 #include "FrontEnd/AST/ASTStringLiteral.hpp"
 #include "FrontEnd/AST/ASTUnaryOperator.hpp"
-//#include "FrontEnd/AST/ASTVarDecl.hpp"
+#include "FrontEnd/AST/ASTVarDecl.hpp"
 #include "FrontEnd/AST/ASTWhileStmt.hpp"
 #include <iostream>
 
@@ -43,16 +43,6 @@ private:
       break;
     case ASTType::BOOLEAN_LITERAL:
       PrintNode(static_cast<ASTBooleanLiteral *>(Node));
-      break;
-    case ASTType::INT_DECL: // Not implemented yet.
-      break;
-    case ASTType::CHAR_DECL: // Not implemented yet.
-      break;
-    case ASTType::STRING_DECL: // Not implemented yet.
-      break;
-    case ASTType::BOOLEAN_DECL: // Not implemented yet.
-      break;
-    case ASTType::VOID_DECL: // Not implemented yet.
       break;
     case ASTType::PARAMETER: // Not implemented yet.
       break;
@@ -87,14 +77,14 @@ private:
     case ASTType::COMPOUND_STMT:
       PrintNode(static_cast<ASTCompoundStmt *>(Node));
       break;
+    case ASTType::VAR_DECL:
+      PrintNode(static_cast<ASTVarDecl *>(Node));
     default:
       break;
     }
   }
 
   void PrintNode(ASTBinaryOperator *Binary) {
-    std::cout << "BinaryOperator " << TokenToString(Binary->GetOperation())
-              << " ";
     using namespace std::string_literals;
     PrintLabelWithTextPosition(
         "BinaryOperator "s + TokenToString(Binary->GetOperation()), Binary);
@@ -221,6 +211,18 @@ private:
     [[maybe_unused]] IndentPrinter _(NestedIndentWidth);
     PrintIndent();
     PrintNode(Return->GetOperand().get());
+  }
+
+  void PrintNode(ASTVarDecl *Decl) {
+    PrintIndent();
+    PrintLabelWithTextPosition("VarDeclStmt", Decl, /*PrintNewLine=*/false);
+    std::cout << " " << TokenToString(Decl->GetDataType());
+    std::cout << " " << Decl->GetSymbolName() << std::endl;
+
+    [[maybe_unused]] IndentPrinter _(NestedIndentWidth);
+    PrintIndent();
+
+    PrintNode(Decl->GetDeclareBody().get());
   }
 
   template <typename DerivedNode>
