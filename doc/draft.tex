@@ -34,9 +34,9 @@
 			\begin{tabular}{ R{3cm} R{3cm} R{3cm} }
 				\textbf{boolean}  & \textbf{break}  & \textbf{char}   \\
 				\textbf{continue} & \textbf{do }    & \textbf{false}  \\
-				\textbf{for}      & \textbf{if}     & \textbf{int}    \\
-				\textbf{return}   & \textbf{string} & \textbf{true}   \\
-				\textbf{void}     & \textbf{while}  &                 \\
+				\textbf{float}    & \textbf{for}    & \textbf{if}     \\
+				\textbf{int}      & \textbf{return} & \textbf{string} \\
+				\textbf{true}     & \textbf{void}   & \textbf{while}  \\
 			\end{tabular}
 		
 		\subsection{Operators and punctuators}
@@ -46,8 +46,7 @@
 				\tt{|}   & \textbf{\^} & \tt{\&}  & \tt{==}  & \tt{!=}  & \tt{>}    \\
 				\tt{<}   & \tt{>=}     & \tt{<=}  & \tt{<<}  & \tt{>>}  & \tt{+}    \\
 				\tt{-}   & \tt{*}      & \tt{/}   & \tt{\%}  & \tt{++}  & \tt{--}   \\
-				\tt{[}   & \tt{]}      & \tt{\&}  & \tt{==}  & \tt{!=}  & \tt{>}    \\
-				\tt{(}   & \tt{)}      & \tt{\{}  & \tt{\}}  &          &           \\
+				\tt{[}   & \tt{]}      & \tt{(}   & \tt{)}   & \tt{\{}  & \tt{\}}   \\
 			\end{tabular}
 		
 	\section{Grammar summary}
@@ -63,6 +62,7 @@
 			\alt <void-type>
 			
 			<type> ::= \textbf{int}
+			\alt \textbf{float}
 			\alt \textbf{char}
 			\alt \textbf{string}
 			\alt \textbf{boolean}
@@ -190,8 +190,61 @@
 	\section{Environment}
 		\upshape
 		
+		\subsection{Data types}
+			The language must implement static strong typing. All casts must
+			be explicit.
+			\begin{itemize}
+				\item \textbf{Int} -- Signed 32-bit;
+				\item \textbf{Float} -- Signed 32-bit;
+				\item \textbf{Bool} -- 8-bit;
+				\item \textbf{String} -- Character sequence, that ends with Null character;
+				\item \textbf{Void} -- Empty type, used as return type only.
+			\end{itemize}
+			
+		\subsection{Inside-iteration statements}
+			\begin{itemize}
+				\item \textbf{Break} -- Usable only inside the \textbf{while},
+		  			\textbf{do-while} and \textbf{for} statements and performs exit from a
+			  		loop.
+				
+				\item \textbf{Continue} -- Usable only inside the \textbf{while},
+		  			\textbf{do-while} and \textbf{for} statements and performs jump to
+		  			the next iteration.
+			\end{itemize}
+			
+		\subsection{Iteration statements}
+			\begin{itemize}
+		  		\item \textbf{While} -- Loop statement that performs its body until the
+		  			condition evaluates to true.
+		  		
+		  		\item \textbf{Do-While} -- Loop statement with similar to \textbf{While}
+		  			semantics, but it executes body before contition check at first time.
+		  			
+	  			\item \textbf{For} -- Loop statement with three initial parts and body.
+	  				This includes:
+	  				\begin{itemize}
+	  					\item \textbf{Initial} part with the variable assignment;
+	  					\item \textbf{Conditional} part with the some condition;
+	  					\item \textbf{Incremental} part with the some statement, that
+	  						should change assigned variable.
+	  				\end{itemize}
+			\end{itemize}
+			
+		\subsection{Conditional statements}
+			\begin{itemize}
+				\item \textbf{If} -- Conditional statement, that should execute
+				If-part when it's condition evaluates to true. Otherwise, Else-part
+				should be executed. 
+			\end{itemize}
+			
+		\subsection{Jump statements}
+			\begin{itemize}
+				\item \textbf{Return} -- The end point of control flow, may return
+				value, may not (void functions).
+			\end{itemize}
+			
 		\subsection{Translation environment}
 			The whole program must be placed in one file to simplify translation
 			and linking (lack of it as such).
-		
+			
 \end{document}
