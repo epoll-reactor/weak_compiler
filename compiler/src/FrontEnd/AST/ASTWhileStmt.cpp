@@ -1,4 +1,5 @@
 #include "FrontEnd/AST/ASTWhileStmt.hpp"
+#include "FrontEnd/AST/ASTVisitor.hpp"
 
 namespace weak {
 namespace frontEnd {
@@ -10,6 +11,10 @@ ASTWhileStmt::ASTWhileStmt(std::unique_ptr<ASTNode> &&TheCondition,
       Body(std::move(TheBody)) {}
 
 ASTType ASTWhileStmt::GetASTType() const { return ASTType::WHILE_STMT; }
+
+void ASTWhileStmt::Accept(const std::unique_ptr<ASTVisitor> &Visitor) const {
+  Visitor->Visit(this);
+}
 
 const std::unique_ptr<ASTNode> &ASTWhileStmt::GetCondition() const {
   return Condition;
