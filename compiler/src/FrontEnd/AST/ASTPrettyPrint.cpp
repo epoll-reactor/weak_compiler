@@ -7,6 +7,7 @@
 #include "FrontEnd/AST/ASTDoWhileStmt.hpp"
 #include "FrontEnd/AST/ASTFloatingPointLiteral.hpp"
 #include "FrontEnd/AST/ASTForStmt.hpp"
+#include "FrontEnd/AST/ASTFunctionDecl.hpp"
 #include "FrontEnd/AST/ASTIfStmt.hpp"
 #include "FrontEnd/AST/ASTIntegerLiteral.hpp"
 #include "FrontEnd/AST/ASTNode.hpp"
@@ -196,6 +197,41 @@ private:
     Indent += 2;
     PrintIndent();
     VisitBaseNode(VarDecl->GetDeclareBody().get());
+    Indent -= 2;
+  }
+
+  void Visit(const ASTFunctionDecl *FunctionDecl) const override {
+    PrintWithTextPosition("FunctionDecl", FunctionDecl, /*NewLineNeeded=*/true);
+
+    Indent += 2;
+    PrintIndent();
+    PrintWithTextPosition("FunctionRetType", FunctionDecl,
+                          /*NewLineNeeded=*/false);
+    std::cout << TokenToString(FunctionDecl->GetReturnType()) << std::endl;
+
+    PrintIndent();
+    PrintWithTextPosition("FunctionName", FunctionDecl,
+                          /*NewLineNeeded=*/false);
+    std::cout << FunctionDecl->GetName() << std::endl;
+
+    PrintIndent();
+    PrintWithTextPosition("FunctionArgs", FunctionDecl,
+                          /*NewLineNeeded=*/true);
+
+    Indent += 2;
+    for (const auto &Argument : FunctionDecl->GetArguments()) {
+      PrintIndent();
+      VisitBaseNode(Argument.get());
+    }
+    Indent -= 2;
+
+    PrintIndent();
+    PrintWithTextPosition("FunctionBody", FunctionDecl,
+                          /*NewLineNeeded=*/true);
+
+    Indent += 2;
+    PrintIndent();
+    Visit(FunctionDecl->GetBody().get());
     Indent -= 2;
   }
 

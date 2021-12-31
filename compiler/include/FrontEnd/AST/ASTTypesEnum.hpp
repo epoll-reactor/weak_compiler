@@ -44,6 +44,9 @@ enum struct ASTType {
 
   // Body for block statements.
   COMPOUND_STMT,
+
+  // Function.
+  FUNCTION_DECL,
 };
 
 } // namespace frontEnd
