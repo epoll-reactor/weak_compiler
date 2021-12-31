@@ -14,6 +14,7 @@
 #include "FrontEnd/AST/ASTStringLiteral.hpp"
 #include "FrontEnd/AST/ASTUnaryOperator.hpp"
 #include "FrontEnd/AST/ASTVarDecl.hpp"
+#include "FrontEnd/AST/ASTVisitor.hpp"
 #include "FrontEnd/AST/ASTWhileStmt.hpp"
 #include <iostream>
 
@@ -21,159 +22,277 @@ using namespace weak::frontEnd;
 
 namespace {
 
-class ASTNodePrinter {
+class ASTPrintVisitor : public ASTVisitor {
 public:
-  ASTNodePrinter(ASTNode *TheRoot) : Root(TheRoot), NestedIndentWidth(0U) {}
+  ASTPrintVisitor(ASTNode *TheRootNode) : RootNode(TheRootNode), Indent(0U) {}
 
-  void Print() { PrintNode(Root); }
+  void Print() const { Visit(RootNode); }
 
-private:
-  void PrintNode(ASTNode *Node) {
+  void Visit(const class ASTNode *Node) const override {
     switch (Node->GetASTType()) {
     case ASTType::BASE_NODE:
       break;
     case ASTType::INTEGER_LITERAL:
-      PrintNode(static_cast<ASTIntegerLiteral *>(Node));
+      Visit(static_cast<const ASTIntegerLiteral *>(Node));
       break;
     case ASTType::FLOATING_POINT_LITERAL:
-      PrintNode(static_cast<ASTFloatingPointLiteral *>(Node));
+      Visit(static_cast<const ASTFloatingPointLiteral *>(Node));
       break;
     case ASTType::STRING_LITERAL:
-      PrintNode(static_cast<ASTStringLiteral *>(Node));
+      Visit(static_cast<const ASTStringLiteral *>(Node));
       break;
     case ASTType::BOOLEAN_LITERAL:
-      PrintNode(static_cast<ASTBooleanLiteral *>(Node));
+      Visit(static_cast<const ASTBooleanLiteral *>(Node));
       break;
-    case ASTType::PARAMETER: // Not implemented yet.
+    case ASTType::VAR_DECL:
+      Visit(static_cast<const ASTVarDecl *>(Node));
+      break;
+    case ASTType::PARAMETER:
       break;
     case ASTType::BREAK_STMT:
-      PrintNode(static_cast<ASTBreakStmt *>(Node));
+      Visit(static_cast<const ASTBreakStmt *>(Node));
       break;
     case ASTType::CONTINUE_STMT:
-      PrintNode(static_cast<ASTContinueStmt *>(Node));
+      Visit(static_cast<const ASTContinueStmt *>(Node));
       break;
     case ASTType::BINARY:
-      PrintNode(static_cast<ASTBinaryOperator *>(Node));
+      Visit(static_cast<const ASTBinaryOperator *>(Node));
       break;
     case ASTType::PREFIX_UNARY: // Fall through.
     case ASTType::POSTFIX_UNARY:
-      PrintNode(static_cast<ASTUnaryOperator *>(Node));
+      Visit(static_cast<const ASTUnaryOperator *>(Node));
       break;
     case ASTType::IF_STMT:
-      PrintNode(static_cast<ASTIfStmt *>(Node));
+      Visit(static_cast<const ASTIfStmt *>(Node));
       break;
     case ASTType::FOR_STMT:
-      PrintNode(static_cast<ASTForStmt *>(Node));
+      Visit(static_cast<const ASTForStmt *>(Node));
       break;
     case ASTType::WHILE_STMT:
-      PrintNode(static_cast<ASTWhileStmt *>(Node));
+      Visit(static_cast<const ASTWhileStmt *>(Node));
       break;
     case ASTType::DO_WHILE_STMT:
-      PrintNode(static_cast<ASTDoWhileStmt *>(Node));
+      Visit(static_cast<const ASTDoWhileStmt *>(Node));
       break;
     case ASTType::RETURN_STMT:
-      PrintNode(static_cast<ASTReturnStmt *>(Node));
+      Visit(static_cast<const ASTReturnStmt *>(Node));
       break;
     case ASTType::COMPOUND_STMT:
-      PrintNode(static_cast<ASTCompoundStmt *>(Node));
-      break;
-    case ASTType::VAR_DECL:
-      PrintNode(static_cast<ASTVarDecl *>(Node));
-    default:
+      Visit(static_cast<const ASTCompoundStmt *>(Node));
       break;
     }
   }
 
-  void PrintNode(ASTBinaryOperator *Binary) {
-    using namespace std::string_literals;
-    PrintLabelWithTextPosition(
-        "BinaryOperator "s + TokenToString(Binary->GetOperation()), Binary);
-    [[maybe_unused]] IndentPrinter _(NestedIndentWidth);
+private:
+  void Visit(const ASTBinaryOperator *Binary) const override {
+    PrintWithTextPosition("BinaryOperator", Binary, /*NewLineNeeded=*/true);
+    Indent += 2;
 
     PrintIndent();
-    PrintNode(Binary->GetLHS().get());
+    Visit(Binary->GetLHS().get());
 
     PrintIndent();
-    PrintNode(Binary->GetRHS().get());
+    Visit(Binary->GetRHS().get());
+
+    Indent -= 2;
   }
 
-  void PrintNode(ASTUnaryOperator *Unary) {
-    using UnaryType = ASTUnaryOperator::UnaryType;
-    std::cout << ((Unary->PrefixOrPostfix == UnaryType::PREFIX) ? "Prefix"
-                                                                : "Postfix");
-    using namespace std::string_literals;
-    PrintLabelWithTextPosition(
-        "UnaryOperator "s + TokenToString(Unary->GetOperation()), Unary);
-    [[maybe_unused]] IndentPrinter _(NestedIndentWidth);
-
-    PrintIndent();
-    PrintNode(Unary->GetOperand().get());
+  void Visit(const ASTBooleanLiteral *Boolean) const override {
+    PrintWithTextPosition("BooleanLiteral", Boolean, /*NewLineNeeded=*/false);
+    std::cout << std::boolalpha << Boolean->GetValue() << std::endl;
   }
 
-  void PrintNode(ASTIfStmt *If) {
-    PrintLabelWithTextPosition("IfStmt", If);
-    [[maybe_unused]] IndentPrinter ConditionLabelIndent(NestedIndentWidth);
-    PrintIndent();
+  void Visit(const ASTBreakStmt *BreakStmt) const override {
+    PrintWithTextPosition("BreakStmt", BreakStmt, /*NewLineNeeded=*/true);
+  }
 
-    PrintLabelWithTextPosition("IfCondition", If);
+  void Visit(const ASTCompoundStmt *CompoundStmt) const override {
+    PrintWithTextPosition("CompoundStmt", CompoundStmt, /*NewLineNeeded=*/true);
 
-    if (const auto &Condition = If->GetCondition()) {
-      [[maybe_unused]] IndentPrinter _(NestedIndentWidth);
+    Indent += 2;
+    for (const auto &Stmt : CompoundStmt->GetStmts()) {
       PrintIndent();
-      PrintNode(Condition.get());
+      Visit(Stmt.get());
+    }
+    Indent -= 2;
+  }
+
+  void Visit(const ASTContinueStmt *ContinueStmt) const override {
+    PrintWithTextPosition("ContinueStmt", ContinueStmt, /*NewLineNeeded=*/true);
+  }
+
+  void Visit(const ASTFloatingPointLiteral *Float) const override {
+    PrintWithTextPosition("FloatingPointLiteral", Float,
+                          /*NewLineNeeded=*/false);
+    std::cout << Float->GetValue() << std::endl;
+  }
+
+  void Visit(const ASTForStmt *ForStmt) const override {
+    PrintWithTextPosition("ForStmt", ForStmt,
+                          /*NewLineNeeded=*/true);
+
+    Indent += 2;
+
+    if (const auto *Init = ForStmt->GetInit().get()) {
+      PrintIndent();
+      PrintWithTextPosition("ForStmtInit", Init,
+                            /*NewLineNeeded=*/true);
+      Indent += 2;
+      PrintIndent();
+      Visit(Init);
+      Indent -= 2;
     }
 
-    if (const auto &ThenBody = If->GetThenBody())
-      PrintCompoundStatement("IfThenBody", ThenBody.get());
+    if (const auto *Condition = ForStmt->GetCondition().get()) {
+      PrintIndent();
+      PrintWithTextPosition("ForStmtCondition", Condition,
+                            /*NewLineNeeded=*/true);
+      Indent += 2;
+      PrintIndent();
+      Visit(Condition);
+      Indent -= 2;
+    }
 
-    if (const auto &ElseBody = If->GetElseBody())
-      PrintCompoundStatement("IfElseBody", ElseBody.get());
+    if (const auto *Increment = ForStmt->GetIncrement().get()) {
+      PrintIndent();
+      PrintWithTextPosition("ForStmtIncrement", Increment,
+                            /*NewLineNeeded=*/true);
+      Indent += 2;
+      PrintIndent();
+      Visit(Increment);
+      Indent -= 2;
+    }
+
+    if (const auto *Body = ForStmt->GetBody().get()) {
+      PrintIndent();
+      PrintWithTextPosition("ForStmtBody", Body,
+                            /*NewLineNeeded=*/true);
+      Indent += 2;
+      PrintIndent();
+      Visit(Body);
+      Indent -= 2;
+    }
+
+    Indent -= 2;
   }
 
-  void PrintLoopControlStmt(std::string_view Label, ASTNode *Node) {
+  void Visit(const ASTIfStmt *IfStmt) const override {
+    PrintWithTextPosition("IfStmt", IfStmt, /*NewLineNeeded=*/true);
+    Indent += 2;
+
+    if (const auto &Condition = IfStmt->GetCondition()) {
+      PrintIndent();
+      PrintWithTextPosition("IfStmtCondition", Condition.get(),
+                            /*NewLineNeeded=*/true);
+      Indent += 2;
+      PrintIndent();
+      Visit(Condition.get());
+      Indent -= 2;
+    }
+
+    if (const auto &ThenBody = IfStmt->GetThenBody()) {
+      PrintIndent();
+      PrintWithTextPosition("IfStmtThenBody", ThenBody.get(),
+                            /*NewLineNeeded=*/true);
+      Indent += 2;
+      PrintIndent();
+      Visit(ThenBody.get());
+      Indent -= 2;
+    }
+
+    if (const auto &ElseBody = IfStmt->GetElseBody()) {
+      PrintIndent();
+      PrintWithTextPosition("IfStmtElseBody", ElseBody.get(),
+                            /*NewLineNeeded=*/true);
+      Indent += 2;
+      PrintIndent();
+      Visit(ElseBody.get());
+      Indent -= 2;
+    }
+    Indent -= 2;
+  }
+
+  void Visit(const ASTIntegerLiteral *Integer) const override {
+    PrintWithTextPosition("IntegerLiteral", Integer,
+                          /*NewLineNeeded*/ false);
+    std::cout << Integer->GetValue() << std::endl;
+  }
+
+  void Visit(const ASTReturnStmt *ReturnStmt) const override {
+    PrintWithTextPosition("ReturnStmt", ReturnStmt, /*NewLineNeeded=*/true);
+    Indent += 2;
+
     PrintIndent();
-    PrintLabelWithTextPosition(Label, Node);
-    [[maybe_unused]] IndentPrinter _(NestedIndentWidth);
+    Visit(ReturnStmt->GetOperand().get());
+
+    Indent -= 2;
+  }
+
+  void Visit(const ASTStringLiteral *String) const override {
+    PrintWithTextPosition("StringLiteral", String,
+                          /*NewLineNeeded=*/false);
+    std::cout << String->GetValue() << std::endl;
+  }
+
+  void Visit(const ASTUnaryOperator *UnaryOperator) const override {
+    PrintWithTextPosition("UnaryOperator", UnaryOperator,
+                          /*NewLineNeeded=*/true);
+    Indent += 2;
+
     PrintIndent();
-    PrintNode(Node);
+    Visit(UnaryOperator->GetOperand().get());
+
+    Indent -= 2;
   }
 
-  void PrintNode(ASTForStmt *For) {
-    PrintLabelWithTextPosition("ForStmt", For);
+  void Visit(const ASTVarDecl *VarDecl) const override {
+    PrintWithTextPosition("VarDeclStmt", VarDecl, /*NewLineNeeedd=*/true);
 
-    [[maybe_unused]] IndentPrinter ForStmtIndent(NestedIndentWidth);
-
-    if (const auto &Init = For->GetInit())
-      PrintLoopControlStmt("ForStmtInit", Init.get());
-
-    if (const auto &Condition = For->GetCondition())
-      PrintLoopControlStmt("ForStmtCondition", Condition.get());
-
-    if (const auto &Increment = For->GetIncrement())
-      PrintLoopControlStmt("ForStmtIncrement", Increment.get());
-
-    if (const auto &ForBody = For->GetBody())
-      PrintCompoundStatement("ForStmtBody", ForBody.get());
+    Indent += 2;
+    PrintIndent();
+    Visit(VarDecl->GetDeclareBody().get());
+    Indent -= 2;
   }
 
-  template <typename DerivedNode>
-  void PrintCommonWhileStmt(DerivedNode *CommonWhile, bool IsDoWhile) {
+  void Visit(const ASTDoWhileStmt *DoWhileStmt) const override {
+    CommonWhileStmtVisit(DoWhileStmt, /*IsDoWhile=*/true);
+  }
+
+  void Visit(const ASTWhileStmt *WhileStmt) const override {
+    CommonWhileStmtVisit(WhileStmt, /*IsDoWhile=*/false);
+  }
+
+  template <typename WhileNode>
+  void CommonWhileStmtVisit(const WhileNode *WhileStmt, bool IsDoWhile) const {
     using namespace std::string_literals;
-    PrintLabelWithTextPosition((IsDoWhile ? "Do"s : ""s) + "WhileStmt",
-                               CommonWhile);
-
-    [[maybe_unused]] IndentPrinter WhileStmtIndent(NestedIndentWidth);
+    PrintIndent();
+    PrintWithTextPosition((IsDoWhile ? "Do"s : ""s) + "WhileStmt", WhileStmt,
+                          /*NewLineNeeded=*/true);
+    Indent += 2;
 
     auto PrintWhileCondition = [&, this] {
-      if (const auto &Condition = CommonWhile->GetCondition())
-        PrintLoopControlStmt((IsDoWhile ? "Do"s : ""s) + "WhileStmtCond",
-                             Condition.get());
+      if (const auto &Condition = WhileStmt->GetCondition().get()) {
+        PrintIndent();
+        PrintWithTextPosition((IsDoWhile ? "Do"s : ""s) + "WhileStmtCond",
+                              Condition,
+                              /*NewLineNeeded=*/true);
+        Indent += 2;
+        PrintIndent();
+        Visit(Condition);
+        Indent -= 2;
+      }
     };
 
     auto PrintWhileBody = [&, this] {
-      if (const auto &Body = CommonWhile->GetBody())
-        PrintCompoundStatement((IsDoWhile ? "Do"s : ""s) + "WhileStmtBody",
-                               Body.get());
+      if (const auto &Body = WhileStmt->GetBody().get()) {
+        PrintIndent();
+        PrintWithTextPosition((IsDoWhile ? "Do"s : ""s) + "WhileStmtBody", Body,
+                              /*NewLineNeeded=*/true);
+        Indent += 2;
+        PrintIndent();
+        Visit(Body);
+        Indent -= 2;
+      }
     };
 
     if (IsDoWhile) {
@@ -185,105 +304,21 @@ private:
     }
   }
 
-  void PrintNode(ASTWhileStmt *While) {
-    PrintCommonWhileStmt(While, /*IsDoWhile=*/false);
-  }
-
-  void PrintNode(ASTDoWhileStmt *While) {
-    PrintCommonWhileStmt(While, /*IsDoWhile=*/true);
-  }
-
-  void PrintNode(ASTCompoundStmt *Compound) {
-    PrintIndent();
-    PrintLabelWithTextPosition("CompoundStmt", Compound);
-
-    [[maybe_unused]] IndentPrinter _(NestedIndentWidth);
-    for (const auto &Stmt : Compound->GetStmts()) {
-      PrintIndent();
-      PrintNode(Stmt.get());
-    }
-  }
-
-  void PrintNode(ASTReturnStmt *Return) {
-    PrintIndent();
-    PrintLabelWithTextPosition("ReturnStmt", Return);
-
-    [[maybe_unused]] IndentPrinter _(NestedIndentWidth);
-    PrintIndent();
-    PrintNode(Return->GetOperand().get());
-  }
-
-  void PrintNode(ASTVarDecl *Decl) {
-    PrintIndent();
-    PrintLabelWithTextPosition("VarDeclStmt", Decl, /*PrintNewLine=*/false);
-    std::cout << " " << TokenToString(Decl->GetDataType());
-    std::cout << " " << Decl->GetSymbolName() << std::endl;
-
-    [[maybe_unused]] IndentPrinter _(NestedIndentWidth);
-    PrintIndent();
-
-    PrintNode(Decl->GetDeclareBody().get());
-  }
-
-  template <typename DerivedNode>
-  void PrintLiteral(std::string_view Label, ASTNode *Node) {
-    PrintLabelWithTextPosition(Label, Node, /*PrintNewLine=*/false);
-    std::cout << " ";
-    std::cout << static_cast<DerivedNode *>(Node)->GetValue() << std::endl;
-  }
-
-  void PrintNode(ASTBooleanLiteral *Boolean) {
-    PrintLiteral<ASTBooleanLiteral>("BooleanLiteral", Boolean);
-  }
-
-  void PrintNode(ASTFloatingPointLiteral *Float) {
-    PrintLiteral<ASTFloatingPointLiteral>("FloatLiteral", Float);
-  }
-
-  void PrintNode(ASTIntegerLiteral *Integer) {
-    PrintLiteral<ASTIntegerLiteral>("IntLiteral", Integer);
-  }
-
-  void PrintNode(ASTStringLiteral *Float) {
-    PrintLiteral<ASTStringLiteral>("StringLiteral", Float);
-  }
-
-  void PrintNode(ASTBreakStmt *Break) {
-    PrintLabelWithTextPosition("BreakStmt", Break);
-  }
-
-  void PrintNode(ASTContinueStmt *Continue) {
-    PrintLabelWithTextPosition("ContinueStmt", Continue);
-  }
-
-  void PrintLabelWithTextPosition(std::string_view Label, ASTNode *Node,
-                                  bool PrintNewLine = true) {
+  void PrintWithTextPosition(std::string_view Label, const ASTNode *Node,
+                             bool NewLineNeeded) const {
     std::cout << Label << " <line:" << Node->GetLineNo()
               << ", col:" << Node->GetColumnNo() << ">";
-    if (PrintNewLine)
+
+    if (NewLineNeeded)
       std::cout << std::endl;
+    else
+      std::cout << " ";
   }
 
-  void PrintIndent() { std::cout << std::string(NestedIndentWidth, ' '); }
+  void PrintIndent() const { std::cout << std::string(Indent, ' '); }
 
-  void PrintCompoundStatement(std::string_view Label,
-                              ASTCompoundStmt *CompoundStmt) {
-    PrintIndent();
-    PrintLabelWithTextPosition(Label, CompoundStmt);
-    [[maybe_unused]] IndentPrinter _indent_2(NestedIndentWidth);
-    PrintNode(CompoundStmt);
-  }
-
-  struct IndentPrinter {
-    IndentPrinter(unsigned &TheWidth) : Width(TheWidth) { Width += IndentSize; }
-    ~IndentPrinter() { Width -= IndentSize; }
-
-    unsigned &Width;
-    static constexpr unsigned IndentSize = 2U;
-  };
-
-  ASTNode *Root;
-  unsigned NestedIndentWidth;
+  ASTNode *RootNode;
+  mutable unsigned Indent;
 };
 
 } // namespace
@@ -291,7 +326,7 @@ private:
 namespace weak {
 
 void frontEnd::ASTPrettyPrint(const std::unique_ptr<ASTNode> &RootNode) {
-  ASTNodePrinter Printer(RootNode.get());
+  ASTPrintVisitor Printer(RootNode.get());
   Printer.Print();
 }
 
