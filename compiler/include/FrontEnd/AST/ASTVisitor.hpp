@@ -17,6 +17,7 @@ public:
   virtual void Visit(const class ASTDoWhileStmt *) const = 0;
   virtual void Visit(const class ASTFloatingPointLiteral *) const = 0;
   virtual void Visit(const class ASTForStmt *) const = 0;
+  virtual void Visit(const class ASTFunctionDecl *) const = 0;
   virtual void Visit(const class ASTIfStmt *) const = 0;
   virtual void Visit(const class ASTIntegerLiteral *) const = 0;
   virtual void Visit(const class ASTReturnStmt *) const = 0;

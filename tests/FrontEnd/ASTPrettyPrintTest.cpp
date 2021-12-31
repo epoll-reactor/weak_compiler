@@ -100,4 +100,15 @@ int main() {
                                MakeBinary(TokenType::PLUS, MakeString("Second"),
                                           MakeString("Third"))))));
   }
+
+  SECTION(FunctionDecl) {
+    std::vector<std::unique_ptr<ASTNode>> Arguments, Body;
+    Arguments.push_back(MakeString("Arg"));
+    Body.push_back(
+        MakeBinary(TokenType::PLUS_ASSIGN, MakeInteger(10), MakeInteger(20)));
+
+    ASTPrettyPrint(MakeFunction(TokenType::VOID, "FunctionName",
+                                std::move(Arguments),
+                                MakeCompound(std::move(Body))));
+  }
 }
