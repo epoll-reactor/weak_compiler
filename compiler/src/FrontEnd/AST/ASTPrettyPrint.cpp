@@ -246,7 +246,7 @@ private:
   }
 
   void Visit(const ASTVarDecl *VarDecl) const override {
-    PrintWithTextPosition("VarDeclStmt", VarDecl, /*NewLineNeeedd=*/true);
+    PrintWithTextPosition("VarDeclStmt", VarDecl, /*NewLineNeeded=*/true);
 
     Indent += 2;
     PrintIndent();
