@@ -9,9 +9,5 @@ ASTContinueStmt::ASTContinueStmt(unsigned TheLineNo, unsigned TheColumnNo)
 
 ASTType ASTContinueStmt::GetASTType() const { return ASTType::CONTINUE_STMT; }
 
-void ASTContinueStmt::Accept(const std::unique_ptr<ASTVisitor> &Visitor) const {
-  Visitor->Visit(this);
-}
-
 } // namespace frontEnd
 } // namespace weak

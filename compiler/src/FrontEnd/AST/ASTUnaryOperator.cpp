@@ -16,11 +16,6 @@ ASTType ASTUnaryOperator::GetASTType() const {
                                                : ASTType::PREFIX_UNARY;
 }
 
-void ASTUnaryOperator::Accept(
-    const std::unique_ptr<ASTVisitor> &Visitor) const {
-  Visitor->Visit(this);
-}
-
 TokenType ASTUnaryOperator::GetOperation() const { return Operation; }
 
 const std::unique_ptr<ASTNode> &ASTUnaryOperator::GetOperand() const {

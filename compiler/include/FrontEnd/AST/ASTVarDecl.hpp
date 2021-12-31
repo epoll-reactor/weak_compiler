@@ -16,7 +16,6 @@ public:
              unsigned TheColumnNo = 0);
 
   ASTType GetASTType() const override;
-  void Accept(const std::unique_ptr<ASTVisitor> &) const override;
 
   TokenType GetDataType() const;
   const std::string &GetSymbolName() const;

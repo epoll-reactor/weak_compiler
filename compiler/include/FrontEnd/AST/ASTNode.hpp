@@ -13,7 +13,6 @@ class ASTNode {
 public:
   virtual ~ASTNode() noexcept = default;
   virtual ASTType GetASTType() const;
-  virtual void Accept(const std::unique_ptr<ASTVisitor> &) const = 0;
 
   unsigned GetLineNo() const;
   unsigned GetColumnNo() const;

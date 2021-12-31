@@ -13,11 +13,6 @@ ASTBinaryOperator::ASTBinaryOperator(TokenType TheOperation,
 
 ASTType ASTBinaryOperator::GetASTType() const { return ASTType::BINARY; }
 
-void ASTBinaryOperator::Accept(
-    const std::unique_ptr<ASTVisitor> &Visitor) const {
-  Visitor->Visit(this);
-}
-
 TokenType ASTBinaryOperator::GetOperation() const { return Operation; }
 
 const std::unique_ptr<ASTNode> &ASTBinaryOperator::GetLHS() const {

@@ -7,6 +7,8 @@ namespace frontEnd {
 class ASTVisitor {
 public:
   virtual ~ASTVisitor() noexcept = default;
+  /// Visit all types of nodes.
+  void VisitBaseNode(const class ASTNode *) const;
   virtual void Visit(const class ASTBinaryOperator *) const = 0;
   virtual void Visit(const class ASTBooleanLiteral *) const = 0;
   virtual void Visit(const class ASTBreakStmt *) const = 0;
@@ -17,7 +19,6 @@ public:
   virtual void Visit(const class ASTForStmt *) const = 0;
   virtual void Visit(const class ASTIfStmt *) const = 0;
   virtual void Visit(const class ASTIntegerLiteral *) const = 0;
-  virtual void Visit(const class ASTNode *) const = 0;
   virtual void Visit(const class ASTReturnStmt *) const = 0;
   virtual void Visit(const class ASTStringLiteral *) const = 0;
   virtual void Visit(const class ASTUnaryOperator *) const = 0;

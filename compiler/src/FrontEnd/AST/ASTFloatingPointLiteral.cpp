@@ -13,11 +13,6 @@ ASTType ASTFloatingPointLiteral::GetASTType() const {
   return ASTType::FLOATING_POINT_LITERAL;
 }
 
-void ASTFloatingPointLiteral::Accept(
-    const std::unique_ptr<ASTVisitor> &Visitor) const {
-  Visitor->Visit(this);
-}
-
 double ASTFloatingPointLiteral::GetValue() const { return Value; }
 
 } // namespace frontEnd

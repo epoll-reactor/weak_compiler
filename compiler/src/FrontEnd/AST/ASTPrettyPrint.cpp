@@ -26,62 +26,7 @@ class ASTPrintVisitor : public ASTVisitor {
 public:
   ASTPrintVisitor(ASTNode *TheRootNode) : RootNode(TheRootNode), Indent(0U) {}
 
-  void Print() const { Visit(RootNode); }
-
-  void Visit(const class ASTNode *Node) const override {
-    switch (Node->GetASTType()) {
-    case ASTType::BASE_NODE:
-      break;
-    case ASTType::INTEGER_LITERAL:
-      Visit(static_cast<const ASTIntegerLiteral *>(Node));
-      break;
-    case ASTType::FLOATING_POINT_LITERAL:
-      Visit(static_cast<const ASTFloatingPointLiteral *>(Node));
-      break;
-    case ASTType::STRING_LITERAL:
-      Visit(static_cast<const ASTStringLiteral *>(Node));
-      break;
-    case ASTType::BOOLEAN_LITERAL:
-      Visit(static_cast<const ASTBooleanLiteral *>(Node));
-      break;
-    case ASTType::VAR_DECL:
-      Visit(static_cast<const ASTVarDecl *>(Node));
-      break;
-    case ASTType::PARAMETER:
-      break;
-    case ASTType::BREAK_STMT:
-      Visit(static_cast<const ASTBreakStmt *>(Node));
-      break;
-    case ASTType::CONTINUE_STMT:
-      Visit(static_cast<const ASTContinueStmt *>(Node));
-      break;
-    case ASTType::BINARY:
-      Visit(static_cast<const ASTBinaryOperator *>(Node));
-      break;
-    case ASTType::PREFIX_UNARY: // Fall through.
-    case ASTType::POSTFIX_UNARY:
-      Visit(static_cast<const ASTUnaryOperator *>(Node));
-      break;
-    case ASTType::IF_STMT:
-      Visit(static_cast<const ASTIfStmt *>(Node));
-      break;
-    case ASTType::FOR_STMT:
-      Visit(static_cast<const ASTForStmt *>(Node));
-      break;
-    case ASTType::WHILE_STMT:
-      Visit(static_cast<const ASTWhileStmt *>(Node));
-      break;
-    case ASTType::DO_WHILE_STMT:
-      Visit(static_cast<const ASTDoWhileStmt *>(Node));
-      break;
-    case ASTType::RETURN_STMT:
-      Visit(static_cast<const ASTReturnStmt *>(Node));
-      break;
-    case ASTType::COMPOUND_STMT:
-      Visit(static_cast<const ASTCompoundStmt *>(Node));
-      break;
-    }
-  }
+  void Print() const { VisitBaseNode(RootNode); }
 
 private:
   void Visit(const ASTBinaryOperator *Binary) const override {
@@ -89,10 +34,10 @@ private:
     Indent += 2;
 
     PrintIndent();
-    Visit(Binary->GetLHS().get());
+    VisitBaseNode(Binary->GetLHS().get());
 
     PrintIndent();
-    Visit(Binary->GetRHS().get());
+    VisitBaseNode(Binary->GetRHS().get());
 
     Indent -= 2;
   }
@@ -112,7 +57,7 @@ private:
     Indent += 2;
     for (const auto &Stmt : CompoundStmt->GetStmts()) {
       PrintIndent();
-      Visit(Stmt.get());
+      VisitBaseNode(Stmt.get());
     }
     Indent -= 2;
   }
@@ -139,7 +84,7 @@ private:
                             /*NewLineNeeded=*/true);
       Indent += 2;
       PrintIndent();
-      Visit(Init);
+      VisitBaseNode(Init);
       Indent -= 2;
     }
 
@@ -149,7 +94,7 @@ private:
                             /*NewLineNeeded=*/true);
       Indent += 2;
       PrintIndent();
-      Visit(Condition);
+      VisitBaseNode(Condition);
       Indent -= 2;
     }
 
@@ -159,7 +104,7 @@ private:
                             /*NewLineNeeded=*/true);
       Indent += 2;
       PrintIndent();
-      Visit(Increment);
+      VisitBaseNode(Increment);
       Indent -= 2;
     }
 
@@ -186,7 +131,7 @@ private:
                             /*NewLineNeeded=*/true);
       Indent += 2;
       PrintIndent();
-      Visit(Condition.get());
+      VisitBaseNode(Condition.get());
       Indent -= 2;
     }
 
@@ -223,7 +168,7 @@ private:
     Indent += 2;
 
     PrintIndent();
-    Visit(ReturnStmt->GetOperand().get());
+    VisitBaseNode(ReturnStmt->GetOperand().get());
 
     Indent -= 2;
   }
@@ -240,7 +185,7 @@ private:
     Indent += 2;
 
     PrintIndent();
-    Visit(UnaryOperator->GetOperand().get());
+    VisitBaseNode(UnaryOperator->GetOperand().get());
 
     Indent -= 2;
   }
@@ -250,7 +195,7 @@ private:
 
     Indent += 2;
     PrintIndent();
-    Visit(VarDecl->GetDeclareBody().get());
+    VisitBaseNode(VarDecl->GetDeclareBody().get());
     Indent -= 2;
   }
 
@@ -278,7 +223,7 @@ private:
                               /*NewLineNeeded=*/true);
         Indent += 2;
         PrintIndent();
-        Visit(Condition);
+        VisitBaseNode(Condition);
         Indent -= 2;
       }
     };

@@ -13,10 +13,6 @@ ASTVarDecl::ASTVarDecl(TokenType TheDataType, std::string &&TheSymbolName,
 
 ASTType ASTVarDecl::GetASTType() const { return ASTType::VAR_DECL; }
 
-void ASTVarDecl::Accept(const std::unique_ptr<ASTVisitor> &Visitor) const {
-  Visitor->Visit(this);
-}
-
 TokenType ASTVarDecl::GetDataType() const { return DataType; }
 
 const std::string &ASTVarDecl::GetSymbolName() const { return SymbolName; }

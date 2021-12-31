@@ -12,11 +12,6 @@ ASTType ASTBooleanLiteral::GetASTType() const {
   return ASTType::BOOLEAN_LITERAL;
 }
 
-void ASTBooleanLiteral::Accept(
-    const std::unique_ptr<ASTVisitor> &Visitor) const {
-  Visitor->Visit(this);
-}
-
 bool ASTBooleanLiteral::GetValue() const { return Value; }
 
 } // namespace frontEnd
