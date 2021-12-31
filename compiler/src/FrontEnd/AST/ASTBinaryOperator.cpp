@@ -1,4 +1,5 @@
 #include "FrontEnd/AST/ASTBinaryOperator.hpp"
+#include "FrontEnd/AST/ASTVisitor.hpp"
 
 namespace weak {
 namespace frontEnd {
@@ -11,6 +12,11 @@ ASTBinaryOperator::ASTBinaryOperator(TokenType TheOperation,
       LHS(std::move(TheLHS)), RHS(std::move(TheRHS)) {}
 
 ASTType ASTBinaryOperator::GetASTType() const { return ASTType::BINARY; }
+
+void ASTBinaryOperator::Accept(
+    const std::unique_ptr<ASTVisitor> &Visitor) const {
+  Visitor->Visit(this);
+}
 
 TokenType ASTBinaryOperator::GetOperation() const { return Operation; }
 

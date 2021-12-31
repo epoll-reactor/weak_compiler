@@ -1,12 +1,21 @@
 #include "FrontEnd/AST/ASTNode.hpp"
+#include "FrontEnd/AST/ASTVisitor.hpp"
 
-weak::frontEnd::ASTNode::ASTNode(unsigned TheLineNo, unsigned TheColumnNo)
+namespace weak {
+namespace frontEnd {
+
+ASTNode::ASTNode(unsigned TheLineNo, unsigned TheColumnNo)
     : LineNo(TheLineNo), ColumnNo(TheColumnNo) {}
 
-weak::frontEnd::ASTType weak::frontEnd::ASTNode::GetASTType() const {
-  return ASTType::BASE_NODE;
+ASTType ASTNode::GetASTType() const { return ASTType::BASE_NODE; }
+
+void ASTNode::Accept(const std::unique_ptr<ASTVisitor> &Visitor) const {
+  Visitor->Visit(this);
 }
 
-unsigned weak::frontEnd::ASTNode::GetLineNo() const { return LineNo; }
+unsigned ASTNode::GetLineNo() const { return LineNo; }
 
-unsigned weak::frontEnd::ASTNode::GetColumnNo() const { return ColumnNo; }
+unsigned ASTNode::GetColumnNo() const { return ColumnNo; }
+
+} // namespace frontEnd
+} // namespace weak

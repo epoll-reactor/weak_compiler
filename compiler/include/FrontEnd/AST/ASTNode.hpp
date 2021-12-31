@@ -2,14 +2,18 @@
 #define WEAK_COMPILER_FRONTEND_AST_AST_NODE_HPP
 
 #include "FrontEnd/AST/ASTTypesEnum.hpp"
+#include <memory>
 
 namespace weak {
 namespace frontEnd {
+
+class ASTVisitor;
 
 class ASTNode {
 public:
   virtual ~ASTNode() noexcept = default;
   virtual ASTType GetASTType() const;
+  virtual void Accept(const std::unique_ptr<ASTVisitor> &) const = 0;
 
   unsigned GetLineNo() const;
   unsigned GetColumnNo() const;
