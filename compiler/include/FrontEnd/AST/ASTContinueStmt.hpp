@@ -11,7 +11,6 @@ public:
   ASTContinueStmt(unsigned TheLineNo = 0U, unsigned TheColumnNo = 0U);
 
   ASTType GetASTType() const override;
-  void Accept(const std::unique_ptr<ASTVisitor> &) const override;
 };
 
 } // namespace frontEnd

@@ -15,10 +15,6 @@ ASTForStmt::ASTForStmt(std::unique_ptr<ASTNode> &&TheInit,
 
 ASTType ASTForStmt::GetASTType() const { return ASTType::FOR_STMT; }
 
-void ASTForStmt::Accept(const std::unique_ptr<ASTVisitor> &Visitor) const {
-  Visitor->Visit(this);
-}
-
 const std::unique_ptr<ASTNode> &ASTForStmt::GetInit() const { return Init; }
 
 const std::unique_ptr<ASTNode> &ASTForStmt::GetCondition() const {

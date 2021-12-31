@@ -13,10 +13,6 @@ weak::frontEnd::ASTDoWhileStmt::ASTDoWhileStmt(
 
 ASTType ASTDoWhileStmt::GetASTType() const { return ASTType::DO_WHILE_STMT; }
 
-void ASTDoWhileStmt::Accept(const std::unique_ptr<ASTVisitor> &Visitor) const {
-  Visitor->Visit(this);
-}
-
 const std::unique_ptr<ASTCompoundStmt> &ASTDoWhileStmt::GetBody() const {
   return Body;
 }

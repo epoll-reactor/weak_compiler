@@ -10,11 +10,6 @@ ASTStringLiteral::ASTStringLiteral(std::string TheValue, unsigned TheLineNo,
 
 ASTType ASTStringLiteral::GetASTType() const { return ASTType::STRING_LITERAL; }
 
-void ASTStringLiteral::Accept(
-    const std::unique_ptr<ASTVisitor> &Visitor) const {
-  Visitor->Visit(this);
-}
-
 const std::string &ASTStringLiteral::GetValue() const { return Value; }
 
 } // namespace frontEnd

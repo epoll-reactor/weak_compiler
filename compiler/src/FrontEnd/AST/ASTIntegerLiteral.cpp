@@ -12,11 +12,6 @@ ASTType ASTIntegerLiteral::GetASTType() const {
   return ASTType::INTEGER_LITERAL;
 }
 
-void ASTIntegerLiteral::Accept(
-    const std::unique_ptr<ASTVisitor> &Visitor) const {
-  Visitor->Visit(this);
-}
-
 signed ASTIntegerLiteral::GetValue() const { return Value; }
 
 } // namespace frontEnd
