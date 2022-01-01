@@ -63,9 +63,8 @@ public:
   explicit LexStringLiteralCheck(char ThePeek) : Peek(ThePeek) {}
 
   void ClosingQuoteCheck(unsigned LineNo, unsigned ColumnNo) const {
-    if (Peek == '\n' || Peek == '\0') {
+    if (Peek == '\n' || Peek == '\0')
       weak::DiagnosticError(LineNo, ColumnNo) << "Closing \" expected";
-    }
   }
 
 private:
@@ -78,16 +77,14 @@ public:
       : Digit(TheDigit), Peek(ThePeek), DotsReached(Dots) {}
 
   void LastDigitRequire(unsigned LineNo, unsigned ColumnNo) const {
-    if (std::isalpha(Peek) || !std::isdigit(Digit.back())) {
+    if (std::isalpha(Peek) || !std::isdigit(Digit.back()))
       weak::DiagnosticError(LineNo, ColumnNo)
           << "Digit as last character expected";
-    }
   }
 
   void ExactOneDotRequire(unsigned LineNo, unsigned ColumnNo) const {
-    if (DotsReached > 1) {
+    if (DotsReached > 1)
       weak::DiagnosticError(LineNo, ColumnNo) << "Extra \".\" in digit";
-    }
   }
 
 private:
@@ -135,6 +132,8 @@ namespace frontEnd {
 Lexer::Lexer(const char *TheBufferStart, const char *TheBufferEnd)
     : BufferStart(TheBufferStart), BufferEnd(TheBufferEnd),
       CurrentBufferPtr(TheBufferStart), CurrentLineNo(0U), CurrentColumnNo(0U) {
+  assert(BufferStart);
+  assert(BufferEnd);
   assert(BufferStart <= BufferEnd);
 }
 
@@ -162,13 +161,12 @@ std::vector<Token> Lexer::Analyze() {
 Token Lexer::AnalyzeDigit() {
   std::string Digit;
   bool DotErrorOccurred = false;
-  unsigned DotErrorColumn = 0;
-  unsigned DotsReached = 0;
+  unsigned DotErrorColumn = 0U;
+  unsigned DotsReached = 0U;
 
   while (std::isdigit(PeekCurrent()) || PeekCurrent() == '.') {
-    if (PeekCurrent() == '.') {
+    if (PeekCurrent() == '.')
       ++DotsReached;
-    }
     if (DotsReached > 1) {
       DotErrorOccurred = true;
       DotErrorColumn = CurrentColumnNo;
@@ -183,8 +181,9 @@ Token Lexer::AnalyzeDigit() {
   Checker.LastDigitRequire(CurrentLineNo, LexColumnName);
   Checker.ExactOneDotRequire(CurrentLineNo, LexColumnName);
 
-  return MakeToken(Digit, DotsReached == 0 ? TokenType::INTEGRAL_LITERAL
-                                           : TokenType::FLOATING_POINT_LITERAL);
+  return MakeToken(Digit, DotsReached == 0U
+                              ? TokenType::INTEGRAL_LITERAL
+                              : TokenType::FLOATING_POINT_LITERAL);
 }
 
 Token Lexer::AnalyzeStringLiteral() {
@@ -202,9 +201,8 @@ Token Lexer::AnalyzeStringLiteral() {
     LexStringLiteralCheck Check(PeekCurrent());
     Check.ClosingQuoteCheck(CurrentLineNo, CurrentColumnNo);
 
-    if (Literal.back() == '\\') {
+    if (Literal.back() == '\\')
       Literal.back() = PeekNext();
-    }
   }
   assert(PeekCurrent() == '\"');
 
@@ -217,26 +215,24 @@ Token Lexer::AnalyzeStringLiteral() {
 Token Lexer::AnalyzeSymbol() {
   std::string Symbol;
 
-  while ((IsAlphanumeric(PeekCurrent()) || std::isdigit(PeekCurrent()))) {
+  while ((IsAlphanumeric(PeekCurrent()) || std::isdigit(PeekCurrent())))
     Symbol += PeekNext();
-  }
 
-  if (LexKeywords.find(Symbol) != LexKeywords.end()) {
+  if (LexKeywords.find(Symbol) != LexKeywords.end())
     return MakeToken("", LexKeywords.at(Symbol));
-  }
 
   return MakeToken(std::move(Symbol), TokenType::SYMBOL);
 }
 
 Token Lexer::AnalyzeOperator() {
   std::string Operator(1, PeekNext());
-  unsigned SavedColumnNo = 0;
+  unsigned SavedColumnNo = 0U;
 
   while (LexOperators.find(Operator) != LexOperators.end()) {
     char Next = *CurrentBufferPtr++;
     SavedColumnNo = CurrentColumnNo;
     if (Next == '\n') {
-      CurrentColumnNo = 0;
+      CurrentColumnNo = 0U;
       CurrentLineNo++;
     }
     ++CurrentColumnNo;
@@ -245,19 +241,20 @@ Token Lexer::AnalyzeOperator() {
     if (LexOperators.find(Operator) == LexOperators.end()) {
       Operator.pop_back();
       --CurrentBufferPtr;
-      if (CurrentColumnNo > 0) {
+
+      if (CurrentColumnNo > 0U)
         --CurrentColumnNo;
-      }
-      if (PeekCurrent() == '\n') {
+
+      if (PeekCurrent() == '\n')
         --CurrentLineNo;
-      }
+
       break;
     }
   }
 
   if (LexOperators.find(Operator) != LexOperators.end()) {
-    return Token("", LexOperators.at(Operator), CurrentLineNo + 1,
-                 SavedColumnNo - Operator.length() + 1);
+    return Token("", LexOperators.at(Operator), CurrentLineNo,
+                 SavedColumnNo - Operator.length());
   }
 
   --CurrentColumnNo;
