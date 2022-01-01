@@ -13,6 +13,7 @@
 #include "FrontEnd/AST/ASTNode.hpp"
 #include "FrontEnd/AST/ASTReturnStmt.hpp"
 #include "FrontEnd/AST/ASTStringLiteral.hpp"
+#include "FrontEnd/AST/ASTSymbol.hpp"
 #include "FrontEnd/AST/ASTUnaryOperator.hpp"
 #include "FrontEnd/AST/ASTVarDecl.hpp"
 #include "FrontEnd/AST/ASTVisitor.hpp"
@@ -120,6 +121,7 @@ private:
     }
 
     Indent -= 2;
+    Indent -= 2;
   }
 
   void Visit(const ASTIfStmt *IfStmt) const override {
@@ -178,6 +180,12 @@ private:
     PrintWithTextPosition("StringLiteral", String,
                           /*NewLineNeeded=*/false);
     std::cout << String->GetValue() << std::endl;
+  }
+
+  void Visit(const ASTSymbol *Symbol) const override {
+    PrintWithTextPosition("Symbol", Symbol,
+                          /*NewLineNeeded=*/false);
+    std::cout << Symbol->GetValue() << std::endl;
   }
 
   void Visit(const ASTUnaryOperator *UnaryOperator) const override {

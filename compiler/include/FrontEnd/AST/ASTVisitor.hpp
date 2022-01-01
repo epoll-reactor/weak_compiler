@@ -22,6 +22,7 @@ public:
   virtual void Visit(const class ASTIntegerLiteral *) const = 0;
   virtual void Visit(const class ASTReturnStmt *) const = 0;
   virtual void Visit(const class ASTStringLiteral *) const = 0;
+  virtual void Visit(const class ASTSymbol *) const = 0;
   virtual void Visit(const class ASTUnaryOperator *) const = 0;
   virtual void Visit(const class ASTVarDecl *) const = 0;
   virtual void Visit(const class ASTWhileStmt *) const = 0;

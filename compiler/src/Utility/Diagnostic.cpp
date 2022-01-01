@@ -52,6 +52,7 @@ void Diagnostic::EmitLabel() const {
   if (Level == DiagLevel::ERROR) {
     std::cerr << "ERROR - at line " << LineNo + 1 << ", column " << ColumnNo + 1
               << ": ";
+//    throw std::runtime_error("Бля");
   } else {
     std::cerr << "WARN - at line " << LineNo + 1 << ", column " << ColumnNo + 1
               << ": ";
