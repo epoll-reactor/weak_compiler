@@ -192,12 +192,16 @@ private:
   }
 
   void Visit(const ASTVarDecl *VarDecl) const override {
-    PrintWithTextPosition("VarDeclStmt", VarDecl, /*NewLineNeeded=*/true);
+    PrintWithTextPosition("VarDeclStmt", VarDecl, /*NewLineNeeded=*/false);
+    std::cout << TokenToString(VarDecl->GetDataType()) << " "
+              << VarDecl->GetSymbolName() << std::endl;
 
-    Indent += 2;
-    PrintIndent();
-    VisitBaseNode(VarDecl->GetDeclareBody().get());
-    Indent -= 2;
+    if (const auto &Body = VarDecl->GetDeclareBody()) {
+      Indent += 2;
+      PrintIndent();
+      VisitBaseNode(Body.get());
+      Indent -= 2;
+    }
   }
 
   void Visit(const ASTFunctionDecl *FunctionDecl) const override {

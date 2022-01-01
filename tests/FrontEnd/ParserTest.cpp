@@ -1,4 +1,5 @@
 #include "FrontEnd/Lex/Lexer.hpp"
+#include "FrontEnd/AST/ASTPrettyPrint.hpp"
 #include "FrontEnd/Parse/Parser.hpp"
 
 using namespace weak::frontEnd;
@@ -8,8 +9,12 @@ static Lexer CreateLexer(std::string_view Input) {
   return Lex;
 }
 
-int main() {
-  auto Tokens = CreateLexer("++ ++ ++").Analyze();
+static void PrintAST(std::string_view String) {
+  auto Tokens = CreateLexer(String).Analyze();
   Parser Parse(&*Tokens.begin(), &*Tokens.end());
-  Parse.Parse();
+  ASTPrettyPrint(Parse.Parse());
+}
+
+int main() {
+  PrintAST("void main(string symbol, int integer) {}");
 }
