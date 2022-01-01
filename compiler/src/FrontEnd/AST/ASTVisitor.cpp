@@ -14,6 +14,7 @@
 #include "FrontEnd/AST/ASTPrettyPrint.hpp"
 #include "FrontEnd/AST/ASTReturnStmt.hpp"
 #include "FrontEnd/AST/ASTStringLiteral.hpp"
+#include "FrontEnd/AST/ASTSymbol.hpp"
 #include "FrontEnd/AST/ASTUnaryOperator.hpp"
 #include "FrontEnd/AST/ASTVarDecl.hpp"
 #include "FrontEnd/AST/ASTWhileStmt.hpp"
@@ -36,6 +37,9 @@ void ASTVisitor::VisitBaseNode(const ASTNode *Node) const {
     break;
   case ASTType::BOOLEAN_LITERAL:
     Visit(static_cast<const ASTBooleanLiteral *>(Node));
+    break;
+  case ASTType::SYMBOL:
+    Visit(static_cast<const ASTSymbol *>(Node));
     break;
   case ASTType::VAR_DECL:
     Visit(static_cast<const ASTVarDecl *>(Node));

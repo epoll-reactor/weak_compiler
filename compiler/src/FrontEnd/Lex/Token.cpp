@@ -14,6 +14,8 @@ const char *weak::frontEnd::TokenToString(TokenType Type) {
     return "<CONTINUE>";
   case TokenType::DO:
     return "<DO>";
+  case TokenType::ELSE:
+    return "<ELSE>";
   case TokenType::FALSE:
     return "<FALSE>";
   case TokenType::FOR:

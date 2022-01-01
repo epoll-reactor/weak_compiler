@@ -13,6 +13,7 @@ enum struct TokenType {
   CHAR,
   CONTINUE,
   DO,
+  ELSE,
   FALSE,
   FOR,
   IF,

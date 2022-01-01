@@ -16,5 +16,9 @@ static void PrintAST(std::string_view String) {
 }
 
 int main() {
-  PrintAST("void main(string symbol, int integer) {}");
+  PrintAST("void main(string symbol, int integer) {"
+           "  for (a;a;a) { a; a; a; }"
+           "  while (a) { a; a; a; }"
+           "  do { a; b; c; } while (a)"
+           "}");
 }

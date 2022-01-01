@@ -14,6 +14,9 @@ enum struct ASTType {
   STRING_LITERAL,
   BOOLEAN_LITERAL,
 
+  // Variable reference.
+  SYMBOL,
+
   // Assignments (e.g int Value = 0).
   VAR_DECL,
 

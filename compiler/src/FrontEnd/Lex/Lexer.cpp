@@ -8,11 +8,12 @@ using TokenType = weak::frontEnd::TokenType;
 static const std::unordered_map<std::string_view, TokenType> LexKeywords = {
     {"bool", TokenType::BOOLEAN},  {"break", TokenType::BREAK},
     {"char", TokenType::CHAR},     {"continue", TokenType::CONTINUE},
-    {"do", TokenType::DO},         {"false", TokenType::FALSE},
-    {"for", TokenType::FOR},       {"if", TokenType::IF},
-    {"int", TokenType::INT},       {"return", TokenType::RETURN},
-    {"string", TokenType::STRING}, {"true", TokenType::TRUE},
-    {"void", TokenType::VOID},     {"while", TokenType::WHILE}};
+    {"do", TokenType::DO},         {"else", TokenType::ELSE},
+    {"false", TokenType::FALSE},   {"for", TokenType::FOR},
+    {"if", TokenType::IF},         {"int", TokenType::INT},
+    {"return", TokenType::RETURN}, {"string", TokenType::STRING},
+    {"true", TokenType::TRUE},     {"void", TokenType::VOID},
+    {"while", TokenType::WHILE}};
 
 static const std::unordered_map<std::string_view, TokenType> LexOperators = {
     {"=", TokenType::ASSIGN},

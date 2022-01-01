@@ -20,7 +20,7 @@ private:
   std::unique_ptr<ASTNode> ParseFunctionDecl();
 
   /// Integral, floating-point, string or boolean literal.
-  const Token &ParseConstant();
+  std::unique_ptr<ASTNode> ParseConstant();
 
   /// Int, char, string, bool.
   const Token &ParseType();
@@ -37,6 +37,46 @@ private:
   /// Selection, iterative, jump, assignment statement
   /// or unary/binary operator.
   std::unique_ptr<ASTNode> ParseStatement();
+
+  /// If statement.
+  std::unique_ptr<ASTNode> ParseSelectionStatement();
+
+  /// For, while or do-while statement.
+  std::unique_ptr<ASTNode> ParseIterationStatement();
+
+  /// Return statement.
+  std::unique_ptr<ASTNode> ParseJumpStatement();
+
+  /// Unary/binary statement.
+  std::unique_ptr<ASTNode> ParseExpression();
+
+  std::unique_ptr<ASTNode> ParseAssignment();
+
+  std::unique_ptr<ASTNode> ParseLogicalOr();
+
+  std::unique_ptr<ASTNode> ParseLogicalAnd();
+
+  std::unique_ptr<ASTNode> ParseInclusiveOr();
+
+  std::unique_ptr<ASTNode> ParseExclusiveOr();
+
+  std::unique_ptr<ASTNode> ParseAnd();
+
+  std::unique_ptr<ASTNode> ParseEquality();
+
+  std::unique_ptr<ASTNode> ParseRelational();
+
+  std::unique_ptr<ASTNode> ParseShift();
+
+  std::unique_ptr<ASTNode> ParseAdditive();
+
+  std::unique_ptr<ASTNode> ParseMultiplicative();
+
+  std::unique_ptr<ASTNode> ParseUnary();
+
+  std::unique_ptr<ASTNode> ParsePostfix();
+
+  std::unique_ptr<ASTNode> ParsePrimary();
 
   /// (<Data type> <id> ,?)*
   std::vector<std::unique_ptr<ASTNode>> ParseParameterList();
