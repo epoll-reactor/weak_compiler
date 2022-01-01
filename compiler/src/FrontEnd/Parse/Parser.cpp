@@ -74,7 +74,7 @@ std::unique_ptr<ASTCompoundStmt> Parser::Parse() {
 }
 
 std::unique_ptr<ASTNode> Parser::ParseConstant() {
-  switch (const Token &Current = PeekCurrent(); Current.Type) {
+  switch (const Token &Current = PeekNext(); Current.Type) {
   case TokenType::INTEGRAL_LITERAL:
     return std::make_unique<ASTIntegerLiteral>(
         std::stoi(Current.Data), Current.LineNo, Current.ColumnNo);
@@ -243,8 +243,7 @@ std::unique_ptr<ASTNode> Parser::ParseIterationStatement() {
     std::unique_ptr<ASTNode> Init;
     if (PeekNext().Type != TokenType::SEMICOLON) {
       --CurrentBufferPtr;
-      Init = ParseExpression();
-
+      Init = ParseMultiplicative();
       PeekNext();
     }
 
@@ -507,12 +506,15 @@ std::unique_ptr<ASTNode> Parser::ParseAdditive() {
 
   return Expr;
 }
-
+// Start refactor from this place.
 std::unique_ptr<ASTNode> Parser::ParseMultiplicative() {
   auto Expr = ParseUnary();
 
   while (true) {
-    switch (const Token &Current = PeekNext(); Current.Type) {
+    const Token &Current = PeekNext();
+    std::cout << "Multiplicative token " << TokenToString(Current.Type)
+              << std::endl;
+    switch (Current.Type) {
     case TokenType::STAR:
     case TokenType::SLASH:
     case TokenType::MOD:
@@ -529,22 +531,19 @@ std::unique_ptr<ASTNode> Parser::ParseMultiplicative() {
 }
 
 std::unique_ptr<ASTNode> Parser::ParseUnary() {
-  auto Expr = ParsePostfix();
+  const Token PrefixUnaryOperator = PeekNext();
 
-  while (true) {
-    switch (const Token &Current = PeekNext(); Current.Type) {
-    case TokenType::INC:
-    case TokenType::DEC:
-      Expr = std::make_unique<ASTUnaryOperator>(
-          ASTUnaryOperator::UnaryType::PREFIX, Current.Type, std::move(Expr));
-      continue;
-    default:
-      break;
-    }
-    break;
+  switch (PrefixUnaryOperator.Type) {
+  case TokenType::INC:
+  case TokenType::DEC:
+    return std::make_unique<ASTUnaryOperator>(
+        ASTUnaryOperator::UnaryType::PREFIX, PrefixUnaryOperator.Type,
+        ParsePostfix());
+  default:
+    // Rollback current token pointer because there's no unary operator.
+    --CurrentBufferPtr;
+    return ParsePostfix();
   }
-
-  return Expr;
 }
 
 std::unique_ptr<ASTNode> Parser::ParsePostfix() {
@@ -567,8 +566,9 @@ std::unique_ptr<ASTNode> Parser::ParsePostfix() {
 }
 
 std::unique_ptr<ASTNode> Parser::ParsePrimary() {
-  switch (const Token &Current = PeekNext(); Current.Type) {
+  switch (const Token &Current = PeekCurrent(); Current.Type) {
   case TokenType::SYMBOL:
+    PeekNext();
     return std::make_unique<ASTSymbol>(Current.Data);
   default:
     return ParseConstant();

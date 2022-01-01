@@ -188,13 +188,16 @@ private:
     std::cout << Symbol->GetValue() << std::endl;
   }
 
-  void Visit(const ASTUnaryOperator *UnaryOperator) const override {
-    PrintWithTextPosition("UnaryOperator", UnaryOperator,
+  void Visit(const ASTUnaryOperator *Unary) const override {
+    std::cout << (Unary->PrefixOrPostfix == ASTUnaryOperator::UnaryType::PREFIX
+                      ? "Prefix "
+                      : "Postfix ");
+    PrintWithTextPosition("UnaryOperator", Unary,
                           /*NewLineNeeded=*/true);
     Indent += 2;
 
     PrintIndent();
-    VisitBaseNode(UnaryOperator->GetOperand().get());
+    VisitBaseNode(Unary->GetOperand().get());
 
     Indent -= 2;
   }
