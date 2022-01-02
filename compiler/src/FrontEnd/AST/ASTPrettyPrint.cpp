@@ -32,7 +32,8 @@ public:
 
 private:
   void Visit(const ASTBinaryOperator *Binary) const override {
-    PrintWithTextPosition("BinaryOperator", Binary, /*NewLineNeeded=*/true);
+    PrintWithTextPosition("BinaryOperator", Binary, /*NewLineNeeded=*/false);
+    std::cout << TokenToString(Binary->GetOperation()) << std::endl;
     Indent += 2;
 
     PrintIndent();
@@ -121,7 +122,6 @@ private:
     }
 
     Indent -= 2;
-    Indent -= 2;
   }
 
   void Visit(const ASTIfStmt *IfStmt) const override {
@@ -170,8 +170,10 @@ private:
     PrintWithTextPosition("ReturnStmt", ReturnStmt, /*NewLineNeeded=*/true);
     Indent += 2;
 
-    PrintIndent();
-    VisitBaseNode(ReturnStmt->GetOperand().get());
+    if (ReturnStmt->GetOperand()) {
+      PrintIndent();
+      VisitBaseNode(ReturnStmt->GetOperand().get());
+    }
 
     Indent -= 2;
   }
@@ -193,7 +195,8 @@ private:
                       ? "Prefix "
                       : "Postfix ");
     PrintWithTextPosition("UnaryOperator", Unary,
-                          /*NewLineNeeded=*/true);
+                          /*NewLineNeeded=*/false);
+    std::cout << TokenToString(Unary->GetOperation()) << std::endl;
     Indent += 2;
 
     PrintIndent();
@@ -261,10 +264,8 @@ private:
   template <typename WhileNode>
   void CommonWhileStmtVisit(const WhileNode *WhileStmt, bool IsDoWhile) const {
     using namespace std::string_literals;
-    PrintIndent();
     PrintWithTextPosition((IsDoWhile ? "Do"s : ""s) + "WhileStmt", WhileStmt,
                           /*NewLineNeeded=*/true);
-    Indent += 2;
 
     auto PrintWhileCondition = [&, this] {
       if (const auto &Condition = WhileStmt->GetCondition().get()) {
@@ -291,6 +292,8 @@ private:
       }
     };
 
+    Indent += 2;
+
     if (IsDoWhile) {
       PrintWhileBody();
       PrintWhileCondition();
@@ -298,6 +301,8 @@ private:
       PrintWhileCondition();
       PrintWhileBody();
     }
+
+    Indent -= 2;
   }
 
   void PrintWithTextPosition(std::string_view Label, const ASTNode *Node,
