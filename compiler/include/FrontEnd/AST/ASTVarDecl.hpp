@@ -12,8 +12,8 @@ namespace frontEnd {
 class ASTVarDecl : public ASTNode {
 public:
   ASTVarDecl(TokenType TheDataType, std::string &&TheSymbolName,
-             std::unique_ptr<ASTNode> &&TheDeclareBody, unsigned TheLineNo = 0,
-             unsigned TheColumnNo = 0);
+             std::unique_ptr<ASTNode> &&TheDeclareBody, unsigned TheLineNo = 0U,
+             unsigned TheColumnNo = 0U);
 
   ASTType GetASTType() const override;
 

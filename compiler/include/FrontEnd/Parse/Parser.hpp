@@ -31,12 +31,17 @@ private:
   /// <Data type> <id>.
   std::unique_ptr<ASTNode> ParseParameter();
 
-  /// Block of code between '{' and '}'.
-  std::unique_ptr<ASTCompoundStmt> ParseBlock();
-
   /// Selection, iterative, jump, assignment statement
   /// or unary/binary operator.
   std::unique_ptr<ASTNode> ParseStatement();
+
+  std::unique_ptr<ASTNode> ParseVarDecl();
+
+  /// Block of code between '{' and '}'.
+  std::unique_ptr<ASTCompoundStmt> ParseBlock();
+
+  /// Block of code with break and continue statements.
+  std::unique_ptr<ASTCompoundStmt> ParseIterationStmtBlock();
 
   /// If statement.
   std::unique_ptr<ASTNode> ParseSelectionStatement();
@@ -44,10 +49,19 @@ private:
   /// For, while or do-while statement.
   std::unique_ptr<ASTNode> ParseIterationStatement();
 
+  std::unique_ptr<ASTNode> ParseForStatement();
+
+  std::unique_ptr<ASTNode> ParseWhileStatement();
+
+  std::unique_ptr<ASTNode> ParseDoWhileStatement();
+
+  /// ParseStatement, break and continue statements.
+  std::unique_ptr<ASTNode> ParseLoopStatement();
+
   /// Return statement.
   std::unique_ptr<ASTNode> ParseJumpStatement();
 
-  /// Unary/binary statement.
+  /// Unary/binary statement or literal.
   std::unique_ptr<ASTNode> ParseExpression();
 
   std::unique_ptr<ASTNode> ParseAssignment();
@@ -100,6 +114,8 @@ private:
 
   /// Does the Match job, but terminates program with log message on error.
   const Token &Require(TokenType Expected);
+
+  void CheckIfHaveMoreTokens() const;
 
   /// First token in input stream.
   const Token *BufferStart;

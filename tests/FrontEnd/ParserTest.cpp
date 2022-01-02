@@ -16,7 +16,23 @@ static void PrintAST(std::string_view String) {
 }
 
 int main() {
-  PrintAST("void main(string symbol, int integer) {"
-           "  for (a * a;a;a) { a; }"
-           "}");
+  PrintAST("string do_some_work() {\n"
+           "  return 1 + 2 + 3 + 4 + 5;\n"
+           "}\n"
+           "void main(string symbol, int integer) {\n"
+           "  for (a = 0; a < 10; ++a) { a << b + c = x <= e == f >= g; }\n"
+           "  while (a << b + c = x) {\n"
+           "    while (0) {\n"
+           "      a << b + c = a << b + c = x <= e == f >= g <= e == f >= g;\n"
+           "      continue;\n"
+           "    }\n"
+           "    break;\n"
+           "  }\n"
+           "  do {\n"
+           "    a + b * c;\n"
+           "  } while (1);\n"
+           "  if (1) { a; } else { b; }\n"
+           "  int v = a << b + c + ++a;\n"
+           "  return;\n"
+           "}\n");
 }

@@ -16,11 +16,9 @@
 #include "FrontEnd/AST/ASTSymbol.hpp"
 #include "FrontEnd/AST/ASTUnaryOperator.hpp"
 #include "FrontEnd/AST/ASTVarDecl.hpp"
-#include "FrontEnd/AST/ASTVisitor.hpp"
 #include "FrontEnd/AST/ASTWhileStmt.hpp"
 #include "Utility/Diagnostic.hpp"
 #include <cassert>
-#include <iostream>
 
 static std::string
 TokensToString(const std::vector<weak::frontEnd::TokenType> &Tokens) {
@@ -87,7 +85,7 @@ std::unique_ptr<ASTNode> Parser::ParseConstant() {
     return std::make_unique<ASTStringLiteral>(Current.Data, Current.LineNo,
                                               Current.ColumnNo);
 
-  case TokenType::BOOLEAN: // Fall through.
+  case TokenType::BOOLEAN:
     return std::make_unique<ASTBooleanLiteral>(
         std::stoi(Current.Data), Current.LineNo, Current.ColumnNo);
 
@@ -115,12 +113,11 @@ std::unique_ptr<ASTNode> Parser::ParseFunctionDecl() {
 
   return std::make_unique<ASTFunctionDecl>(
       ReturnType.Type, std::string(FunctionName.Data), std::move(ParameterList),
-      std::move(Block));
+      std::move(Block), ReturnType.LineNo, ReturnType.ColumnNo);
 }
 
 const Token &Parser::ParseType() {
-  const Token &Current = PeekCurrent();
-  switch (Current.Type) {
+  switch (const Token &Current = PeekCurrent(); Current.Type) {
   case TokenType::INT:
   case TokenType::CHAR:
   case TokenType::STRING:
@@ -149,14 +146,50 @@ std::unique_ptr<ASTNode> Parser::ParseParameter() {
     DiagnosticError(VariableName.LineNo, VariableName.ColumnNo)
         << "Variable name expected.";
 
-  return std::make_unique<ASTVarDecl>(DataType.Type,
-                                      std::string(VariableName.Data),
-                                      /*DeclareBody=*/nullptr);
+  return std::make_unique<ASTVarDecl>(
+      DataType.Type, std::string(VariableName.Data),
+      /*DeclareBody=*/nullptr, DataType.LineNo, DataType.ColumnNo);
+}
+
+std::unique_ptr<ASTNode> Parser::ParseStatement() {
+  switch (const Token &Current = PeekCurrent(); Current.Type) {
+  case TokenType::IF:
+    return ParseSelectionStatement();
+  case TokenType::FOR:
+  case TokenType::DO:
+  case TokenType::WHILE: // Fall through.
+    return ParseIterationStatement();
+  case TokenType::RETURN:
+    return ParseJumpStatement();
+  case TokenType::INT:
+  case TokenType::CHAR:
+  case TokenType::STRING:
+  case TokenType::BOOLEAN: // Fall through.
+    return ParseVarDecl();
+    break;
+  default:
+    return ParseExpression();
+  }
+}
+
+std::unique_ptr<ASTNode> Parser::ParseVarDecl() {
+  const Token &DataType = PeekNext();
+  std::string VariableName = PeekNext().Data;
+  const Token &Current = PeekNext(); // Assignment op.
+
+  if (Current.Type == TokenType::ASSIGN) {
+    return std::make_unique<ASTVarDecl>(DataType.Type, std::move(VariableName),
+                                        ParseLogicalOr(), DataType.LineNo,
+                                        DataType.ColumnNo);
+  }
+
+  DiagnosticError(Current.LineNo, Current.ColumnNo)
+      << "Assignment operator expected.";
+  UnreachablePoint();
 }
 
 std::vector<std::unique_ptr<ASTNode>> Parser::ParseParameterList() {
   std::vector<std::unique_ptr<ASTNode>> ParameterList;
-
   if (PeekNext().Type == TokenType::CLOSE_PAREN) {
     --CurrentBufferPtr;
     return ParameterList;
@@ -172,48 +205,60 @@ std::vector<std::unique_ptr<ASTNode>> Parser::ParseParameterList() {
       break;
     }
   }
-
   return ParameterList;
 }
 
 std::unique_ptr<ASTCompoundStmt> Parser::ParseBlock() {
   std::vector<std::unique_ptr<ASTNode>> Statements;
 
-  Require(TokenType::OPEN_CURLY_BRACKET);
-
+  const Token &BeginOfBlock = Require(TokenType::OPEN_CURLY_BRACKET);
   while (PeekCurrent().Type != TokenType::CLOSE_CURLY_BRACKET) {
     Statements.push_back(ParseStatement());
     switch (const ASTType Type = Statements.back()->GetASTType(); Type) {
     case ASTType::BINARY:
     case ASTType::POSTFIX_UNARY:
     case ASTType::PREFIX_UNARY:
-    case ASTType::SYMBOL: // Fall through.
-
+    case ASTType::SYMBOL:
+    case ASTType::RETURN_STMT:
+    case ASTType::DO_WHILE_STMT:
+    case ASTType::VAR_DECL: // Fall through.
       Require(TokenType::SEMICOLON);
       break;
     default:
       break;
     }
   }
-
   Require(TokenType::CLOSE_CURLY_BRACKET);
 
-  return std::make_unique<ASTCompoundStmt>(std::move(Statements));
+  return std::make_unique<ASTCompoundStmt>(
+      std::move(Statements), BeginOfBlock.LineNo, BeginOfBlock.ColumnNo);
 }
 
-std::unique_ptr<ASTNode> Parser::ParseStatement() {
-  switch (const Token &Current = PeekCurrent(); Current.Type) {
-  case TokenType::IF:
-    return ParseSelectionStatement();
-  case TokenType::FOR:
-  case TokenType::DO:
-  case TokenType::WHILE: // Fall through.
-    return ParseIterationStatement();
-  case TokenType::RETURN:
-    return ParseJumpStatement();
-  default:
-    return ParseExpression();
+std::unique_ptr<ASTCompoundStmt> Parser::ParseIterationStmtBlock() {
+  std::vector<std::unique_ptr<ASTNode>> Statements;
+
+  const Token &BeginOfBlock = Require(TokenType::OPEN_CURLY_BRACKET);
+  while (PeekCurrent().Type != TokenType::CLOSE_CURLY_BRACKET) {
+    Statements.push_back(ParseLoopStatement());
+    switch (const ASTType Type = Statements.back()->GetASTType(); Type) {
+    case ASTType::BINARY:
+    case ASTType::POSTFIX_UNARY:
+    case ASTType::PREFIX_UNARY:
+    case ASTType::SYMBOL:
+    case ASTType::RETURN_STMT:
+    case ASTType::BREAK_STMT:
+    case ASTType::CONTINUE_STMT:
+    case ASTType::VAR_DECL: // Fall through.
+      Require(TokenType::SEMICOLON);
+      break;
+    default:
+      break;
+    }
   }
+  Require(TokenType::CLOSE_CURLY_BRACKET);
+
+  return std::make_unique<ASTCompoundStmt>(
+      std::move(Statements), BeginOfBlock.LineNo, BeginOfBlock.ColumnNo);
 }
 
 std::unique_ptr<ASTNode> Parser::ParseSelectionStatement() {
@@ -221,7 +266,7 @@ std::unique_ptr<ASTNode> Parser::ParseSelectionStatement() {
   std::unique_ptr<ASTCompoundStmt> ThenBody;
   std::unique_ptr<ASTCompoundStmt> ElseBody;
 
-  Require(TokenType::IF);
+  const Token &BeginOfSelectionStmt = Require(TokenType::IF);
   Require(TokenType::OPEN_PAREN);
   Condition = ParseExpression();
   Require(TokenType::CLOSE_PAREN);
@@ -230,105 +275,115 @@ std::unique_ptr<ASTNode> Parser::ParseSelectionStatement() {
     ElseBody = ParseBlock();
   }
 
-  return std::make_unique<ASTIfStmt>(std::move(Condition), std::move(ThenBody),
-                                     std::move(ElseBody));
+  return std::make_unique<ASTIfStmt>(
+      std::move(Condition), std::move(ThenBody), std::move(ElseBody),
+      BeginOfSelectionStmt.LineNo, BeginOfSelectionStmt.ColumnNo);
 }
 
 std::unique_ptr<ASTNode> Parser::ParseIterationStatement() {
   switch (const Token &Current = PeekCurrent(); Current.Type) {
-  case TokenType::FOR: {
-    Require(TokenType::FOR);
-    Require(TokenType::OPEN_PAREN);
-
-    std::unique_ptr<ASTNode> Init;
-    if (PeekNext().Type != TokenType::SEMICOLON) {
-      --CurrentBufferPtr;
-      Init = ParseMultiplicative();
-      PeekNext();
-    }
-
-    std::unique_ptr<ASTNode> Condition;
-    if (PeekNext().Type != TokenType::SEMICOLON) {
-      --CurrentBufferPtr;
-      Condition = ParseExpression();
-      PeekNext();
-    }
-
-    std::unique_ptr<ASTNode> Increment;
-    if (PeekNext().Type != TokenType::CLOSE_PAREN) {
-      --CurrentBufferPtr;
-      Increment = ParseExpression();
-      PeekNext();
-    }
-    --CurrentBufferPtr;
-
-    Require(TokenType::CLOSE_PAREN);
-    auto Body = ParseBlock();
-
-    return std::make_unique<ASTForStmt>(std::move(Init), std::move(Condition),
-                                        std::move(Increment), std::move(Body));
-  }
-  case TokenType::DO: {
-    Require(TokenType::DO);
-
-    auto Body = ParseBlock();
-
-    Require(TokenType::WHILE);
-
-    Require(TokenType::OPEN_PAREN);
-    auto Condition = ParseExpression();
-    Require(TokenType::CLOSE_PAREN);
-
-    return std::make_unique<ASTDoWhileStmt>(std::move(Body),
-                                            std::move(Condition));
-  }
-  case TokenType::WHILE: {
-    Require(TokenType::WHILE);
-    Require(TokenType::OPEN_PAREN);
-    auto Condition = ParseExpression();
-    Require(TokenType::CLOSE_PAREN);
-
-    auto Body = ParseBlock();
-
-    return std::make_unique<ASTWhileStmt>(std::move(Condition),
-                                          std::move(Body));
-  }
+  case TokenType::FOR:
+    return ParseForStatement();
+  case TokenType::DO:
+    return ParseDoWhileStatement();
+  case TokenType::WHILE:
+    return ParseWhileStatement();
   default:
     UnreachablePoint();
   }
 }
 
-std::unique_ptr<ASTNode> Parser::ParseJumpStatement() {
-  Require(TokenType::RETURN);
+std::unique_ptr<ASTNode> Parser::ParseForStatement() {
+  const Token &ForStmtBegin = Require(TokenType::FOR);
+  Require(TokenType::OPEN_PAREN);
 
-  auto Body = ParseExpression();
-
-  return std::make_unique<ASTReturnStmt>(std::move(Body));
-}
-
-// std::unique_ptr<ASTNode> Parser::ParseExpression() { return
-// ParseAssignment(); }
-
-// Just for testing, parse variable name only.
-std::unique_ptr<ASTNode> Parser::ParseExpression() {
-  const Token &Current = PeekNext();
-  if (Current.Type == TokenType::SYMBOL) {
-    return std::make_unique<ASTSymbol>(Current.Data);
+  std::unique_ptr<ASTNode> Init;
+  if (PeekNext().Type != TokenType::SEMICOLON) {
+    --CurrentBufferPtr;
+    Init = ParseExpression();
+    PeekNext();
   }
 
-  DiagnosticWarning(Current.LineNo, Current.ColumnNo)
-      << TokenToString(Current.Type);
+  std::unique_ptr<ASTNode> Condition;
+  if (PeekNext().Type != TokenType::SEMICOLON) {
+    --CurrentBufferPtr;
+    Condition = ParseExpression();
+    PeekNext();
+  }
 
-  DiagnosticWarning(Current.LineNo, Current.ColumnNo)
-      << "Current: " << TokenToString(CurrentBufferPtr->Type);
+  std::unique_ptr<ASTNode> Increment;
+  if (PeekNext().Type != TokenType::CLOSE_PAREN) {
+    --CurrentBufferPtr;
+    Increment = ParseExpression();
+    PeekNext();
+  }
+  --CurrentBufferPtr;
 
-  DiagnosticError(Current.LineNo, Current.ColumnNo) << "Symbol name expected.";
-  UnreachablePoint();
+  Require(TokenType::CLOSE_PAREN);
+  auto Body = ParseIterationStmtBlock();
+
+  return std::make_unique<ASTForStmt>(
+      std::move(Init), std::move(Condition), std::move(Increment),
+      std::move(Body), ForStmtBegin.LineNo, ForStmtBegin.ColumnNo);
 }
+
+std::unique_ptr<ASTNode> Parser::ParseDoWhileStatement() {
+  const Token &DoWhileBegin = Require(TokenType::DO);
+  auto Body = ParseIterationStmtBlock();
+  Require(TokenType::WHILE);
+
+  Require(TokenType::OPEN_PAREN);
+  auto Condition = ParseExpression();
+  Require(TokenType::CLOSE_PAREN);
+
+  return std::make_unique<ASTDoWhileStmt>(std::move(Body), std::move(Condition),
+                                          DoWhileBegin.LineNo,
+                                          DoWhileBegin.ColumnNo);
+}
+
+std::unique_ptr<ASTNode> Parser::ParseWhileStatement() {
+  const Token &WhileBegin = Require(TokenType::WHILE);
+  Require(TokenType::OPEN_PAREN);
+  auto Condition = ParseExpression();
+  Require(TokenType::CLOSE_PAREN);
+
+  auto Body = ParseIterationStmtBlock();
+
+  return std::make_unique<ASTWhileStmt>(std::move(Condition), std::move(Body),
+                                        WhileBegin.LineNo, WhileBegin.ColumnNo);
+}
+
+std::unique_ptr<ASTNode> Parser::ParseLoopStatement() {
+  switch (const Token &Current = PeekNext(); Current.Type) {
+  case TokenType::BREAK:
+    return std::make_unique<ASTBreakStmt>(Current.LineNo, Current.ColumnNo);
+  case TokenType::CONTINUE:
+    return std::make_unique<ASTContinueStmt>(Current.LineNo, Current.ColumnNo);
+  default:
+    --CurrentBufferPtr;
+    return ParseStatement();
+  }
+}
+
+std::unique_ptr<ASTNode> Parser::ParseJumpStatement() {
+  const Token &ReturnStmt = Require(TokenType::RETURN);
+  if (Match(TokenType::SEMICOLON)) {
+    // Rollback to allow match ';' in block parse function.
+    --CurrentBufferPtr;
+    return std::make_unique<ASTReturnStmt>(nullptr, ReturnStmt.LineNo,
+                                           ReturnStmt.ColumnNo);
+  }
+  // We want to forbid expressions like int var = var = var, so we
+  // expect the first expression to have the precedence is lower than
+  // the assignment operator.
+  return std::make_unique<ASTReturnStmt>(ParseLogicalOr(), ReturnStmt.LineNo,
+                                         ReturnStmt.ColumnNo);
+}
+
+std::unique_ptr<ASTNode> Parser::ParseExpression() { return ParseAssignment(); }
 
 std::unique_ptr<ASTNode> Parser::ParseAssignment() {
   auto Expr = ParseLogicalOr();
-
   while (true) {
     switch (const Token &Current = PeekNext(); Current.Type) {
     case TokenType::ASSIGN:
@@ -342,203 +397,214 @@ std::unique_ptr<ASTNode> Parser::ParseAssignment() {
     case TokenType::BIT_AND_ASSIGN:
     case TokenType::BIT_OR_ASSIGN:
     case TokenType::XOR_ASSIGN:
-      Expr = std::make_unique<ASTBinaryOperator>(Current.Type, std::move(Expr),
-                                                 ParseLogicalOr());
+      Expr = std::make_unique<ASTBinaryOperator>(
+          Current.Type, std::move(Expr), ParseAssignment(), Current.LineNo,
+          Current.ColumnNo);
       continue;
     default:
+      --CurrentBufferPtr;
       break;
     }
     break;
   }
-
   return Expr;
 }
 
 std::unique_ptr<ASTNode> Parser::ParseLogicalOr() {
   auto Expr = ParseLogicalAnd();
-
   while (true) {
-    if (const Token &Current = PeekNext(); Current.Type == TokenType::OR) {
-      Expr = std::make_unique<ASTBinaryOperator>(Current.Type, std::move(Expr),
-                                                 ParseLogicalAnd());
+    switch (const Token &Current = PeekNext(); Current.Type) {
+    case TokenType::OR:
+      Expr = std::make_unique<ASTBinaryOperator>(
+          Current.Type, std::move(Expr), ParseLogicalOr(), Current.LineNo,
+          Current.ColumnNo);
       continue;
+    default:
+      --CurrentBufferPtr;
+      break;
     }
     break;
   }
-
   return Expr;
 }
 
 std::unique_ptr<ASTNode> Parser::ParseLogicalAnd() {
   auto Expr = ParseInclusiveOr();
-
   while (true) {
-    if (const Token &Current = PeekNext(); Current.Type == TokenType::AND) {
-      Expr = std::make_unique<ASTBinaryOperator>(Current.Type, std::move(Expr),
-                                                 ParseInclusiveOr());
+    switch (const Token &Current = PeekNext(); Current.Type) {
+    case TokenType::AND:
+      Expr = std::make_unique<ASTBinaryOperator>(
+          Current.Type, std::move(Expr), ParseLogicalAnd(), Current.LineNo,
+          Current.ColumnNo);
       continue;
+    default:
+      --CurrentBufferPtr;
+      break;
     }
     break;
   }
-
   return Expr;
 }
 
 std::unique_ptr<ASTNode> Parser::ParseInclusiveOr() {
   auto Expr = ParseExclusiveOr();
-
   while (true) {
-    if (const Token &Current = PeekNext(); Current.Type == TokenType::OR) {
-      Expr = std::make_unique<ASTBinaryOperator>(Current.Type, std::move(Expr),
-                                                 ParseExclusiveOr());
+    switch (const Token &Current = PeekNext(); Current.Type) {
+    case TokenType::BIT_OR:
+      Expr = std::make_unique<ASTBinaryOperator>(
+          Current.Type, std::move(Expr), ParseInclusiveOr(), Current.LineNo,
+          Current.ColumnNo);
       continue;
+    default:
+      --CurrentBufferPtr;
+      break;
     }
     break;
   }
-
   return Expr;
 }
 
 std::unique_ptr<ASTNode> Parser::ParseExclusiveOr() {
   auto Expr = ParseAnd();
-
   while (true) {
-    if (const Token &Current = PeekNext(); Current.Type == TokenType::XOR) {
-      Expr = std::make_unique<ASTBinaryOperator>(Current.Type, std::move(Expr),
-                                                 ParseAnd());
+    switch (const Token &Current = PeekNext(); Current.Type) {
+    case TokenType::XOR:
+      Expr = std::make_unique<ASTBinaryOperator>(
+          Current.Type, std::move(Expr), ParseExclusiveOr(), Current.LineNo,
+          Current.ColumnNo);
       continue;
+    default:
+      --CurrentBufferPtr;
+      break;
     }
     break;
   }
-
   return Expr;
 }
 
 std::unique_ptr<ASTNode> Parser::ParseAnd() {
   auto Expr = ParseEquality();
-
   while (true) {
-    if (const Token &Current = PeekNext(); Current.Type == TokenType::BIT_AND) {
+    switch (const Token &Current = PeekNext(); Current.Type) {
+    case TokenType::BIT_AND:
       Expr = std::make_unique<ASTBinaryOperator>(Current.Type, std::move(Expr),
-                                                 ParseEquality());
+                                                 ParseAnd(), Current.LineNo,
+                                                 Current.ColumnNo);
       continue;
+    default:
+      --CurrentBufferPtr;
+      break;
     }
     break;
   }
-
   return Expr;
 }
 
 std::unique_ptr<ASTNode> Parser::ParseEquality() {
   auto Expr = ParseRelational();
-
   while (true) {
     switch (const Token &Current = PeekNext(); Current.Type) {
     case TokenType::EQ:
     case TokenType::NEQ:
-      Expr = std::make_unique<ASTBinaryOperator>(Current.Type, std::move(Expr),
-                                                 ParseRelational());
+      Expr = std::make_unique<ASTBinaryOperator>(
+          Current.Type, std::move(Expr), ParseEquality(), Current.LineNo,
+          Current.ColumnNo);
       continue;
     default:
+      --CurrentBufferPtr;
       break;
     }
     break;
   }
-
   return Expr;
 }
 
 std::unique_ptr<ASTNode> Parser::ParseRelational() {
   auto Expr = ParseShift();
-
   while (true) {
     switch (const Token &Current = PeekNext(); Current.Type) {
     case TokenType::GT:
     case TokenType::LT:
     case TokenType::GE:
     case TokenType::LE:
-      Expr = std::make_unique<ASTBinaryOperator>(Current.Type, std::move(Expr),
-                                                 ParseShift());
+      Expr = std::make_unique<ASTBinaryOperator>(
+          Current.Type, std::move(Expr), ParseRelational(), Current.LineNo,
+          Current.ColumnNo);
       continue;
     default:
+      --CurrentBufferPtr;
       break;
     }
     break;
   }
-
   return Expr;
 }
 
 std::unique_ptr<ASTNode> Parser::ParseShift() {
   auto Expr = ParseAdditive();
-
   while (true) {
     switch (const Token &Current = PeekNext(); Current.Type) {
     case TokenType::SHL:
     case TokenType::SHR:
       Expr = std::make_unique<ASTBinaryOperator>(Current.Type, std::move(Expr),
-                                                 ParseAdditive());
+                                                 ParseShift(), Current.LineNo,
+                                                 Current.ColumnNo);
       continue;
     default:
+      --CurrentBufferPtr;
       break;
     }
     break;
   }
-
   return Expr;
 }
 
 std::unique_ptr<ASTNode> Parser::ParseAdditive() {
   auto Expr = ParseMultiplicative();
-
   while (true) {
     switch (const Token &Current = PeekNext(); Current.Type) {
     case TokenType::PLUS:
     case TokenType::MINUS:
-      Expr = std::make_unique<ASTBinaryOperator>(Current.Type, std::move(Expr),
-                                                 ParseMultiplicative());
+      Expr = std::make_unique<ASTBinaryOperator>(
+          Current.Type, std::move(Expr), ParseAdditive(), Current.LineNo,
+          Current.ColumnNo);
       continue;
     default:
+      --CurrentBufferPtr;
       break;
     }
     break;
   }
-
   return Expr;
 }
-// Start refactor from this place.
+
 std::unique_ptr<ASTNode> Parser::ParseMultiplicative() {
   auto Expr = ParseUnary();
-
   while (true) {
-    const Token &Current = PeekNext();
-    std::cout << "Multiplicative token " << TokenToString(Current.Type)
-              << std::endl;
-    switch (Current.Type) {
+    switch (const Token &Current = PeekNext(); Current.Type) {
     case TokenType::STAR:
     case TokenType::SLASH:
     case TokenType::MOD:
-      Expr = std::make_unique<ASTBinaryOperator>(Current.Type, std::move(Expr),
-                                                 ParseUnary());
+      Expr = std::make_unique<ASTBinaryOperator>(
+          Current.Type, std::move(Expr), ParseMultiplicative(), Current.LineNo,
+          Current.ColumnNo);
       continue;
     default:
+      --CurrentBufferPtr;
       break;
     }
     break;
   }
-
   return Expr;
 }
 
 std::unique_ptr<ASTNode> Parser::ParseUnary() {
-  const Token PrefixUnaryOperator = PeekNext();
-
-  switch (PrefixUnaryOperator.Type) {
+  switch (const Token Current = PeekNext(); Current.Type) {
   case TokenType::INC:
   case TokenType::DEC:
     return std::make_unique<ASTUnaryOperator>(
-        ASTUnaryOperator::UnaryType::PREFIX, PrefixUnaryOperator.Type,
-        ParsePostfix());
+        ASTUnaryOperator::UnaryType::PREFIX, Current.Type, ParsePostfix(),
+        Current.LineNo, Current.ColumnNo);
   default:
     // Rollback current token pointer because there's no unary operator.
     --CurrentBufferPtr;
@@ -548,52 +614,46 @@ std::unique_ptr<ASTNode> Parser::ParseUnary() {
 
 std::unique_ptr<ASTNode> Parser::ParsePostfix() {
   auto Expr = ParsePrimary();
-
   while (true) {
     switch (const Token &Current = PeekNext(); Current.Type) {
     case TokenType::INC:
     case TokenType::DEC:
       Expr = std::make_unique<ASTUnaryOperator>(
-          ASTUnaryOperator::UnaryType::POSTFIX, Current.Type, std::move(Expr));
+          ASTUnaryOperator::UnaryType::POSTFIX, Current.Type, std::move(Expr),
+          Current.LineNo, Current.ColumnNo);
       continue;
     default:
+      --CurrentBufferPtr;
       break;
     }
     break;
   }
-
   return Expr;
 }
 
 std::unique_ptr<ASTNode> Parser::ParsePrimary() {
-  switch (const Token &Current = PeekCurrent(); Current.Type) {
+  switch (const Token &Current = PeekNext(); Current.Type) {
   case TokenType::SYMBOL:
-    PeekNext();
-    return std::make_unique<ASTSymbol>(Current.Data);
+    return std::make_unique<ASTSymbol>(Current.Data, Current.LineNo,
+                                       Current.ColumnNo);
   default:
+    --CurrentBufferPtr;
     return ParseConstant();
   }
 }
 
 const Token &Parser::PeekNext() {
-  std::cout << "Peek: " << TokenToString((CurrentBufferPtr + 1)->Type)
-            << std::endl;
+  CheckIfHaveMoreTokens();
   return *CurrentBufferPtr++;
 }
 
 const Token &Parser::PeekCurrent() const {
-  std::cout << "Peek current: " << TokenToString(CurrentBufferPtr->Type)
-            << std::endl;
+  CheckIfHaveMoreTokens();
   return *CurrentBufferPtr;
 }
 
 bool Parser::Match(const std::vector<TokenType> &Expected) {
-  if (CurrentBufferPtr == BufferEnd) {
-    DiagnosticError(CurrentBufferPtr->LineNo, CurrentBufferPtr->LineNo)
-        << "End of buffer reached.";
-    UnreachablePoint();
-  }
-  std::cout << "Match " << TokensToString(Expected) << std::endl;
+  CheckIfHaveMoreTokens();
   for (TokenType Token : Expected) {
     if (CurrentBufferPtr == BufferEnd)
       return false;
@@ -610,12 +670,7 @@ bool Parser::Match(TokenType Expected) {
 }
 
 const Token &Parser::Require(const std::vector<TokenType> &Expected) {
-  if (CurrentBufferPtr == BufferEnd) {
-    DiagnosticError(CurrentBufferPtr->LineNo, CurrentBufferPtr->LineNo)
-        << "End of buffer reached.";
-    UnreachablePoint();
-  }
-  std::cout << "Require " << TokensToString(Expected) << std::endl;
+  CheckIfHaveMoreTokens();
   if (Match(Expected)) {
     /// Something from vector successfully matched and located in previous
     /// token.
@@ -629,6 +684,14 @@ const Token &Parser::Require(const std::vector<TokenType> &Expected) {
 
 const Token &Parser::Require(TokenType Expected) {
   return Require(std::vector<TokenType>{Expected});
+}
+
+void Parser::CheckIfHaveMoreTokens() const {
+  if (CurrentBufferPtr == BufferEnd) {
+    DiagnosticError(CurrentBufferPtr->LineNo, CurrentBufferPtr->LineNo)
+        << "End of buffer reached.";
+    UnreachablePoint();
+  }
 }
 
 } // namespace frontEnd
