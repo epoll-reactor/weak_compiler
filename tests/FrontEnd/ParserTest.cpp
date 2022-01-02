@@ -1,6 +1,6 @@
-#include "FrontEnd/Lex/Lexer.hpp"
-#include "FrontEnd/AST/ASTPrettyPrint.hpp"
 #include "FrontEnd/Parse/Parser.hpp"
+#include "FrontEnd/AST/ASTPrettyPrint.hpp"
+#include "FrontEnd/Lex/Lexer.hpp"
 
 using namespace weak::frontEnd;
 

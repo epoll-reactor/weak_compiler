@@ -1,8 +1,8 @@
 #ifndef WEAK_COMPILER_FRONTEND_PARSE_PARSER_HPP
 #define WEAK_COMPILER_FRONTEND_PARSE_PARSER_HPP
 
-#include "FrontEnd/Lex/Token.hpp"
 #include "FrontEnd/AST/ASTCompoundStmt.hpp"
+#include "FrontEnd/Lex/Token.hpp"
 #include <vector>
 
 namespace weak {
