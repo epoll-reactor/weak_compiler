@@ -71,30 +71,6 @@ std::unique_ptr<ASTCompoundStmt> Parser::Parse() {
   return std::make_unique<ASTCompoundStmt>(std::move(GlobalEntities));
 }
 
-std::unique_ptr<ASTNode> Parser::ParseConstant() {
-  switch (const Token &Current = PeekNext(); Current.Type) {
-  case TokenType::INTEGRAL_LITERAL:
-    return std::make_unique<ASTIntegerLiteral>(
-        std::stoi(Current.Data), Current.LineNo, Current.ColumnNo);
-
-  case TokenType::FLOATING_POINT_LITERAL:
-    return std::make_unique<ASTFloatingPointLiteral>(
-        std::stod(Current.Data), Current.LineNo, Current.ColumnNo);
-
-  case TokenType::STRING_LITERAL:
-    return std::make_unique<ASTStringLiteral>(Current.Data, Current.LineNo,
-                                              Current.ColumnNo);
-
-  case TokenType::BOOLEAN:
-    return std::make_unique<ASTBooleanLiteral>(
-        std::stoi(Current.Data), Current.LineNo, Current.ColumnNo);
-
-  default:
-    DiagnosticError(Current.LineNo, Current.ColumnNo) << "Literal expected.";
-    UnreachablePoint();
-  }
-}
-
 std::unique_ptr<ASTNode> Parser::ParseFunctionDecl() {
   /// Guaranteed data type, no checks needed.
   const Token &ReturnType = ParseReturnType();
@@ -114,6 +90,22 @@ std::unique_ptr<ASTNode> Parser::ParseFunctionDecl() {
   return std::make_unique<ASTFunctionDecl>(
       ReturnType.Type, std::string(FunctionName.Data), std::move(ParameterList),
       std::move(Block), ReturnType.LineNo, ReturnType.ColumnNo);
+}
+
+std::unique_ptr<ASTNode> Parser::ParseVarDecl() {
+  const Token &DataType = ParseType();
+  std::string VariableName = PeekNext().Data;
+  const Token &Current = PeekNext(); // Assignment op.
+
+  if (Current.Type == TokenType::ASSIGN) {
+    return std::make_unique<ASTVarDecl>(DataType.Type, std::move(VariableName),
+                                        ParseLogicalOr(), DataType.LineNo,
+                                        DataType.ColumnNo);
+  }
+
+  DiagnosticError(Current.LineNo, Current.ColumnNo)
+      << "Assignment operator expected.";
+  UnreachablePoint();
 }
 
 const Token &Parser::ParseType() {
@@ -149,43 +141,6 @@ std::unique_ptr<ASTNode> Parser::ParseParameter() {
   return std::make_unique<ASTVarDecl>(
       DataType.Type, std::string(VariableName.Data),
       /*DeclareBody=*/nullptr, DataType.LineNo, DataType.ColumnNo);
-}
-
-std::unique_ptr<ASTNode> Parser::ParseStatement() {
-  switch (const Token &Current = PeekCurrent(); Current.Type) {
-  case TokenType::IF:
-    return ParseSelectionStatement();
-  case TokenType::FOR:
-  case TokenType::DO:
-  case TokenType::WHILE: // Fall through.
-    return ParseIterationStatement();
-  case TokenType::RETURN:
-    return ParseJumpStatement();
-  case TokenType::INT:
-  case TokenType::CHAR:
-  case TokenType::STRING:
-  case TokenType::BOOLEAN: // Fall through.
-    return ParseVarDecl();
-    break;
-  default:
-    return ParseExpression();
-  }
-}
-
-std::unique_ptr<ASTNode> Parser::ParseVarDecl() {
-  const Token &DataType = PeekNext();
-  std::string VariableName = PeekNext().Data;
-  const Token &Current = PeekNext(); // Assignment op.
-
-  if (Current.Type == TokenType::ASSIGN) {
-    return std::make_unique<ASTVarDecl>(DataType.Type, std::move(VariableName),
-                                        ParseLogicalOr(), DataType.LineNo,
-                                        DataType.ColumnNo);
-  }
-
-  DiagnosticError(Current.LineNo, Current.ColumnNo)
-      << "Assignment operator expected.";
-  UnreachablePoint();
 }
 
 std::vector<std::unique_ptr<ASTNode>> Parser::ParseParameterList() {
@@ -259,6 +214,27 @@ std::unique_ptr<ASTCompoundStmt> Parser::ParseIterationStmtBlock() {
 
   return std::make_unique<ASTCompoundStmt>(
       std::move(Statements), BeginOfBlock.LineNo, BeginOfBlock.ColumnNo);
+}
+
+std::unique_ptr<ASTNode> Parser::ParseStatement() {
+  switch (const Token &Current = PeekCurrent(); Current.Type) {
+  case TokenType::IF:
+    return ParseSelectionStatement();
+  case TokenType::FOR:
+  case TokenType::DO:
+  case TokenType::WHILE: // Fall through.
+    return ParseIterationStatement();
+  case TokenType::RETURN:
+    return ParseJumpStatement();
+  case TokenType::INT:
+  case TokenType::CHAR:
+  case TokenType::STRING:
+  case TokenType::BOOLEAN: // Fall through.
+    return ParseVarDecl();
+    break;
+  default:
+    return ParseExpression();
+  }
 }
 
 std::unique_ptr<ASTNode> Parser::ParseSelectionStatement() {
@@ -639,6 +615,30 @@ std::unique_ptr<ASTNode> Parser::ParsePrimary() {
   default:
     --CurrentBufferPtr;
     return ParseConstant();
+  }
+}
+
+std::unique_ptr<ASTNode> Parser::ParseConstant() {
+  switch (const Token &Current = PeekNext(); Current.Type) {
+  case TokenType::INTEGRAL_LITERAL:
+    return std::make_unique<ASTIntegerLiteral>(
+        std::stoi(Current.Data), Current.LineNo, Current.ColumnNo);
+
+  case TokenType::FLOATING_POINT_LITERAL:
+    return std::make_unique<ASTFloatingPointLiteral>(
+        std::stod(Current.Data), Current.LineNo, Current.ColumnNo);
+
+  case TokenType::STRING_LITERAL:
+    return std::make_unique<ASTStringLiteral>(Current.Data, Current.LineNo,
+                                              Current.ColumnNo);
+
+  case TokenType::BOOLEAN:
+    return std::make_unique<ASTBooleanLiteral>(
+        std::stoi(Current.Data), Current.LineNo, Current.ColumnNo);
+
+  default:
+    DiagnosticError(Current.LineNo, Current.ColumnNo) << "Literal expected.";
+    UnreachablePoint();
   }
 }
 
