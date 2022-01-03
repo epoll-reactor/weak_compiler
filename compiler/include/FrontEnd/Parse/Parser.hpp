@@ -19,8 +19,7 @@ public:
 private:
   std::unique_ptr<ASTNode> ParseFunctionDecl();
 
-  /// Integral, floating-point, string or boolean literal.
-  std::unique_ptr<ASTNode> ParseConstant();
+  std::unique_ptr<ASTNode> ParseVarDecl();
 
   /// Int, char, string, bool.
   const Token &ParseType();
@@ -31,17 +30,18 @@ private:
   /// <Data type> <id>.
   std::unique_ptr<ASTNode> ParseParameter();
 
-  /// Selection, iterative, jump, assignment statement
-  /// or unary/binary operator.
-  std::unique_ptr<ASTNode> ParseStatement();
-
-  std::unique_ptr<ASTNode> ParseVarDecl();
+  /// (<Data type> <id> ,?)*
+  std::vector<std::unique_ptr<ASTNode>> ParseParameterList();
 
   /// Block of code between '{' and '}'.
   std::unique_ptr<ASTCompoundStmt> ParseBlock();
 
   /// Block of code with break and continue statements.
   std::unique_ptr<ASTCompoundStmt> ParseIterationStmtBlock();
+
+  /// Selection, iterative, jump, assignment statement
+  /// or unary/binary operator.
+  std::unique_ptr<ASTNode> ParseStatement();
 
   /// If statement.
   std::unique_ptr<ASTNode> ParseSelectionStatement();
@@ -92,8 +92,8 @@ private:
 
   std::unique_ptr<ASTNode> ParsePrimary();
 
-  /// (<Data type> <id> ,?)*
-  std::vector<std::unique_ptr<ASTNode>> ParseParameterList();
+  /// Integral, floating-point, string or boolean literal.
+  std::unique_ptr<ASTNode> ParseConstant();
 
   /// Get current token from input range and move forward.
   const Token &PeekNext();
