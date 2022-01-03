@@ -3,14 +3,19 @@
 
 #include "FrontEnd/AST/ASTNode.hpp"
 #include "FrontEnd/Analysis/CFGBlock.hpp"
+#include "Utility/Uncopyable.hpp"
+#include "Utility/Unmovable.hpp"
 #include <vector>
 
 namespace weak {
 namespace frontEnd {
-
-class CFG {
+/*! This is an implementation of Control Flow Graph, which forms from AST. */
+class CFG : public Uncopyable, public Unmovable {
 public:
+  CFG(CFGBlock *TheRootBlock);
+
 private:
+  CFGBlock *RootBlock;
 };
 
 } // namespace frontEnd

@@ -2,19 +2,16 @@
 #define WEAK_COMPILER_FRONTEND_ANALYSIS_CFG_BLOCK_HPP
 
 #include "FrontEnd/AST/ASTNode.hpp"
+#include "Utility/Uncopyable.hpp"
+#include "Utility/Unmovable.hpp"
 #include <vector>
 
 namespace weak {
 namespace frontEnd {
 /*! This is an implementation of Control Flow Graph node. */
-class CFGBlock {
+class CFGBlock : public Uncopyable, public Unmovable {
 public:
   CFGBlock(std::vector<std::unique_ptr<ASTNode>> &&TheStatements);
-
-  CFGBlock(const CFGBlock &) = delete;
-  CFGBlock(CFGBlock &&) = delete;
-  CFGBlock &operator=(const CFGBlock &) = delete;
-  CFGBlock &operator=(CFGBlock &&) = delete;
 
   void Link(CFGBlock &With);
   void Unlink(CFGBlock &With);
