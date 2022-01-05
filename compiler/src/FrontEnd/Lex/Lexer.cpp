@@ -255,8 +255,8 @@ Token Lexer::AnalyzeOperator() {
   }
 
   if (LexOperators.find(Operator) != LexOperators.end()) {
-    return Token("", LexOperators.at(Operator), CurrentLineNo,
-                 SavedColumnNo - Operator.length());
+    return Token("", LexOperators.at(Operator), CurrentLineNo + 1,
+                 SavedColumnNo - Operator.length() + 1);
   }
 
   --CurrentColumnNo;
