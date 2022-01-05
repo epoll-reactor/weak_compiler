@@ -5,7 +5,7 @@
 Transformation source text to pseudo-asm representation (feature branch). For example, the code
 
 ```
-void Function() {"
+void Function() {
   for (1 == 2; 3 != 4; 5 + 6) {
     7 + 8;
     for (9 == 10; 11 != 12; 13 + 14) {
