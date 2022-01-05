@@ -111,4 +111,13 @@ int main() {
                                 std::move(Arguments),
                                 MakeCompound(std::move(Body))));
   }
+
+  SECTION(FunctionCall) {
+    std::vector<std::unique_ptr<ASTNode>> Arguments;
+    Arguments.push_back(MakeString("Arg"));
+    Arguments.push_back(MakeString("Arg"));
+    Arguments.push_back(MakeString("Arg"));
+    Arguments.push_back(MakeString("Arg"));
+    ASTPrettyPrint(MakeFunctionCall("Fun", std::move(Arguments)));
+  }
 }

@@ -7,6 +7,7 @@
 #include "FrontEnd/AST/ASTDoWhileStmt.hpp"
 #include "FrontEnd/AST/ASTFloatingPointLiteral.hpp"
 #include "FrontEnd/AST/ASTForStmt.hpp"
+#include "FrontEnd/AST/ASTFunctionCall.hpp"
 #include "FrontEnd/AST/ASTFunctionDecl.hpp"
 #include "FrontEnd/AST/ASTIfStmt.hpp"
 #include "FrontEnd/AST/ASTIntegerLiteral.hpp"
@@ -250,6 +251,24 @@ private:
     Indent += 2;
     PrintIndent();
     Visit(FunctionDecl->GetBody().get());
+    Indent -= 2;
+  }
+
+  void Visit(const ASTFunctionCall *FunctionCall) const override {
+    PrintWithTextPosition("FunctionCall", FunctionCall, /*NewLineNeeded=*/true);
+
+    Indent += 2;
+    PrintIndent();
+    PrintWithTextPosition("FunctionArgs", FunctionCall,
+                          /*NewLineNeeded=*/true);
+
+    Indent += 2;
+    for (const auto &Argument : FunctionCall->GetArguments()) {
+      PrintIndent();
+      VisitBaseNode(Argument.get());
+    }
+    Indent -= 2;
+
     Indent -= 2;
   }
 

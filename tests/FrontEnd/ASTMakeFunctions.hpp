@@ -9,6 +9,7 @@
 #include "FrontEnd/AST/ASTDoWhileStmt.hpp"
 #include "FrontEnd/AST/ASTFloatingPointLiteral.hpp"
 #include "FrontEnd/AST/ASTForStmt.hpp"
+#include "FrontEnd/AST/ASTFunctionCall.hpp"
 #include "FrontEnd/AST/ASTFunctionDecl.hpp"
 #include "FrontEnd/AST/ASTIfStmt.hpp"
 #include "FrontEnd/AST/ASTIntegerLiteral.hpp"
@@ -110,6 +111,13 @@ MakeFunction(TokenType ReturnType, std::string &&Name,
              std::unique_ptr<ASTCompoundStmt> &&Body) {
   return std::make_unique<ASTFunctionDecl>(
       ReturnType, std::move(Name), std::move(Arguments), std::move(Body));
+}
+
+static std::unique_ptr<ASTNode>
+MakeFunctionCall(std::string &&Name,
+                 std::vector<std::unique_ptr<ASTNode>> &&Arguments) {
+  return std::make_unique<ASTFunctionCall>(std::move(Name),
+                                           std::move(Arguments));
 }
 
 #endif // WEAK_COMPILER_TESTS_FRONTEND_AST_MAKE_FUNCTIONS_HPP

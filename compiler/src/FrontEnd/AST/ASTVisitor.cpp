@@ -8,6 +8,7 @@
 #include "FrontEnd/AST/ASTFloatingPointLiteral.hpp"
 #include "FrontEnd/AST/ASTForStmt.hpp"
 #include "FrontEnd/AST/ASTFunctionDecl.hpp"
+#include "FrontEnd/AST/ASTFunctionCall.hpp"
 #include "FrontEnd/AST/ASTIfStmt.hpp"
 #include "FrontEnd/AST/ASTIntegerLiteral.hpp"
 #include "FrontEnd/AST/ASTNode.hpp"
@@ -79,6 +80,9 @@ void ASTVisitor::VisitBaseNode(const ASTNode *Node) const {
     break;
   case ASTType::FUNCTION_DECL:
     Visit(static_cast<const ASTFunctionDecl *>(Node));
+    break;
+  case ASTType::FUNCTION_CALL:
+    Visit(static_cast<const ASTFunctionCall *>(Node));
     break;
   }
 }
