@@ -269,6 +269,8 @@ std::unique_ptr<ASTNode> Parser::ParseStatement() {
   case TokenType::SYMBOL:
     return ParseExpression();
   default:
+    DiagnosticError(Current.LineNo, Current.ColumnNo)
+        << "Unexpected token: " << TokenToString(Current.Type);
     UnreachablePoint();
   }
 }
@@ -301,6 +303,8 @@ std::unique_ptr<ASTNode> Parser::ParseIterationStatement() {
   case TokenType::WHILE:
     return ParseWhileStatement();
   default:
+    DiagnosticError(Current.LineNo, Current.ColumnNo)
+        << "Should not reach here.";
     UnreachablePoint();
   }
 }
@@ -656,6 +660,12 @@ std::unique_ptr<ASTNode> Parser::ParsePrimary() {
   case TokenType::SYMBOL:
     return std::make_unique<ASTSymbol>(Current.Data, Current.LineNo,
                                        Current.ColumnNo);
+  case TokenType::OPEN_PAREN: {
+    /// We expect all binary/unary/constant statements expect assignment.
+    auto Expr = ParseLogicalOr();
+    Require(TokenType::CLOSE_PAREN);
+    return Expr;
+  }
   default:
     --CurrentBufferPtr;
     return ParseConstant();
