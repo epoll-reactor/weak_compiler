@@ -19,6 +19,9 @@ public:
 private:
   std::unique_ptr<ASTNode> ParseFunctionDecl();
 
+  /// Function call with optional argument list.
+  std::unique_ptr<ASTNode> ParseFunctionCall();
+
   std::unique_ptr<ASTNode> ParseVarDecl();
 
   /// Int, char, string, bool.
@@ -61,7 +64,7 @@ private:
   /// Return statement.
   std::unique_ptr<ASTNode> ParseJumpStatement();
 
-  /// Unary/binary statement or literal.
+  /// Unary/binary statement, literal, symbol or function call.
   std::unique_ptr<ASTNode> ParseExpression();
 
   std::unique_ptr<ASTNode> ParseAssignment();

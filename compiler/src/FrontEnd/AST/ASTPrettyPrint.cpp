@@ -255,7 +255,9 @@ private:
   }
 
   void Visit(const ASTFunctionCall *FunctionCall) const override {
-    PrintWithTextPosition("FunctionCall", FunctionCall, /*NewLineNeeded=*/true);
+    PrintWithTextPosition("FunctionCall", FunctionCall,
+                          /*NewLineNeeded=*/false);
+    std::cout << FunctionCall->GetName() << std::endl;
 
     Indent += 2;
     PrintIndent();
