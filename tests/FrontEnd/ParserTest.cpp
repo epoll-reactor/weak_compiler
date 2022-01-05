@@ -33,7 +33,7 @@ int main() {
            "    a + b * c;\n"
            "  } while (1);\n"
            "  if (1) { a; } else { b; }\n"
-           "  int v = a << b + c + ++a;\n"
+           "  int v = a + b * (c + (d));\n"
            "  return;\n"
            "}\n");
 }
