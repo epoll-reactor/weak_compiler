@@ -7,6 +7,7 @@
 #include "FrontEnd/AST/ASTDoWhileStmt.hpp"
 #include "FrontEnd/AST/ASTFloatingPointLiteral.hpp"
 #include "FrontEnd/AST/ASTForStmt.hpp"
+#include "FrontEnd/AST/ASTFunctionCall.hpp"
 #include "FrontEnd/AST/ASTFunctionDecl.hpp"
 #include "FrontEnd/AST/ASTIfStmt.hpp"
 #include "FrontEnd/AST/ASTIntegerLiteral.hpp"
@@ -90,6 +91,38 @@ std::unique_ptr<ASTNode> Parser::ParseFunctionDecl() {
   return std::make_unique<ASTFunctionDecl>(
       ReturnType.Type, std::string(FunctionName.Data), std::move(ParameterList),
       std::move(Block), ReturnType.LineNo, ReturnType.ColumnNo);
+}
+
+std::unique_ptr<ASTNode> Parser::ParseFunctionCall() {
+  const Token &FunctionName = PeekNext();
+  std::string Name = FunctionName.Data;
+  std::vector<std::unique_ptr<ASTNode>> Arguments;
+
+  Require(TokenType::OPEN_PAREN);
+
+  if (PeekNext().Type == TokenType::CLOSE_PAREN) {
+    --CurrentBufferPtr;
+    return std::make_unique<ASTFunctionCall>(
+        std::move(Name), std::move(Arguments), FunctionName.LineNo,
+        FunctionName.ColumnNo);
+  }
+
+  --CurrentBufferPtr;
+  while (PeekCurrent().Type != TokenType::CLOSE_PAREN) {
+    Arguments.push_back(ParseLogicalOr());
+    Require({TokenType::CLOSE_PAREN, TokenType::COMMA});
+    if ((CurrentBufferPtr - 1)->Type == TokenType::CLOSE_PAREN) {
+      /// Move back to token before '('.
+      --CurrentBufferPtr;
+      break;
+    }
+  }
+
+  Require(TokenType::CLOSE_PAREN);
+
+  return std::make_unique<ASTFunctionCall>(
+      std::move(Name), std::move(Arguments), FunctionName.LineNo,
+      FunctionName.ColumnNo);
 }
 
 std::unique_ptr<ASTNode> Parser::ParseVarDecl() {
@@ -176,7 +209,8 @@ std::unique_ptr<ASTCompoundStmt> Parser::ParseBlock() {
     case ASTType::SYMBOL:
     case ASTType::RETURN_STMT:
     case ASTType::DO_WHILE_STMT:
-    case ASTType::VAR_DECL: // Fall through.
+    case ASTType::VAR_DECL:
+    case ASTType::FUNCTION_CALL: // Fall through.
       Require(TokenType::SEMICOLON);
       break;
     default:
@@ -203,7 +237,8 @@ std::unique_ptr<ASTCompoundStmt> Parser::ParseIterationStmtBlock() {
     case ASTType::RETURN_STMT:
     case ASTType::BREAK_STMT:
     case ASTType::CONTINUE_STMT:
-    case ASTType::VAR_DECL: // Fall through.
+    case ASTType::VAR_DECL:
+    case ASTType::FUNCTION_CALL: // Fall through.
       Require(TokenType::SEMICOLON);
       break;
     default:
@@ -231,9 +266,10 @@ std::unique_ptr<ASTNode> Parser::ParseStatement() {
   case TokenType::STRING:
   case TokenType::BOOLEAN: // Fall through.
     return ParseVarDecl();
-    break;
-  default:
+  case TokenType::SYMBOL:
     return ParseExpression();
+  default:
+    UnreachablePoint();
   }
 }
 
@@ -356,7 +392,15 @@ std::unique_ptr<ASTNode> Parser::ParseJumpStatement() {
                                          ReturnStmt.ColumnNo);
 }
 
-std::unique_ptr<ASTNode> Parser::ParseExpression() { return ParseAssignment(); }
+std::unique_ptr<ASTNode> Parser::ParseExpression() {
+  PeekNext();
+  if (PeekCurrent().Type == TokenType::OPEN_PAREN) {
+    --CurrentBufferPtr;
+    return ParseFunctionCall();
+  }
+  --CurrentBufferPtr;
+  return ParseAssignment();
+}
 
 std::unique_ptr<ASTNode> Parser::ParseAssignment() {
   auto Expr = ParseLogicalOr();
@@ -678,7 +722,8 @@ const Token &Parser::Require(const std::vector<TokenType> &Expected) {
   }
 
   DiagnosticError(CurrentBufferPtr->LineNo, CurrentBufferPtr->ColumnNo)
-      << "Expected " << TokensToString(Expected);
+      << "Expected " << TokensToString(Expected) << ", got "
+      << TokenToString(CurrentBufferPtr->Type);
   UnreachablePoint();
 }
 

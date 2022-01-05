@@ -16,10 +16,11 @@ static void PrintAST(std::string_view String) {
 }
 
 int main() {
-  PrintAST("string do_some_work() {\n"
+  PrintAST("string do_some_work(int a, int b) {\n"
            "  return 1 + 2 + 3 + 4 + 5;\n"
            "}\n"
            "void main(string symbol, int integer) {\n"
+           "  do_some_another_work(1, a + b * c << 3);\n"
            "  for (a = 0; a < 10; ++a) { a << b + c = x <= e == f >= g; }\n"
            "  while (a << b + c = x) {\n"
            "    while (0) {\n"
