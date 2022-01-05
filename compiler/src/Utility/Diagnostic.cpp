@@ -52,7 +52,6 @@ void Diagnostic::EmitLabel() const {
   if (Level == DiagLevel::ERROR) {
     std::cerr << "ERROR - at line " << LineNo + 1 << ", column " << ColumnNo + 1
               << ": ";
-    throw std::runtime_error("Stacktrace exception.");
   } else {
     std::cerr << "WARN - at line " << LineNo + 1 << ", column " << ColumnNo + 1
               << ": ";
