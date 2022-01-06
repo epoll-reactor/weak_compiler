@@ -70,21 +70,5 @@ CFGBlock::GetPredecessors() const {
   return Predecessors;
 }
 
-bool CFGBlock::IsFirstSuccessorPresent(
-    const std::shared_ptr<CFGBlock> &Block) const {
-  return Successors.first.get() == Block.get();
-}
-
-bool CFGBlock::IsSecondSuccessorPresent(
-    const std::shared_ptr<CFGBlock> &Block) const {
-  return Successors.second.get() == Block.get();
-}
-
-bool CFGBlock::IsPredecessorPresent(
-    const std::shared_ptr<CFGBlock> &Block) const {
-  return std::find(Predecessors.begin(), Predecessors.end(), Block) !=
-         Predecessors.end();
-}
-
 } // namespace frontEnd
 } // namespace weak
