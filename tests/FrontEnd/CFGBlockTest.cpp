@@ -24,46 +24,45 @@ int main() {
     std::shared_ptr<CFGBlock> Block1 = CreateCFGBlock();
     std::shared_ptr<CFGBlock> Block2 = CreateCFGBlock();
 
-    assert(!Block1->LinkedWith(Block2));
-    assert(!Block2->LinkedWith(Block1));
+    assert(!Block1->IsSuccessorOf(Block2));
+    assert(!Block2->IsPredecessorOf(Block1));
 
-    assert(Block1->GetSuccessors().size() == 0);
+    assert(!Block1->GetSequentialSuccessor());
+    assert(!Block1->GetConditionalSuccessor());
     assert(Block1->GetPredecessors().size() == 0);
 
-    Block1->Link(Block2);
-    assert(Block1->GetSuccessors().size() == 1);
+    Block1->AddSequentialSuccessor(Block2);
     assert(Block2->GetPredecessors().size() == 1);
+    assert(Block1->IsPredecessorOf(Block2));
+    assert(Block2->IsSuccessorOf(Block1));
+    assert(!Block1->IsSuccessorOf(Block1));
+    assert(!Block1->IsSuccessorOf(Block2));
 
-    assert(Block1->LinkedWith(Block2));
-
-    Block1->Unlink(Block2);
-    assert(Block1->GetSuccessors().size() == 0);
-    assert(Block2->GetPredecessors().size() == 0);
-
-    assert(!Block1->LinkedWith(Block2));
+    assert(Block1->GetSequentialSuccessor());
   }
-  SECTION(CFGEnsureUniqueLinks) {
-    std::shared_ptr<CFGBlock> Block1 = CreateCFGBlock();
-    std::shared_ptr<CFGBlock> Block2 = CreateCFGBlock();
-    std::shared_ptr<CFGBlock> Block3 = CreateCFGBlock();
+  SECTION(CFGConditionSuccessor) {
+    std::shared_ptr<CFGBlock> MainBlock = CreateCFGBlock();
+    std::shared_ptr<CFGBlock> YesBlock = CreateCFGBlock();
+    std::shared_ptr<CFGBlock> NoBlock = CreateCFGBlock();
 
-    Block1->Link(Block2);
-    assert(Block1->GetSuccessors().size() == 1);
-    assert(Block2->GetPredecessors().size() == 1);
-    assert(Block1->GetPredecessors().size() == 0);
-    assert(Block2->GetSuccessors().size() == 0);
+    assert(!MainBlock->GetSequentialSuccessor());
+    assert(!MainBlock->GetConditionalSuccessor());
 
-    Block2->Link(Block3);
-  }
-  SECTION(CFGCyclicLink) {
-    std::shared_ptr<CFGBlock> Block1 = CreateCFGBlock();
-    std::shared_ptr<CFGBlock> Block2 = CreateCFGBlock();
+    assert(!MainBlock->IsPredecessorOf(YesBlock));
+    assert(!MainBlock->IsPredecessorOf(NoBlock));
+    assert(!YesBlock->IsSuccessorOf(MainBlock));
+    assert(!NoBlock->IsSuccessorOf(MainBlock));
 
-    Block1->Link(Block2);
-    Block2->Link(Block1);
-    assert(Block1->GetPredecessors().size() == 1);
-    assert(Block1->GetSuccessors().size() == 1);
-    assert(Block2->GetPredecessors().size() == 1);
-    assert(Block2->GetSuccessors().size() == 1);
+    MainBlock->AddConditionSuccessors(YesBlock, NoBlock);
+
+    assert(MainBlock->IsPredecessorOf(YesBlock));
+    assert(MainBlock->IsPredecessorOf(NoBlock));
+    assert(YesBlock->IsSuccessorOf(MainBlock));
+    assert(NoBlock->IsSuccessorOf(MainBlock));
+
+    assert(MainBlock->GetSequentialSuccessor());
+    assert(MainBlock->GetConditionalSuccessor());
+    assert(YesBlock->GetPredecessors().size() == 1);
+    assert(NoBlock->GetPredecessors().size() == 1);
   }
 }
