@@ -11,6 +11,8 @@ public:
   Unmovable() = default;
   Unmovable(Unmovable &&) = delete;
   Unmovable &operator=(Unmovable &&) = delete;
+  Unmovable(const Unmovable &) = default;
+  Unmovable &operator=(const Unmovable &) = default;
 };
 
 } // namespace weak
