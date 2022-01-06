@@ -35,10 +35,6 @@ public:
   const std::vector<std::shared_ptr<CFGBlock>> &GetPredecessors() const;
 
 private:
-  bool IsFirstSuccessorPresent(const std::shared_ptr<CFGBlock> &Block) const;
-  bool IsSecondSuccessorPresent(const std::shared_ptr<CFGBlock> &Block) const;
-  bool IsPredecessorPresent(const std::shared_ptr<CFGBlock> &Block) const;
-
   /// Stored inside statements.
   std::vector<std::unique_ptr<ASTNode>> Statements;
 
