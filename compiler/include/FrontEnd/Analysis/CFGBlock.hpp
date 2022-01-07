@@ -22,13 +22,13 @@ public:
 
   void AddStatement(std::unique_ptr<ASTNode> &&Statement);
   void AddSequentialSuccessor(const std::shared_ptr<CFGBlock> &Block);
-  void AddConditionSuccessors(const std::shared_ptr<CFGBlock> &Yes,
-                              const std::shared_ptr<CFGBlock> &No);
+  void AddConditionSuccessor(const std::shared_ptr<CFGBlock> &Block);
   void AddPredecessor(const std::shared_ptr<CFGBlock> &Block);
 
   bool IsSuccessorOf(const std::shared_ptr<CFGBlock> &Block);
   bool IsPredecessorOf(const std::shared_ptr<CFGBlock> &Block);
 
+  std::vector<std::unique_ptr<ASTNode>> &&GetStatements();
   const std::vector<std::unique_ptr<ASTNode>> &GetStatements() const;
   const std::shared_ptr<CFGBlock> &GetSequentialSuccessor() const;
   const std::shared_ptr<CFGBlock> &GetConditionalSuccessor() const;

@@ -15,6 +15,7 @@ public:
 
   ASTType GetASTType() const override;
 
+  std::vector<std::unique_ptr<ASTNode>> &&GetStmts();
   const std::vector<std::unique_ptr<ASTNode>> &GetStmts() const;
 
 private:

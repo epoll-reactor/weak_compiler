@@ -19,11 +19,19 @@ TokenType ASTFunctionDecl::GetReturnType() const { return ReturnType; }
 
 const std::string &ASTFunctionDecl::GetName() const { return Name; }
 
-const std::vector<std::unique_ptr<ASTNode>> &
+std::vector<std::unique_ptr<ASTNode>> &&ASTFunctionDecl::GetArguments() {
+  return std::move(Arguments);
+}
 
+const std::vector<std::unique_ptr<ASTNode>> &
 ASTFunctionDecl::GetArguments() const {
   return Arguments;
 }
+
+std::unique_ptr<ASTCompoundStmt> &&ASTFunctionDecl::GetBody() {
+  return std::move(Body);
+}
+
 const std::unique_ptr<ASTCompoundStmt> &ASTFunctionDecl::GetBody() const {
   return Body;
 }

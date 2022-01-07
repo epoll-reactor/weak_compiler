@@ -53,7 +53,8 @@ int main() {
     assert(!YesBlock->IsSuccessorOf(MainBlock));
     assert(!NoBlock->IsSuccessorOf(MainBlock));
 
-    MainBlock->AddConditionSuccessors(YesBlock, NoBlock);
+    MainBlock->AddSequentialSuccessor(YesBlock);
+    MainBlock->AddConditionSuccessor(NoBlock);
 
     assert(MainBlock->IsPredecessorOf(YesBlock));
     assert(MainBlock->IsPredecessorOf(NoBlock));

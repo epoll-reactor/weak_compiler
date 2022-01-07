@@ -15,14 +15,28 @@ ASTForStmt::ASTForStmt(std::unique_ptr<ASTNode> &&TheInit,
 
 ASTType ASTForStmt::GetASTType() const { return ASTType::FOR_STMT; }
 
+std::unique_ptr<ASTNode> &&ASTForStmt::GetInit() { return std::move(Init); }
+
 const std::unique_ptr<ASTNode> &ASTForStmt::GetInit() const { return Init; }
+
+std::unique_ptr<ASTNode> &&ASTForStmt::GetCondition() {
+  return std::move(Condition);
+}
 
 const std::unique_ptr<ASTNode> &ASTForStmt::GetCondition() const {
   return Condition;
 }
 
+std::unique_ptr<ASTNode> &&ASTForStmt::GetIncrement() {
+  return std::move(Increment);
+}
+
 const std::unique_ptr<ASTNode> &ASTForStmt::GetIncrement() const {
   return Increment;
+}
+
+std::unique_ptr<ASTCompoundStmt> &&ASTForStmt::GetBody() {
+  return std::move(Body);
 }
 
 const std::unique_ptr<ASTCompoundStmt> &ASTForStmt::GetBody() const {

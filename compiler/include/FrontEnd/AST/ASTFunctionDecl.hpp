@@ -22,7 +22,9 @@ public:
 
   TokenType GetReturnType() const;
   const std::string &GetName() const;
+  std::vector<std::unique_ptr<ASTNode>> &&GetArguments();
   const std::vector<std::unique_ptr<ASTNode>> &GetArguments() const;
+  std::unique_ptr<ASTCompoundStmt> &&GetBody();
   const std::unique_ptr<ASTCompoundStmt> &GetBody() const;
 
 private:

@@ -12,8 +12,16 @@ ASTWhileStmt::ASTWhileStmt(std::unique_ptr<ASTNode> &&TheCondition,
 
 ASTType ASTWhileStmt::GetASTType() const { return ASTType::WHILE_STMT; }
 
+std::unique_ptr<ASTNode> &&ASTWhileStmt::GetCondition() {
+  return std::move(Condition);
+}
+
 const std::unique_ptr<ASTNode> &ASTWhileStmt::GetCondition() const {
   return Condition;
+}
+
+std::unique_ptr<ASTCompoundStmt> &&ASTWhileStmt::GetBody() {
+  return std::move(Body);
 }
 
 const std::unique_ptr<ASTCompoundStmt> &ASTWhileStmt::GetBody() const {

@@ -16,8 +16,11 @@ public:
 
   ASTType GetASTType() const override;
 
+  std::unique_ptr<ASTNode> &&GetCondition();
   const std::unique_ptr<ASTNode> &GetCondition() const;
+  std::unique_ptr<ASTCompoundStmt> &&GetThenBody();
   const std::unique_ptr<ASTCompoundStmt> &GetThenBody() const;
+  std::unique_ptr<ASTCompoundStmt> &&GetElseBody();
   const std::unique_ptr<ASTCompoundStmt> &GetElseBody() const;
 
 private:
