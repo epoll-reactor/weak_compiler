@@ -13,9 +13,18 @@ weak::frontEnd::ASTDoWhileStmt::ASTDoWhileStmt(
 
 ASTType ASTDoWhileStmt::GetASTType() const { return ASTType::DO_WHILE_STMT; }
 
+std::unique_ptr<ASTCompoundStmt> &&ASTDoWhileStmt::GetBody() {
+  return std::move(Body);
+}
+
 const std::unique_ptr<ASTCompoundStmt> &ASTDoWhileStmt::GetBody() const {
   return Body;
 }
+
+std::unique_ptr<ASTNode> &&ASTDoWhileStmt::GetCondition() {
+  return std::move(Condition);
+}
+
 const std::unique_ptr<ASTNode> &ASTDoWhileStmt::GetCondition() const {
   return Condition;
 }

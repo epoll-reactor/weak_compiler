@@ -13,12 +13,24 @@ ASTIfStmt::ASTIfStmt(std::unique_ptr<ASTNode> &&TheCondition,
 
 ASTType ASTIfStmt::GetASTType() const { return ASTType::IF_STMT; }
 
+std::unique_ptr<ASTNode> &&ASTIfStmt::GetCondition() {
+  return std::move(Condition);
+}
+
 const std::unique_ptr<ASTNode> &ASTIfStmt::GetCondition() const {
   return Condition;
 }
 
+std::unique_ptr<ASTCompoundStmt> &&ASTIfStmt::GetThenBody() {
+  return std::move(ThenBody);
+}
+
 const std::unique_ptr<ASTCompoundStmt> &ASTIfStmt::GetThenBody() const {
   return ThenBody;
+}
+
+std::unique_ptr<ASTCompoundStmt> &&ASTIfStmt::GetElseBody() {
+  return std::move(ElseBody);
 }
 
 const std::unique_ptr<ASTCompoundStmt> &ASTIfStmt::GetElseBody() const {

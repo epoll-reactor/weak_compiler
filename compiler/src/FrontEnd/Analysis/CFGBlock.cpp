@@ -20,17 +20,14 @@ void CFGBlock::AddSequentialSuccessor(const std::shared_ptr<CFGBlock> &Block) {
   Block->Predecessors.push_back(shared_from_this());
 }
 
-void CFGBlock::AddConditionSuccessors(const std::shared_ptr<CFGBlock> &Yes,
-                                      const std::shared_ptr<CFGBlock> &No) {
-  if (Successors.first == Yes || Successors.second == No) {
+void CFGBlock::AddConditionSuccessor(const std::shared_ptr<CFGBlock> &Block) {
+  if (this->IsSuccessorOf(Block)) {
     DiagnosticError(0U, 0U) << "CFG node is already linked as successor.";
     UnreachablePoint();
   }
 
-  Successors.first = Yes;
-  Successors.second = No;
-  Yes->Predecessors.push_back(shared_from_this());
-  No->Predecessors.push_back(shared_from_this());
+  Successors.second = Block;
+  Block->Predecessors.push_back(shared_from_this());
 }
 
 void CFGBlock::AddPredecessor(const std::shared_ptr<CFGBlock> &Block) {
@@ -51,6 +48,10 @@ bool CFGBlock::IsPredecessorOf(const std::shared_ptr<CFGBlock> &Block) {
 bool CFGBlock::IsSuccessorOf(const std::shared_ptr<CFGBlock> &Block) {
   return Block->Successors.first == shared_from_this() ||
          Block->Successors.second == shared_from_this();
+}
+
+std::vector<std::unique_ptr<ASTNode>> &&CFGBlock::GetStatements() {
+  return std::move(Statements);
 }
 
 const std::vector<std::unique_ptr<ASTNode>> &CFGBlock::GetStatements() const {

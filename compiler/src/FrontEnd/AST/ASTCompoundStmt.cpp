@@ -10,6 +10,10 @@ ASTCompoundStmt::ASTCompoundStmt(std::vector<std::unique_ptr<ASTNode>> &&stmts,
 
 ASTType ASTCompoundStmt::GetASTType() const { return ASTType::COMPOUND_STMT; }
 
+std::vector<std::unique_ptr<ASTNode>> &&ASTCompoundStmt::GetStmts() {
+  return std::move(Stmts);
+}
+
 const std::vector<std::unique_ptr<ASTNode>> &ASTCompoundStmt::GetStmts() const {
   return Stmts;
 }
