@@ -69,8 +69,8 @@ public:
 
 private:
   void LinkTrivialStmt(size_t Position) {
-    auto TrivialStmt = Blocks.at(Position - 1);
-    auto NextStmt = Blocks.at(Position);
+    auto &TrivialStmt = Blocks.at(Position - 1);
+    auto &NextStmt = Blocks.at(Position);
 
     TrivialStmt->AddSequentialSuccessor(NextStmt);
   }
@@ -85,13 +85,9 @@ private:
     assert(IfBody);
 
     if (ElseBody) {
-      assert(IfBody);
-      assert(ElseBody);
       IfBody->AddSequentialSuccessor(AfterIfBlock);
       ElseBody->AddSequentialSuccessor(AfterIfBlock);
     } else {
-      assert(IfBody);
-      assert(!ElseBody);
       IfBody->AddSequentialSuccessor(AfterIfBlock);
       IfCondition->AddConditionSuccessor(AfterIfBlock);
     }
