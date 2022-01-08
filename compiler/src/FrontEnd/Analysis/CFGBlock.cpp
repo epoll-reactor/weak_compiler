@@ -5,27 +5,21 @@
 namespace weak {
 namespace frontEnd {
 
+void CFGBlock::SetStmtType(Stmt Type) { StmtType = Type; }
+
+CFGBlock::Stmt CFGBlock::GetStmtType() const { return StmtType; }
+
 void CFGBlock::AddStatement(std::unique_ptr<ASTNode> &&Statement) {
   /// Guaranteed unique object.
   Statements.push_back(std::move(Statement));
 }
 
 void CFGBlock::AddSequentialSuccessor(const std::shared_ptr<CFGBlock> &Block) {
-  if (this->IsSuccessorOf(Block)) {
-    DiagnosticError(0U, 0U) << "CFG node is already linked as successor.";
-    UnreachablePoint();
-  }
-
   Successors.first = Block;
   Block->Predecessors.push_back(shared_from_this());
 }
 
 void CFGBlock::AddConditionSuccessor(const std::shared_ptr<CFGBlock> &Block) {
-  if (this->IsSuccessorOf(Block)) {
-    DiagnosticError(0U, 0U) << "CFG node is already linked as successor.";
-    UnreachablePoint();
-  }
-
   Successors.second = Block;
   Block->Predecessors.push_back(shared_from_this());
 }
