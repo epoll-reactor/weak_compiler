@@ -1,4 +1,5 @@
 include_directories(../compiler/include)
+include_directories(../tests)
 
 find_library(Compiler PATHS "../compiler")
 

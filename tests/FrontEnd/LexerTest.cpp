@@ -1,5 +1,5 @@
 #include "FrontEnd/Lex/Lexer.hpp"
-#include "../TestHelpers.hpp"
+#include "TestHelpers.hpp"
 
 static weak::frontEnd::Lexer CreateLexer(std::string_view Input) {
   weak::frontEnd::Lexer Lex(Input.begin(), Input.end());
