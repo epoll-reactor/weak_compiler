@@ -149,74 +149,68 @@ std::vector<std::shared_ptr<CFGBlock>> CFGBuilder::BuildCFG() {
 std::shared_ptr<CFGBlock> CFGBuilder::Visit(std::unique_ptr<ASTNode> &&Node) {
   switch (Node->GetASTType()) {
   case ASTType::INTEGER_LITERAL:
-    return VisitInteger(
+    return Visit(
         StaticUniquePtrCast<ASTNode, ASTIntegerLiteral>(std::move(Node)));
 
   case ASTType::FLOATING_POINT_LITERAL:
-    return VisitFloat(
+    return Visit(
         StaticUniquePtrCast<ASTNode, ASTFloatingPointLiteral>(std::move(Node)));
 
   case ASTType::STRING_LITERAL:
-    return VisitString(
+    return Visit(
         StaticUniquePtrCast<ASTNode, ASTStringLiteral>(std::move(Node)));
 
   case ASTType::BOOLEAN_LITERAL:
-    return VisitBoolean(
+    return Visit(
         StaticUniquePtrCast<ASTNode, ASTBooleanLiteral>(std::move(Node)));
 
   case ASTType::SYMBOL:
-    return VisitSymbol(
-        StaticUniquePtrCast<ASTNode, ASTSymbol>(std::move(Node)));
+    return Visit(StaticUniquePtrCast<ASTNode, ASTSymbol>(std::move(Node)));
 
   case ASTType::VAR_DECL:
-    return VisitVarDecl(
-        StaticUniquePtrCast<ASTNode, ASTVarDecl>(std::move(Node)));
+    return Visit(StaticUniquePtrCast<ASTNode, ASTVarDecl>(std::move(Node)));
 
   case ASTType::BREAK_STMT:
-    return VisitBreak(
-        StaticUniquePtrCast<ASTNode, ASTBreakStmt>(std::move(Node)));
+    return Visit(StaticUniquePtrCast<ASTNode, ASTBreakStmt>(std::move(Node)));
 
   case ASTType::CONTINUE_STMT:
-    return VisitContinue(
+    return Visit(
         StaticUniquePtrCast<ASTNode, ASTContinueStmt>(std::move(Node)));
 
   case ASTType::BINARY:
-    return VisitBinary(
+    return Visit(
         StaticUniquePtrCast<ASTNode, ASTBinaryOperator>(std::move(Node)));
 
   case ASTType::PREFIX_UNARY: // Fall through.
   case ASTType::POSTFIX_UNARY:
-    return VisitUnary(
+    return Visit(
         StaticUniquePtrCast<ASTNode, ASTUnaryOperator>(std::move(Node)));
 
   case ASTType::IF_STMT:
-    return VisitIf(StaticUniquePtrCast<ASTNode, ASTIfStmt>(std::move(Node)));
+    return Visit(StaticUniquePtrCast<ASTNode, ASTIfStmt>(std::move(Node)));
 
   case ASTType::FOR_STMT:
-    return VisitFor(StaticUniquePtrCast<ASTNode, ASTForStmt>(std::move(Node)));
+    return Visit(StaticUniquePtrCast<ASTNode, ASTForStmt>(std::move(Node)));
 
   case ASTType::WHILE_STMT:
-    return VisitWhile(
-        StaticUniquePtrCast<ASTNode, ASTWhileStmt>(std::move(Node)));
+    return Visit(StaticUniquePtrCast<ASTNode, ASTWhileStmt>(std::move(Node)));
 
   case ASTType::DO_WHILE_STMT:
-    return VisitDoWhile(
-        StaticUniquePtrCast<ASTNode, ASTDoWhileStmt>(std::move(Node)));
+    return Visit(StaticUniquePtrCast<ASTNode, ASTDoWhileStmt>(std::move(Node)));
 
   case ASTType::RETURN_STMT:
-    return VisitReturn(
-        StaticUniquePtrCast<ASTNode, ASTReturnStmt>(std::move(Node)));
+    return Visit(StaticUniquePtrCast<ASTNode, ASTReturnStmt>(std::move(Node)));
 
   case ASTType::COMPOUND_STMT:
-    return VisitCompound(
+    return Visit(
         StaticUniquePtrCast<ASTNode, ASTCompoundStmt>(std::move(Node)));
 
   case ASTType::FUNCTION_DECL:
-    return VisitFunctionDecl(
+    return Visit(
         StaticUniquePtrCast<ASTNode, ASTFunctionDecl>(std::move(Node)));
 
   case ASTType::FUNCTION_CALL:
-    return VisitFunctionCall(
+    return Visit(
         StaticUniquePtrCast<ASTNode, ASTFunctionCall>(std::move(Node)));
 
   default:
@@ -227,14 +221,14 @@ std::shared_ptr<CFGBlock> CFGBuilder::Visit(std::unique_ptr<ASTNode> &&Node) {
 }
 
 std::shared_ptr<CFGBlock>
-CFGBuilder::VisitBinary(std::unique_ptr<ASTBinaryOperator> &&Binary) {
+CFGBuilder::Visit(std::unique_ptr<ASTBinaryOperator> &&Binary) {
   auto CurrentBlock = CreateCFGBlock();
   CurrentBlock->AddStatement(std::move(Binary));
   return CurrentBlock;
 }
 
 std::shared_ptr<CFGBlock>
-CFGBuilder::VisitBreak(std::unique_ptr<ASTBreakStmt> &&Break) {
+CFGBuilder::Visit(std::unique_ptr<ASTBreakStmt> &&Break) {
   auto CurrentBlock = CreateCFGBlock();
   assert(CurrentBlock);
   CurrentBlock->AddStatement(std::move(Break));
@@ -242,7 +236,7 @@ CFGBuilder::VisitBreak(std::unique_ptr<ASTBreakStmt> &&Break) {
 }
 
 std::shared_ptr<CFGBlock>
-CFGBuilder::VisitCompound(std::unique_ptr<ASTCompoundStmt> &&Compound) {
+CFGBuilder::Visit(std::unique_ptr<ASTCompoundStmt> &&Compound) {
   std::vector<std::shared_ptr<CFGBlock>> Blocks;
 
   for (auto &&Stmt : Compound->GetStmts())
@@ -258,7 +252,7 @@ CFGBuilder::VisitCompound(std::unique_ptr<ASTCompoundStmt> &&Compound) {
 }
 
 std::shared_ptr<CFGBlock>
-CFGBuilder::VisitContinue(std::unique_ptr<ASTContinueStmt> &&Continue) {
+CFGBuilder::Visit(std::unique_ptr<ASTContinueStmt> &&Continue) {
   auto CurrentBlock = CreateCFGBlock();
   CurrentBlock->AddStatement(std::move(Continue));
   return CurrentBlock;
@@ -282,7 +276,7 @@ CFGBuilder::VisitContinue(std::unique_ptr<ASTContinueStmt> &&Continue) {
  *    +------------+
  */
 std::shared_ptr<CFGBlock>
-CFGBuilder::VisitDoWhile(std::unique_ptr<ASTDoWhileStmt> &&DoWhile) {
+CFGBuilder::Visit(std::unique_ptr<ASTDoWhileStmt> &&DoWhile) {
   auto BodyBlock = CreateCFGBlock();
   BodyBlock->SetStmtType(CFGBlock::Stmt::DoWhile);
   BodyBlock->AddStatement(DoWhile->GetBody());
@@ -295,7 +289,7 @@ CFGBuilder::VisitDoWhile(std::unique_ptr<ASTDoWhileStmt> &&DoWhile) {
 }
 
 std::shared_ptr<CFGBlock>
-CFGBuilder::VisitFloat(std::unique_ptr<ASTFloatingPointLiteral> &&Float) {
+CFGBuilder::Visit(std::unique_ptr<ASTFloatingPointLiteral> &&Float) {
   auto CurrentBlock = CreateCFGBlock();
   CurrentBlock->AddStatement(std::move(Float));
   return CurrentBlock;
@@ -319,8 +313,7 @@ CFGBuilder::VisitFloat(std::unique_ptr<ASTFloatingPointLiteral> &&Float) {
  *         +------------+  +---------+    |
  *                            \___________/
  */
-std::shared_ptr<CFGBlock>
-CFGBuilder::VisitFor(std::unique_ptr<ASTForStmt> &&For) {
+std::shared_ptr<CFGBlock> CFGBuilder::Visit(std::unique_ptr<ASTForStmt> &&For) {
   auto &&ForInit = For->GetInit();
   auto &&ForCondition = For->GetCondition();
   auto &&ForIncrement = For->GetIncrement();
@@ -347,14 +340,14 @@ CFGBuilder::VisitFor(std::unique_ptr<ASTForStmt> &&For) {
 }
 
 std::shared_ptr<CFGBlock>
-CFGBuilder::VisitFunctionCall(std::unique_ptr<ASTFunctionCall> &&FunctionCall) {
+CFGBuilder::Visit(std::unique_ptr<ASTFunctionCall> &&FunctionCall) {
   auto CurrentBlock = CreateCFGBlock();
   CurrentBlock->AddStatement(std::move(FunctionCall));
   return CurrentBlock;
 }
 
 std::shared_ptr<CFGBlock>
-CFGBuilder::VisitFunctionDecl(std::unique_ptr<ASTFunctionDecl> &&FunctionDecl) {
+CFGBuilder::Visit(std::unique_ptr<ASTFunctionDecl> &&FunctionDecl) {
   auto FunctionBlock = CreateCFGBlock();
   FunctionBlock->AddSequentialSuccessor(Visit(FunctionDecl->GetBody()));
   return FunctionBlock;
@@ -379,7 +372,7 @@ CFGBuilder::VisitFunctionDecl(std::unique_ptr<ASTFunctionDecl> &&FunctionDecl) {
  *           +----------+              +----------+
  *
  */
-std::shared_ptr<CFGBlock> CFGBuilder::VisitIf(std::unique_ptr<ASTIfStmt> &&If) {
+std::shared_ptr<CFGBlock> CFGBuilder::Visit(std::unique_ptr<ASTIfStmt> &&If) {
   auto ConditionBlock = CreateCFGBlock();
   ConditionBlock->SetStmtType(CFGBlock::Stmt::If);
   ConditionBlock->AddStatement(If->GetCondition());
@@ -397,42 +390,42 @@ std::shared_ptr<CFGBlock> CFGBuilder::VisitIf(std::unique_ptr<ASTIfStmt> &&If) {
 }
 
 std::shared_ptr<CFGBlock>
-CFGBuilder::VisitInteger(std::unique_ptr<ASTIntegerLiteral> &&Integer) {
+CFGBuilder::Visit(std::unique_ptr<ASTIntegerLiteral> &&Integer) {
   auto CurrentBlock = CreateCFGBlock();
   CurrentBlock->AddStatement(std::move(Integer));
   return CurrentBlock;
 }
 
 std::shared_ptr<CFGBlock>
-CFGBuilder::VisitReturn(std::unique_ptr<ASTReturnStmt> &&Return) {
+CFGBuilder::Visit(std::unique_ptr<ASTReturnStmt> &&Return) {
   auto CurrentBlock = CreateCFGBlock();
   CurrentBlock->AddStatement(std::move(Return));
   return CurrentBlock;
 }
 
 std::shared_ptr<CFGBlock>
-CFGBuilder::VisitString(std::unique_ptr<ASTStringLiteral> &&String) {
+CFGBuilder::Visit(std::unique_ptr<ASTStringLiteral> &&String) {
   auto CurrentBlock = CreateCFGBlock();
   CurrentBlock->AddStatement(std::move(String));
   return CurrentBlock;
 }
 
 std::shared_ptr<CFGBlock>
-CFGBuilder::VisitSymbol(std::unique_ptr<ASTSymbol> &&Symbol) {
+CFGBuilder::Visit(std::unique_ptr<ASTSymbol> &&Symbol) {
   auto CurrentBlock = CreateCFGBlock();
   CurrentBlock->AddStatement(std::move(Symbol));
   return CurrentBlock;
 }
 
 std::shared_ptr<CFGBlock>
-CFGBuilder::VisitUnary(std::unique_ptr<ASTUnaryOperator> &&Unary) {
+CFGBuilder::Visit(std::unique_ptr<ASTUnaryOperator> &&Unary) {
   auto CurrentBlock = CreateCFGBlock();
   CurrentBlock->AddStatement(std::move(Unary));
   return CurrentBlock;
 }
 
 std::shared_ptr<CFGBlock>
-CFGBuilder::VisitVarDecl(std::unique_ptr<ASTVarDecl> &&VarDecl) {
+CFGBuilder::Visit(std::unique_ptr<ASTVarDecl> &&VarDecl) {
   auto CurrentBlock = CreateCFGBlock();
   CurrentBlock->AddStatement(std::move(VarDecl));
   return CurrentBlock;
@@ -456,7 +449,7 @@ CFGBuilder::VisitVarDecl(std::unique_ptr<ASTVarDecl> &&VarDecl) {
  *        +------------+
  */
 std::shared_ptr<CFGBlock>
-CFGBuilder::VisitWhile(std::unique_ptr<ASTWhileStmt> &&While) {
+CFGBuilder::Visit(std::unique_ptr<ASTWhileStmt> &&While) {
   auto ConditionBlock = CreateCFGBlock();
   ConditionBlock->SetStmtType(CFGBlock::Stmt::While);
   ConditionBlock->AddStatement(While->GetCondition());
@@ -469,7 +462,7 @@ CFGBuilder::VisitWhile(std::unique_ptr<ASTWhileStmt> &&While) {
 }
 
 std::shared_ptr<CFGBlock>
-CFGBuilder::VisitBoolean(std::unique_ptr<ASTBooleanLiteral> &&Boolean) {
+CFGBuilder::Visit(std::unique_ptr<ASTBooleanLiteral> &&Boolean) {
   auto CurrentBlock = CreateCFGBlock();
   CurrentBlock->AddStatement(std::move(Boolean));
   return CurrentBlock;
