@@ -1,6 +1,6 @@
 #include "FrontEnd/AST/ASTPrettyPrint.hpp"
-#include "../TestHelpers.hpp"
 #include "ASTMakeFunctions.hpp"
+#include "TestHelpers.hpp"
 
 using weak::frontEnd::TokenType;
 
