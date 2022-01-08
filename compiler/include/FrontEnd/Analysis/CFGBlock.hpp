@@ -17,8 +17,12 @@ namespace frontEnd {
 class CFGBlock : public std::enable_shared_from_this<CFGBlock>,
                  public Uncopyable {
 public:
+  enum Stmt { Trivial, If, While, DoWhile, For };
+
   using SuccessorPair =
       std::pair<std::shared_ptr<CFGBlock>, std::shared_ptr<CFGBlock>>;
+
+  void SetStmtType(Stmt type);
 
   void AddStatement(std::unique_ptr<ASTNode> &&Statement);
   void AddSequentialSuccessor(const std::shared_ptr<CFGBlock> &Block);
@@ -27,6 +31,8 @@ public:
 
   bool IsSuccessorOf(const std::shared_ptr<CFGBlock> &Block);
   bool IsPredecessorOf(const std::shared_ptr<CFGBlock> &Block);
+
+  Stmt GetStmtType() const;
 
   std::vector<std::unique_ptr<ASTNode>> &&GetStatements();
   const std::vector<std::unique_ptr<ASTNode>> &GetStatements() const;
@@ -44,6 +50,8 @@ private:
 
   /// Arbitrary length set of predecessors.
   std::vector<std::shared_ptr<CFGBlock>> Predecessors;
+
+  Stmt StmtType = Stmt::Trivial;
 };
 
 } // namespace frontEnd

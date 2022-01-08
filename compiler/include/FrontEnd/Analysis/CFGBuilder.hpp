@@ -53,30 +53,41 @@ public:
   std::vector<std::shared_ptr<CFGBlock>> BuildCFG();
 
 private:
-  void VisitBaseNode(std::unique_ptr<ASTNode> &&);
-  void Visit(std::unique_ptr<class ASTBinaryOperator> &&);
-  void Visit(std::unique_ptr<class ASTBooleanLiteral> &&);
-  void Visit(std::unique_ptr<class ASTBreakStmt> &&);
-  void Visit(std::unique_ptr<class ASTCompoundStmt> &&);
-  void Visit(std::unique_ptr<class ASTContinueStmt> &&);
-  void Visit(std::unique_ptr<class ASTDoWhileStmt> &&);
-  void Visit(std::unique_ptr<class ASTFloatingPointLiteral> &&);
-  void Visit(std::unique_ptr<class ASTForStmt> &&);
-  void Visit(std::unique_ptr<class ASTFunctionDecl> &&);
-  void Visit(std::unique_ptr<class ASTFunctionCall> &&);
-  void Visit(std::unique_ptr<class ASTIfStmt> &&);
-  void Visit(std::unique_ptr<class ASTIntegerLiteral> &&);
-  void Visit(std::unique_ptr<class ASTReturnStmt> &&);
-  void Visit(std::unique_ptr<class ASTStringLiteral> &&);
-  void Visit(std::unique_ptr<class ASTSymbol> &&);
-  void Visit(std::unique_ptr<class ASTUnaryOperator> &&);
-  void Visit(std::unique_ptr<class ASTVarDecl> &&);
-  void Visit(std::unique_ptr<class ASTWhileStmt> &&);
+  std::shared_ptr<CFGBlock> Visit(std::unique_ptr<ASTNode> &&);
+  std::shared_ptr<CFGBlock>
+  VisitBinary(std::unique_ptr<class ASTBinaryOperator> &&);
+  std::shared_ptr<CFGBlock>
+  VisitBoolean(std::unique_ptr<class ASTBooleanLiteral> &&);
+  std::shared_ptr<CFGBlock> VisitBreak(std::unique_ptr<class ASTBreakStmt> &&);
+  std::shared_ptr<CFGBlock>
+  VisitCompound(std::unique_ptr<class ASTCompoundStmt> &&);
+  std::shared_ptr<CFGBlock>
+  VisitContinue(std::unique_ptr<class ASTContinueStmt> &&);
+  std::shared_ptr<CFGBlock>
+  VisitDoWhile(std::unique_ptr<class ASTDoWhileStmt> &&);
+  std::shared_ptr<CFGBlock>
+  VisitFloat(std::unique_ptr<class ASTFloatingPointLiteral> &&);
+  std::shared_ptr<CFGBlock> VisitFor(std::unique_ptr<class ASTForStmt> &&);
+  std::shared_ptr<CFGBlock>
+  VisitFunctionCall(std::unique_ptr<class ASTFunctionCall> &&);
+  std::shared_ptr<CFGBlock>
+  VisitFunctionDecl(std::unique_ptr<class ASTFunctionDecl> &&);
+  std::shared_ptr<CFGBlock> VisitIf(std::unique_ptr<class ASTIfStmt> &&);
+  std::shared_ptr<CFGBlock>
+  VisitInteger(std::unique_ptr<class ASTIntegerLiteral> &&);
+  std::shared_ptr<CFGBlock>
+  VisitReturn(std::unique_ptr<class ASTReturnStmt> &&);
+  std::shared_ptr<CFGBlock>
+  VisitString(std::unique_ptr<class ASTStringLiteral> &&);
+  std::shared_ptr<CFGBlock> VisitSymbol(std::unique_ptr<class ASTSymbol> &&);
+  std::shared_ptr<CFGBlock>
+  VisitUnary(std::unique_ptr<class ASTUnaryOperator> &&);
+  std::shared_ptr<CFGBlock> VisitVarDecl(std::unique_ptr<class ASTVarDecl> &&);
+  std::shared_ptr<CFGBlock> VisitWhile(std::unique_ptr<class ASTWhileStmt> &&);
 
-  /// Functions represented as CFG.
-  std::vector<std::shared_ptr<CFGBlock>> FunctionGraphs;
+  std::shared_ptr<CFGBlock> CreateCFGBlock();
 
-  std::shared_ptr<CFGBlock> CurrentBlock;
+  //  std::shared_ptr<CFGBlock> CurrentBlock;
 
   std::unique_ptr<ASTNode> RootNode;
 };

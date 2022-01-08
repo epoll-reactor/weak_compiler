@@ -18,6 +18,7 @@
 #include "FrontEnd/AST/ASTUnaryOperator.hpp"
 #include "FrontEnd/AST/ASTVarDecl.hpp"
 #include "FrontEnd/AST/ASTWhileStmt.hpp"
+#include "Utility/Diagnostic.hpp"
 #include <cassert>
 
 using namespace weak::frontEnd;
@@ -30,23 +31,103 @@ static auto StaticUniquePtrCast(std::unique_ptr<Base> &&Ptr) {
 
 namespace {
 
+/*! This is helper class to link CFG blocks together.
+ *
+ *  For example, we have `if` and `while` statements. We need to set
+ *  `while` condition as successor of `if` false condition or else block.
+ *
+ *  This class links loop and trivial statements together in similar way.
+ */
 class CFGBlocksLinker {
 public:
-  CFGBlocksLinker(std::shared_ptr<CFGBlock> &TheTarget,
-                  std::shared_ptr<CFGBlock> &TheSuccessor)
-      : Target(TheTarget), Successor(TheSuccessor) {}
+  CFGBlocksLinker(std::vector<std::shared_ptr<CFGBlock>> &UnlinkedBlocks)
+      : Blocks(UnlinkedBlocks) {}
 
-  /*! Trivial considered statements: literals, unary, binary, return, symbol,
-   *  var decl, break, continue, function call.
-   *
-   *  Other: if, for, while, do-while.
-   *
-   */
-  void Link() {}
+  void LinkAll() {
+    for (size_t It = 1; Blocks.size() >= 2 && It < Blocks.size(); ++It) {
+      switch (Blocks.at(It - 1)->GetStmtType()) {
+      case CFGBlock::Stmt::Trivial:
+        LinkTrivialStmt(It);
+        break;
+      case CFGBlock::Stmt::If:
+        LinkIfStmt(It);
+        break;
+      case CFGBlock::Stmt::For:
+        LinkForStmt(It);
+        break;
+      case CFGBlock::Stmt::While:
+        LinkWhileStmt(It);
+        break;
+      case CFGBlock::Stmt::DoWhile:
+        LinkDoWhileStmt(It);
+        break;
+      default:
+        break;
+      }
+    }
+  }
 
 private:
-  [[maybe_unused]] std::shared_ptr<CFGBlock> &Target;
-  [[maybe_unused]] std::shared_ptr<CFGBlock> &Successor;
+  void LinkTrivialStmt(size_t Position) {
+    auto TrivialStmt = Blocks.at(Position - 1);
+    auto NextStmt = Blocks.at(Position);
+
+    TrivialStmt->AddSequentialSuccessor(NextStmt);
+  }
+
+  void LinkIfStmt(size_t Position) {
+    auto &IfCondition = Blocks.at(Position - 1);
+    auto &IfBody = IfCondition->GetSequentialSuccessor();
+    auto &ElseBody = IfCondition->GetConditionalSuccessor();
+    auto &AfterIfBlock = Blocks.at(Position);
+
+    assert(IfCondition);
+    assert(IfBody);
+
+    if (ElseBody) {
+      assert(IfBody);
+      assert(ElseBody);
+      IfBody->AddSequentialSuccessor(AfterIfBlock);
+      ElseBody->AddSequentialSuccessor(AfterIfBlock);
+    } else {
+      assert(IfBody);
+      assert(!ElseBody);
+      IfBody->AddSequentialSuccessor(AfterIfBlock);
+      IfCondition->AddConditionSuccessor(AfterIfBlock);
+    }
+  }
+
+  void LinkForStmt(size_t Position) {
+    auto &ForInit = Blocks.at(Position - 1);
+    auto &ForCondition = ForInit->GetSequentialSuccessor();
+    auto &AfterForBlock = Blocks.at(Position);
+
+    assert(AfterForBlock);
+    assert(ForCondition);
+    ForCondition->AddConditionSuccessor(AfterForBlock);
+  }
+
+  void LinkWhileStmt(size_t Position) {
+    auto &WhileCondition = Blocks.at(Position - 1);
+    auto &WhileBody = WhileCondition->GetSequentialSuccessor();
+    auto &AfterWhileBlock = Blocks.at(Position);
+
+    assert(WhileCondition);
+    assert(WhileBody);
+    WhileCondition->AddConditionSuccessor(AfterWhileBlock);
+  }
+
+  void LinkDoWhileStmt(size_t Position) {
+    auto &DoWhileBody = Blocks.at(Position - 1);
+    auto &DoWhileCondition = DoWhileBody->GetSequentialSuccessor();
+    auto &AfterDoWhileBlock = Blocks.at(Position);
+
+    assert(DoWhileCondition);
+    assert(DoWhileBody);
+    DoWhileCondition->AddConditionSuccessor(AfterDoWhileBlock);
+  }
+
+  std::vector<std::shared_ptr<CFGBlock>> &Blocks;
 };
 
 } // namespace
@@ -58,111 +139,129 @@ CFGBuilder::CFGBuilder(std::unique_ptr<ASTNode> &&TheRootNode)
     : RootNode(std::move(TheRootNode)) {}
 
 std::vector<std::shared_ptr<CFGBlock>> CFGBuilder::BuildCFG() {
-  VisitBaseNode(std::move(RootNode));
+  std::vector<std::shared_ptr<CFGBlock>> FunctionGraphs;
+
+  FunctionGraphs.push_back(Visit(std::move(RootNode)));
+
   return FunctionGraphs;
 }
 
-void CFGBuilder::VisitBaseNode(std::unique_ptr<ASTNode> &&Node) {
+std::shared_ptr<CFGBlock> CFGBuilder::Visit(std::unique_ptr<ASTNode> &&Node) {
   switch (Node->GetASTType()) {
-  case ASTType::BASE_NODE:
-    break;
   case ASTType::INTEGER_LITERAL:
-    Visit(StaticUniquePtrCast<ASTNode, ASTIntegerLiteral>(std::move(Node)));
-    break;
+    return VisitInteger(
+        StaticUniquePtrCast<ASTNode, ASTIntegerLiteral>(std::move(Node)));
+
   case ASTType::FLOATING_POINT_LITERAL:
-    Visit(
+    return VisitFloat(
         StaticUniquePtrCast<ASTNode, ASTFloatingPointLiteral>(std::move(Node)));
-    break;
+
   case ASTType::STRING_LITERAL:
-    Visit(StaticUniquePtrCast<ASTNode, ASTStringLiteral>(std::move(Node)));
-    break;
+    return VisitString(
+        StaticUniquePtrCast<ASTNode, ASTStringLiteral>(std::move(Node)));
+
   case ASTType::BOOLEAN_LITERAL:
-    Visit(StaticUniquePtrCast<ASTNode, ASTBooleanLiteral>(std::move(Node)));
-    break;
+    return VisitBoolean(
+        StaticUniquePtrCast<ASTNode, ASTBooleanLiteral>(std::move(Node)));
+
   case ASTType::SYMBOL:
-    Visit(StaticUniquePtrCast<ASTNode, ASTSymbol>(std::move(Node)));
-    break;
+    return VisitSymbol(
+        StaticUniquePtrCast<ASTNode, ASTSymbol>(std::move(Node)));
+
   case ASTType::VAR_DECL:
-    Visit(StaticUniquePtrCast<ASTNode, ASTVarDecl>(std::move(Node)));
-    break;
-  case ASTType::PARAMETER:
-    break;
+    return VisitVarDecl(
+        StaticUniquePtrCast<ASTNode, ASTVarDecl>(std::move(Node)));
+
   case ASTType::BREAK_STMT:
-    Visit(StaticUniquePtrCast<ASTNode, ASTBreakStmt>(std::move(Node)));
-    break;
+    return VisitBreak(
+        StaticUniquePtrCast<ASTNode, ASTBreakStmt>(std::move(Node)));
+
   case ASTType::CONTINUE_STMT:
-    Visit(StaticUniquePtrCast<ASTNode, ASTContinueStmt>(std::move(Node)));
-    break;
+    return VisitContinue(
+        StaticUniquePtrCast<ASTNode, ASTContinueStmt>(std::move(Node)));
+
   case ASTType::BINARY:
-    Visit(StaticUniquePtrCast<ASTNode, ASTBinaryOperator>(std::move(Node)));
-    break;
+    return VisitBinary(
+        StaticUniquePtrCast<ASTNode, ASTBinaryOperator>(std::move(Node)));
+
   case ASTType::PREFIX_UNARY: // Fall through.
   case ASTType::POSTFIX_UNARY:
-    Visit(StaticUniquePtrCast<ASTNode, ASTUnaryOperator>(std::move(Node)));
-    break;
+    return VisitUnary(
+        StaticUniquePtrCast<ASTNode, ASTUnaryOperator>(std::move(Node)));
+
   case ASTType::IF_STMT:
-    Visit(StaticUniquePtrCast<ASTNode, ASTIfStmt>(std::move(Node)));
-    break;
+    return VisitIf(StaticUniquePtrCast<ASTNode, ASTIfStmt>(std::move(Node)));
+
   case ASTType::FOR_STMT:
-    Visit(StaticUniquePtrCast<ASTNode, ASTForStmt>(std::move(Node)));
-    break;
+    return VisitFor(StaticUniquePtrCast<ASTNode, ASTForStmt>(std::move(Node)));
+
   case ASTType::WHILE_STMT:
-    Visit(StaticUniquePtrCast<ASTNode, ASTWhileStmt>(std::move(Node)));
-    break;
+    return VisitWhile(
+        StaticUniquePtrCast<ASTNode, ASTWhileStmt>(std::move(Node)));
+
   case ASTType::DO_WHILE_STMT:
-    Visit(StaticUniquePtrCast<ASTNode, ASTDoWhileStmt>(std::move(Node)));
-    break;
+    return VisitDoWhile(
+        StaticUniquePtrCast<ASTNode, ASTDoWhileStmt>(std::move(Node)));
+
   case ASTType::RETURN_STMT:
-    Visit(StaticUniquePtrCast<ASTNode, ASTReturnStmt>(std::move(Node)));
-    break;
+    return VisitReturn(
+        StaticUniquePtrCast<ASTNode, ASTReturnStmt>(std::move(Node)));
+
   case ASTType::COMPOUND_STMT:
-    Visit(StaticUniquePtrCast<ASTNode, ASTCompoundStmt>(std::move(Node)));
-    break;
+    return VisitCompound(
+        StaticUniquePtrCast<ASTNode, ASTCompoundStmt>(std::move(Node)));
+
   case ASTType::FUNCTION_DECL:
-    Visit(StaticUniquePtrCast<ASTNode, ASTFunctionDecl>(std::move(Node)));
-    break;
+    return VisitFunctionDecl(
+        StaticUniquePtrCast<ASTNode, ASTFunctionDecl>(std::move(Node)));
+
   case ASTType::FUNCTION_CALL:
-    Visit(StaticUniquePtrCast<ASTNode, ASTFunctionCall>(std::move(Node)));
-    break;
+    return VisitFunctionCall(
+        StaticUniquePtrCast<ASTNode, ASTFunctionCall>(std::move(Node)));
+
+  default:
+    DiagnosticError(0U, 0U)
+        << "Unexpected statement reached while building the CFG.";
+    UnreachablePoint();
   }
 }
 
-void CFGBuilder::Visit(std::unique_ptr<ASTBinaryOperator> &&Binary) {
+std::shared_ptr<CFGBlock>
+CFGBuilder::VisitBinary(std::unique_ptr<ASTBinaryOperator> &&Binary) {
+  auto CurrentBlock = CreateCFGBlock();
   CurrentBlock->AddStatement(std::move(Binary));
+  return CurrentBlock;
 }
 
-void CFGBuilder::Visit(std::unique_ptr<ASTBooleanLiteral> &&Boolean) {
-  CurrentBlock->AddStatement(std::move(Boolean));
-}
-
-void CFGBuilder::Visit(std::unique_ptr<ASTBreakStmt> &&Break) {
+std::shared_ptr<CFGBlock>
+CFGBuilder::VisitBreak(std::unique_ptr<ASTBreakStmt> &&Break) {
+  auto CurrentBlock = CreateCFGBlock();
+  assert(CurrentBlock);
   CurrentBlock->AddStatement(std::move(Break));
+  return CurrentBlock;
 }
 
-///\TODO implement linking of CFG blocks based on stmt type and it's successor.
-void CFGBuilder::Visit(std::unique_ptr<ASTCompoundStmt> &&Compound) {
-  std::vector<std::shared_ptr<CFGBlock>> BlockGraphs;
+std::shared_ptr<CFGBlock>
+CFGBuilder::VisitCompound(std::unique_ptr<ASTCompoundStmt> &&Compound) {
+  std::vector<std::shared_ptr<CFGBlock>> Blocks;
 
-  for (auto &&Statement : Compound->GetStmts()) {
-    CurrentBlock = std::make_shared<CFGBlock>();
-    VisitBaseNode(std::move(Statement));
-    BlockGraphs.push_back(std::move(CurrentBlock));
-  }
+  for (auto &&Stmt : Compound->GetStmts())
+    Blocks.push_back(Visit(std::move(Stmt)));
 
-  for (size_t It = 1; BlockGraphs.size() >= 2 && It < BlockGraphs.size();
-       ++It) {
-    /// E.g we have (binary) (if) (binary), then we should supplement links
-    /// chain from partially formed CFG node:
-    ///      (binary)(1) ->        (if)
-    ///   (if-condition) -> (binary)(2)
-    ///        (if-body) -> (binary)(2)
-    CFGBlocksLinker Linker(BlockGraphs[It - 1], BlockGraphs[It]);
-    Linker.Link();
-  }
+  /// At the moment, we have list of unlinked blocks, so solve this problem.
+  CFGBlocksLinker Linker(Blocks);
+  Linker.LinkAll();
+
+  /// We return the first block because all others are linked with it and
+  /// continue their life time.
+  return Blocks.front();
 }
 
-void CFGBuilder::Visit(std::unique_ptr<ASTContinueStmt> &&Continue) {
+std::shared_ptr<CFGBlock>
+CFGBuilder::VisitContinue(std::unique_ptr<ASTContinueStmt> &&Continue) {
+  auto CurrentBlock = CreateCFGBlock();
   CurrentBlock->AddStatement(std::move(Continue));
+  return CurrentBlock;
 }
 
 /*  do { body(); } while (cond);
@@ -182,10 +281,24 @@ void CFGBuilder::Visit(std::unique_ptr<ASTContinueStmt> &&Continue) {
  *    | after loop |
  *    +------------+
  */
-void CFGBuilder::Visit(std::unique_ptr<ASTDoWhileStmt> &&) {}
+std::shared_ptr<CFGBlock>
+CFGBuilder::VisitDoWhile(std::unique_ptr<ASTDoWhileStmt> &&DoWhile) {
+  auto BodyBlock = CreateCFGBlock();
+  BodyBlock->SetStmtType(CFGBlock::Stmt::DoWhile);
+  BodyBlock->AddStatement(DoWhile->GetBody());
 
-void CFGBuilder::Visit(std::unique_ptr<ASTFloatingPointLiteral> &&Float) {
+  auto ConditionBlock = Visit(DoWhile->GetCondition());
+  BodyBlock->AddSequentialSuccessor(ConditionBlock);
+  ConditionBlock->AddSequentialSuccessor(BodyBlock);
+
+  return BodyBlock;
+}
+
+std::shared_ptr<CFGBlock>
+CFGBuilder::VisitFloat(std::unique_ptr<ASTFloatingPointLiteral> &&Float) {
+  auto CurrentBlock = CreateCFGBlock();
   CurrentBlock->AddStatement(std::move(Float));
+  return CurrentBlock;
 }
 
 /*! for (init; cond; inc) { body }
@@ -206,29 +319,45 @@ void CFGBuilder::Visit(std::unique_ptr<ASTFloatingPointLiteral> &&Float) {
  *         +------------+  +---------+    |
  *                            \___________/
  */
-void CFGBuilder::Visit(std::unique_ptr<ASTForStmt> &&For) {
-  CurrentBlock->AddStatement(For->GetInit());
+std::shared_ptr<CFGBlock>
+CFGBuilder::VisitFor(std::unique_ptr<ASTForStmt> &&For) {
+  auto &&ForInit = For->GetInit();
+  auto &&ForCondition = For->GetCondition();
+  auto &&ForIncrement = For->GetIncrement();
+  auto &&ForBody = For->GetBody();
 
-  auto InitBlock = std::make_shared<CFGBlock>();
-  InitBlock->AddStatement(For->GetInit());
+  auto ForInitBlock = CreateCFGBlock();
+  auto ForConditionBlock = CreateCFGBlock();
+  auto ForIncrementBlock = CreateCFGBlock();
 
-  auto ConditionBlock = std::make_shared<CFGBlock>();
-  ConditionBlock->AddStatement(For->GetCondition());
+  ForInitBlock->SetStmtType(CFGBlock::For);
 
-  auto IncrementBlock = std::make_shared<CFGBlock>();
-  IncrementBlock->AddStatement(For->GetIncrement());
+  ForInitBlock->AddStatement(std::move(ForInit));
+  ForConditionBlock->AddStatement(std::move(ForCondition));
+  ForIncrementBlock->AddStatement(std::move(ForIncrement));
 
-  /// This should be handled recursively...
-  [[maybe_unused]] auto Body = std::make_shared<CFGBlock>();
+  auto ForBodyBlock = Visit(std::move(ForBody));
+
+  ForInitBlock->AddSequentialSuccessor(ForConditionBlock);
+  ForConditionBlock->AddSequentialSuccessor(ForBodyBlock);
+  ForBodyBlock->AddSequentialSuccessor(ForIncrementBlock);
+  ForIncrementBlock->AddSequentialSuccessor(ForConditionBlock);
+
+  return ForInitBlock;
 }
 
-void CFGBuilder::Visit(std::unique_ptr<ASTFunctionDecl> &&FunctionDecl) {
-  FunctionGraphs.emplace_back(std::make_shared<CFGBlock>());
-  Visit(FunctionDecl->GetBody());
+std::shared_ptr<CFGBlock>
+CFGBuilder::VisitFunctionCall(std::unique_ptr<ASTFunctionCall> &&FunctionCall) {
+  auto CurrentBlock = CreateCFGBlock();
+  CurrentBlock->AddStatement(std::move(FunctionCall));
+  return CurrentBlock;
 }
 
-void CFGBuilder::Visit(std::unique_ptr<ASTFunctionCall> &&Call) {
-  CurrentBlock->AddStatement(std::move(Call));
+std::shared_ptr<CFGBlock>
+CFGBuilder::VisitFunctionDecl(std::unique_ptr<ASTFunctionDecl> &&FunctionDecl) {
+  auto FunctionBlock = CreateCFGBlock();
+  FunctionBlock->AddSequentialSuccessor(Visit(FunctionDecl->GetBody()));
+  return FunctionBlock;
 }
 
 /* if (cond) { body }
@@ -250,55 +379,63 @@ void CFGBuilder::Visit(std::unique_ptr<ASTFunctionCall> &&Call) {
  *           +----------+              +----------+
  *
  */
-void CFGBuilder::Visit(std::unique_ptr<ASTIfStmt> &&If) {
-  CurrentBlock->AddStatement(If->GetCondition());
+std::shared_ptr<CFGBlock> CFGBuilder::VisitIf(std::unique_ptr<ASTIfStmt> &&If) {
+  auto ConditionBlock = CreateCFGBlock();
+  ConditionBlock->SetStmtType(CFGBlock::Stmt::If);
+  ConditionBlock->AddStatement(If->GetCondition());
 
-  auto IfBodyBlock = std::make_shared<CFGBlock>();
-  /// This should be handled recursively...
-  IfBodyBlock->AddStatement(If->GetThenBody());
+  auto ThenBlock = Visit(If->GetThenBody());
+  ConditionBlock->AddSequentialSuccessor(ThenBlock);
 
   if (If->GetElseBody()) {
-    auto ElseBodyBlock = std::make_shared<CFGBlock>();
-    /// This should be handled recursively...
-    ElseBodyBlock->AddStatement(If->GetElseBody());
-    /// If-Else body successors are configured externally.
-    //  if (NextBlock) {
-    //    IfBodyBlock->AddSequentialSuccessor(NextBlock);
-    //    ElseBodyBlock->AddSequentialSuccessor(NextBlock);
-    //  }
-    CurrentBlock->AddSequentialSuccessor(IfBodyBlock);
-    CurrentBlock->AddConditionSuccessor(ElseBodyBlock);
-  } else {
-    /// If body successors are configured externally.
-    //  if (NextBlock) {
-    //    IfBodyBlock->AddSequentialSuccessor(NextBlock);
-    //    ConditionBlock->AddConditionSuccessors(IfBodyBlock, NextBlock);
-    //  }
+    auto ElseBlock = CreateCFGBlock();
+    ElseBlock->AddStatement(If->GetElseBody());
+    ConditionBlock->AddConditionSuccessor(ElseBlock);
   }
+
+  return ConditionBlock;
 }
 
-void CFGBuilder::Visit(std::unique_ptr<ASTIntegerLiteral> &&Integer) {
+std::shared_ptr<CFGBlock>
+CFGBuilder::VisitInteger(std::unique_ptr<ASTIntegerLiteral> &&Integer) {
+  auto CurrentBlock = CreateCFGBlock();
   CurrentBlock->AddStatement(std::move(Integer));
+  return CurrentBlock;
 }
 
-void CFGBuilder::Visit(std::unique_ptr<ASTReturnStmt> &&) {
-  // Always means the end of control flow.
+std::shared_ptr<CFGBlock>
+CFGBuilder::VisitReturn(std::unique_ptr<ASTReturnStmt> &&Return) {
+  auto CurrentBlock = CreateCFGBlock();
+  CurrentBlock->AddStatement(std::move(Return));
+  return CurrentBlock;
 }
 
-void CFGBuilder::Visit(std::unique_ptr<ASTStringLiteral> &&String) {
+std::shared_ptr<CFGBlock>
+CFGBuilder::VisitString(std::unique_ptr<ASTStringLiteral> &&String) {
+  auto CurrentBlock = CreateCFGBlock();
   CurrentBlock->AddStatement(std::move(String));
+  return CurrentBlock;
 }
 
-void CFGBuilder::Visit(std::unique_ptr<ASTSymbol> &&Symbol) {
+std::shared_ptr<CFGBlock>
+CFGBuilder::VisitSymbol(std::unique_ptr<ASTSymbol> &&Symbol) {
+  auto CurrentBlock = CreateCFGBlock();
   CurrentBlock->AddStatement(std::move(Symbol));
+  return CurrentBlock;
 }
 
-void CFGBuilder::Visit(std::unique_ptr<ASTUnaryOperator> &&Unary) {
+std::shared_ptr<CFGBlock>
+CFGBuilder::VisitUnary(std::unique_ptr<ASTUnaryOperator> &&Unary) {
+  auto CurrentBlock = CreateCFGBlock();
   CurrentBlock->AddStatement(std::move(Unary));
+  return CurrentBlock;
 }
 
-void CFGBuilder::Visit(std::unique_ptr<ASTVarDecl> &&VarDecl) {
+std::shared_ptr<CFGBlock>
+CFGBuilder::VisitVarDecl(std::unique_ptr<ASTVarDecl> &&VarDecl) {
+  auto CurrentBlock = CreateCFGBlock();
   CurrentBlock->AddStatement(std::move(VarDecl));
+  return CurrentBlock;
 }
 
 /*  while (cond) { body(); }
@@ -307,7 +444,7 @@ void CFGBuilder::Visit(std::unique_ptr<ASTVarDecl> &&VarDecl) {
  *               |  cond  |<-----
  *               +--------+      \
  *                 /    \        |
- *             no /      \ yes   |
+ *             no /      v yes   |
  *               |   +--------+  |
  *               |   | body() |  |
  *               |   +--------+  |
@@ -318,19 +455,28 @@ void CFGBuilder::Visit(std::unique_ptr<ASTVarDecl> &&VarDecl) {
  *        | after loop |
  *        +------------+
  */
-void CFGBuilder::Visit(std::unique_ptr<ASTWhileStmt> &&While) {
-  auto BodyBlock = std::make_shared<CFGBlock>();
+std::shared_ptr<CFGBlock>
+CFGBuilder::VisitWhile(std::unique_ptr<ASTWhileStmt> &&While) {
+  auto ConditionBlock = CreateCFGBlock();
+  ConditionBlock->SetStmtType(CFGBlock::Stmt::While);
+  ConditionBlock->AddStatement(While->GetCondition());
 
-  CurrentBlock->AddStatement(While->GetCondition());
-  //  if (NextBlock)
-  //    CurrentBlock->AddConditionSuccessors(BodyBlock, NextBlock);
-  /// This should be handled recursively...
-  BodyBlock->AddStatement(While->GetBody());
-  BodyBlock->AddSequentialSuccessor(CurrentBlock);
+  auto BodyBlock = Visit(While->GetBody());
+  ConditionBlock->AddSequentialSuccessor(BodyBlock);
+  BodyBlock->AddSequentialSuccessor(ConditionBlock);
 
-  /// All other blocks expect the next after whole statement are linked with
-  /// this.
-  //  CurrentBlock = std::move(ConditionBlock);
+  return ConditionBlock;
+}
+
+std::shared_ptr<CFGBlock>
+CFGBuilder::VisitBoolean(std::unique_ptr<ASTBooleanLiteral> &&Boolean) {
+  auto CurrentBlock = CreateCFGBlock();
+  CurrentBlock->AddStatement(std::move(Boolean));
+  return CurrentBlock;
+}
+
+std::shared_ptr<CFGBlock> CFGBuilder::CreateCFGBlock() {
+  return std::make_shared<CFGBlock>();
 }
 
 } // namespace frontEnd
