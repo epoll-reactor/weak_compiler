@@ -13,7 +13,7 @@ namespace frontEnd {
  */
 class Lexer {
 public:
-  Lexer(const char *TheBufferStart, const char *TheBufferEnd);
+  Lexer(class Storage *TheStorage, const char *TheBufferStart, const char *TheBufferEnd);
 
   /// Walk through input text and generate stream of tokens.
   std::vector<Token> Analyze();
@@ -31,6 +31,9 @@ private:
   char PeekCurrent() const;
 
   Token MakeToken(std::string_view Data, TokenType Type) const;
+
+  /// Used to accumulate symbols with their attributes.
+  class Storage *Storage;
 
   /// First symbol in buffer.
   const char *BufferStart;

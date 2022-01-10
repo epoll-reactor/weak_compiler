@@ -127,9 +127,10 @@ const char *weak::frontEnd::TokenToString(TokenType Type) {
   }
 }
 
-Token::Token(std::string_view TheData, TokenType TheType,
-             unsigned int TheLineNo, unsigned int TheColumnNo)
-    : Data(TheData), Type(TheType), LineNo(TheLineNo), ColumnNo(TheColumnNo) {}
+Token::Token(std::string_view TheData, TokenType TheType, unsigned TheLineNo,
+             unsigned TheColumnNo, unsigned TheAttribute)
+    : Data(TheData), Type(TheType), LineNo(TheLineNo), ColumnNo(TheColumnNo),
+      Attribute(TheAttribute) {}
 
 bool Token::operator==(const Token &rhs) const {
   return (Data == rhs.Data) && (Type == rhs.Type);

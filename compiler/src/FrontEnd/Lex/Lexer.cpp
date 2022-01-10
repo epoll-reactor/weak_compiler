@@ -1,4 +1,5 @@
 #include "FrontEnd/Lex/Lexer.hpp"
+#include "FrontEnd/Symbols/Storage.hpp"
 #include "Utility/Diagnostic.hpp"
 #include <cassert>
 #include <unordered_map>
@@ -131,8 +132,9 @@ static void NormalizeColumnPosition(std::string_view Data,
 namespace weak {
 namespace frontEnd {
 
-Lexer::Lexer(const char *TheBufferStart, const char *TheBufferEnd)
-    : BufferStart(TheBufferStart), BufferEnd(TheBufferEnd),
+Lexer::Lexer(weak::frontEnd::Storage *TheStorage, const char *TheBufferStart,
+             const char *TheBufferEnd)
+    : Storage(TheStorage), BufferStart(TheBufferStart), BufferEnd(TheBufferEnd),
       CurrentBufferPtr(TheBufferStart), CurrentLineNo(0U), CurrentColumnNo(0U) {
   assert(BufferStart);
   assert(BufferEnd);
@@ -223,7 +225,14 @@ Token Lexer::AnalyzeSymbol() {
   if (LexKeywords.find(Symbol) != LexKeywords.end())
     return MakeToken("", LexKeywords.at(Symbol));
 
-  return MakeToken(std::move(Symbol), TokenType::SYMBOL);
+  unsigned Attribute = Storage->AddSymbol(Symbol);
+
+  unsigned LineNo = CurrentLineNo + 1;
+  unsigned ColumnNo = CurrentColumnNo + 1;
+
+  NormalizeColumnPosition(Symbol, TokenType::SYMBOL, ColumnNo);
+  Token T(std::move(Symbol), TokenType::SYMBOL, LineNo, ColumnNo, Attribute);
+  return T;
 }
 
 Token Lexer::AnalyzeOperator() {
