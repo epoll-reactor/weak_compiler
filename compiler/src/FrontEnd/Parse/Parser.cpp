@@ -286,7 +286,7 @@ std::unique_ptr<ASTNode> Parser::ParseSelectionStatement() {
 
   const Token &BeginOfSelectionStmt = Require(TokenType::IF);
   Require(TokenType::OPEN_PAREN);
-  Condition = ParseExpression();
+  Condition = ParseLogicalOr();
   Require(TokenType::CLOSE_PAREN);
   ThenBody = ParseBlock();
   if (Match(TokenType::ELSE)) {
@@ -327,14 +327,14 @@ std::unique_ptr<ASTNode> Parser::ParseForStatement() {
   std::unique_ptr<ASTNode> Condition;
   if (PeekNext().Type != TokenType::SEMICOLON) {
     --CurrentBufferPtr;
-    Condition = ParseExpression();
+    Condition = ParseLogicalOr();
     PeekNext();
   }
 
   std::unique_ptr<ASTNode> Increment;
   if (PeekNext().Type != TokenType::CLOSE_PAREN) {
     --CurrentBufferPtr;
-    Increment = ParseExpression();
+    Increment = ParseLogicalOr();
     PeekNext();
   }
   --CurrentBufferPtr;
@@ -353,7 +353,7 @@ std::unique_ptr<ASTNode> Parser::ParseDoWhileStatement() {
   Require(TokenType::WHILE);
 
   Require(TokenType::OPEN_PAREN);
-  auto Condition = ParseExpression();
+  auto Condition = ParseLogicalOr();
   Require(TokenType::CLOSE_PAREN);
 
   return std::make_unique<ASTDoWhileStmt>(std::move(Body), std::move(Condition),
@@ -364,7 +364,7 @@ std::unique_ptr<ASTNode> Parser::ParseDoWhileStatement() {
 std::unique_ptr<ASTNode> Parser::ParseWhileStatement() {
   const Token &WhileBegin = Require(TokenType::WHILE);
   Require(TokenType::OPEN_PAREN);
-  auto Condition = ParseExpression();
+  auto Condition = ParseLogicalOr();
   Require(TokenType::CLOSE_PAREN);
 
   auto Body = ParseIterationStmtBlock();
@@ -401,13 +401,24 @@ std::unique_ptr<ASTNode> Parser::ParseJumpStatement() {
 }
 
 std::unique_ptr<ASTNode> Parser::ParseExpression() {
+  switch (PeekCurrent().Type) {
+  case TokenType::INT:
+  case TokenType::CHAR:
+  case TokenType::STRING:
+  case TokenType::BOOLEAN: // Fall through.
+    return ParseVarDecl();
+  default:
+    break;
+  }
   PeekNext();
-  if (PeekCurrent().Type == TokenType::OPEN_PAREN) {
+  switch (PeekCurrent().Type) {
+  case TokenType::OPEN_PAREN:
     --CurrentBufferPtr;
     return ParseFunctionCall();
+  default:
+    --CurrentBufferPtr;
+    return ParseAssignment();
   }
-  --CurrentBufferPtr;
-  return ParseAssignment();
 }
 
 std::unique_ptr<ASTNode> Parser::ParseAssignment() {
