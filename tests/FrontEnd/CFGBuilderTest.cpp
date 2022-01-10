@@ -3,6 +3,7 @@
 #include "FrontEnd/Lex/Lexer.hpp"
 #include "FrontEnd/Parse/Parser.hpp"
 #include "TestHelpers.hpp"
+#include <cassert>
 
 using namespace weak::frontEnd;
 
@@ -20,6 +21,35 @@ static void CreateCFG(std::string_view String) {
 }
 
 int main() {
+  SECTION(CFGCompoundLoops) {
+    CreateCFG("void f() {"
+              "  while (1) {"
+              "    if (2) {"
+              "      do_if(3);"
+              "    } else {"
+              "      do_else(4);"
+              "    }"
+              "  }"
+              "  do {"
+              "    if (5) {"
+              "      do_if(6);"
+              "    } else {"
+              "      do_else(7);"
+              "    }"
+              "  } while(8);"
+              "  do_after(9);"
+              "}");
+  }
+
+  SECTION(CFGForLoop) {
+    CreateCFG("void f() {"
+              "  for (init; cond; inc) {"
+              "    do_for_body(0);"
+              "  }"
+              "  do_after_for(0);"
+              "}");
+  }
+
   SECTION(CFGBasic) {
     CreateCFG("void f() {"
               "  if (1) {"
@@ -28,6 +58,7 @@ int main() {
               "    call(3);"
               "  }"
               "  call(4);"
+              "  call(5);"
               "}");
   }
   SECTION(CFGNestedIf) {
@@ -96,18 +127,22 @@ int main() {
               "  f(4);"
               "}");
   }
+
   SECTION(CFGCompoundLoops) {
     CreateCFG("void f() {"
-              "  while (1) {"
-              "    do_while_body(0);"
-              "  }"
-              "  do {"
-              "    do_do_while_body(0);"
-              "  } while(1);"
+              "  stmt++;"
               "  for (a; b; c) {"
-              "    do_for_body(0);"
+              "    if (x) { y++; } else { z++; }"
+              "    for (d; e; f) {"
+              "      var2++;"
+              "      for (x; y; z) {"
+              "        do_for(5);"
+              "      }"
+              "      stmt3++;"
+              "    }"
+              "    stmt4++;"
               "  }"
-              "  do_after(0);"
+              "  do_after(6);"
               "}");
   }
 }

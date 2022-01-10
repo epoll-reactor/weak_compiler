@@ -114,12 +114,9 @@ private:
   }
 
   void LinkDoWhileStmt(size_t Position) {
-    auto &DoWhileBody = Blocks.at(Position - 1);
-    auto &DoWhileCondition = DoWhileBody->GetSequentialSuccessor();
+    auto &DoWhileCondition = Blocks.at(Position - 1);
     auto &AfterDoWhileBlock = Blocks.at(Position);
 
-    assert(DoWhileCondition);
-    assert(DoWhileBody);
     DoWhileCondition->AddConditionSuccessor(AfterDoWhileBlock);
   }
 
@@ -273,15 +270,17 @@ CFGBuilder::Visit(std::unique_ptr<ASTContinueStmt> &&Continue) {
  */
 std::shared_ptr<CFGBlock>
 CFGBuilder::Visit(std::unique_ptr<ASTDoWhileStmt> &&DoWhile) {
-  auto BodyBlock = CreateCFGBlock();
-  BodyBlock->SetStmtType(CFGBlock::Stmt::DoWhile);
-  BodyBlock->AddStatement(DoWhile->GetBody());
+  auto ConditionBlock = CreateCFGBlock();
+  ConditionBlock->SetStmtType(CFGBlock::Stmt::DoWhile);
+  ConditionBlock->AddStatement(DoWhile->GetCondition());
 
-  auto ConditionBlock = Visit(DoWhile->GetCondition());
-  BodyBlock->AddSequentialSuccessor(ConditionBlock);
+  auto BodyBlock = Visit(DoWhile->GetBody());
   ConditionBlock->AddSequentialSuccessor(BodyBlock);
 
-  return BodyBlock;
+  /// Don't link this to simplify tree traversal.
+  /// ConditionBlock->AddSequentialSuccessor(BodyBlock);
+
+  return ConditionBlock;
 }
 
 std::shared_ptr<CFGBlock>
@@ -328,9 +327,11 @@ std::shared_ptr<CFGBlock> CFGBuilder::Visit(std::unique_ptr<ASTForStmt> &&For) {
   auto ForBodyBlock = Visit(std::move(ForBody));
 
   ForInitBlock->AddSequentialSuccessor(ForConditionBlock);
-  ForConditionBlock->AddSequentialSuccessor(ForBodyBlock);
-  ForBodyBlock->AddSequentialSuccessor(ForIncrementBlock);
-  ForIncrementBlock->AddSequentialSuccessor(ForConditionBlock);
+  ForConditionBlock->AddSequentialSuccessor(ForIncrementBlock);
+  ForIncrementBlock->AddSequentialSuccessor(ForBodyBlock);
+//  ForBodyBlock->AddSequentialSuccessor(ForIncrementBlock);
+  /// Don't link this to simplify tree traversal.
+  /// ForIncrementBlock->AddSequentialSuccessor(ForConditionBlock);
 
   return ForInitBlock;
 }
@@ -344,9 +345,7 @@ CFGBuilder::Visit(std::unique_ptr<ASTFunctionCall> &&FunctionCall) {
 
 std::shared_ptr<CFGBlock>
 CFGBuilder::Visit(std::unique_ptr<ASTFunctionDecl> &&FunctionDecl) {
-  auto FunctionBlock = CreateCFGBlock();
-  FunctionBlock->AddSequentialSuccessor(Visit(FunctionDecl->GetBody()));
-  return FunctionBlock;
+  return Visit(FunctionDecl->GetBody());
 }
 
 /* if (cond) { body }
@@ -377,8 +376,7 @@ std::shared_ptr<CFGBlock> CFGBuilder::Visit(std::unique_ptr<ASTIfStmt> &&If) {
   ConditionBlock->AddSequentialSuccessor(ThenBlock);
 
   if (If->GetElseBody()) {
-    auto ElseBlock = CreateCFGBlock();
-    ElseBlock->AddStatement(If->GetElseBody());
+    auto ElseBlock = Visit(If->GetElseBody());
     ConditionBlock->AddConditionSuccessor(ElseBlock);
   }
 
@@ -452,7 +450,8 @@ CFGBuilder::Visit(std::unique_ptr<ASTWhileStmt> &&While) {
 
   auto BodyBlock = Visit(While->GetBody());
   ConditionBlock->AddSequentialSuccessor(BodyBlock);
-  BodyBlock->AddSequentialSuccessor(ConditionBlock);
+  /// Don't link this to simplify tree traversal.
+  /// BodyBlock->AddSequentialSuccessor(ConditionBlock);
 
   return ConditionBlock;
 }
