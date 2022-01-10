@@ -7,6 +7,7 @@ namespace weak {
 namespace frontEnd {
 
 enum struct TokenType {
+  NONE,
   // Keywords.
   BOOLEAN,
   BREAK,
@@ -94,6 +95,10 @@ struct Token {
 
   /// Position in source text.
   unsigned ColumnNo;
+
+  /// Integer value used to represent variable in symbol table.
+  /// Used by CFG builder/analyzer and code generator.
+  unsigned Attribute;
 };
 
 } // namespace frontEnd
