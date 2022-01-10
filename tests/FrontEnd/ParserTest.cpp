@@ -20,6 +20,7 @@ int main() {
            "  return 1 + 2 + 3 + 4 + 5;\n"
            "}\n"
            "void main(string symbol, int integer) {\n"
+           "  empty_call();\n"
            "  do_some_another_work(1, a + b * c << 3);\n"
            "  ++var1;\n"
            "  --var2;\n"

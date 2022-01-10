@@ -101,7 +101,6 @@ std::unique_ptr<ASTNode> Parser::ParseFunctionCall() {
   Require(TokenType::OPEN_PAREN);
 
   if (PeekNext().Type == TokenType::CLOSE_PAREN) {
-    --CurrentBufferPtr;
     return std::make_unique<ASTFunctionCall>(
         std::move(Name), std::move(Arguments), FunctionName.LineNo,
         FunctionName.ColumnNo);
