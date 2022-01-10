@@ -237,6 +237,7 @@ std::unique_ptr<ASTCompoundStmt> Parser::ParseIterationStmtBlock() {
     case ASTType::RETURN_STMT:
     case ASTType::BREAK_STMT:
     case ASTType::CONTINUE_STMT:
+    case ASTType::DO_WHILE_STMT:
     case ASTType::VAR_DECL:
     case ASTType::FUNCTION_CALL: // Fall through.
       Require(TokenType::SEMICOLON);
