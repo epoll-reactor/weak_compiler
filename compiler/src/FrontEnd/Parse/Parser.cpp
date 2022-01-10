@@ -269,6 +269,9 @@ std::unique_ptr<ASTNode> Parser::ParseStatement() {
     return ParseVarDecl();
   case TokenType::SYMBOL:
     return ParseExpression();
+  case TokenType::INC:
+  case TokenType::DEC: // Fall through.
+    return ParsePrefixUnary();
   default:
     DiagnosticError(Current.LineNo, Current.ColumnNo)
         << "Unexpected token: " << TokenToString(Current.Type);
@@ -604,7 +607,7 @@ std::unique_ptr<ASTNode> Parser::ParseAdditive() {
 }
 
 std::unique_ptr<ASTNode> Parser::ParseMultiplicative() {
-  auto Expr = ParseUnary();
+  auto Expr = ParsePrefixUnary();
   while (true) {
     switch (const Token &Current = PeekNext(); Current.Type) {
     case TokenType::STAR:
@@ -623,21 +626,21 @@ std::unique_ptr<ASTNode> Parser::ParseMultiplicative() {
   return Expr;
 }
 
-std::unique_ptr<ASTNode> Parser::ParseUnary() {
+std::unique_ptr<ASTNode> Parser::ParsePrefixUnary() {
   switch (const Token Current = PeekNext(); Current.Type) {
   case TokenType::INC:
   case TokenType::DEC:
     return std::make_unique<ASTUnaryOperator>(
-        ASTUnaryOperator::UnaryType::PREFIX, Current.Type, ParsePostfix(),
+        ASTUnaryOperator::UnaryType::PREFIX, Current.Type, ParsePostfixUnary(),
         Current.LineNo, Current.ColumnNo);
   default:
     // Rollback current token pointer because there's no unary operator.
     --CurrentBufferPtr;
-    return ParsePostfix();
+    return ParsePostfixUnary();
   }
 }
 
-std::unique_ptr<ASTNode> Parser::ParsePostfix() {
+std::unique_ptr<ASTNode> Parser::ParsePostfixUnary() {
   auto Expr = ParsePrimary();
   while (true) {
     switch (const Token &Current = PeekNext(); Current.Type) {

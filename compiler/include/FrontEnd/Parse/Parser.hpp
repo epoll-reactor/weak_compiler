@@ -89,9 +89,9 @@ private:
 
   std::unique_ptr<ASTNode> ParseMultiplicative();
 
-  std::unique_ptr<ASTNode> ParseUnary();
+  std::unique_ptr<ASTNode> ParsePrefixUnary();
 
-  std::unique_ptr<ASTNode> ParsePostfix();
+  std::unique_ptr<ASTNode> ParsePostfixUnary();
 
   std::unique_ptr<ASTNode> ParsePrimary();
 
