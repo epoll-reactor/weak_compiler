@@ -78,7 +78,7 @@ const char *TokenToString(TokenType Type);
 
 struct Token {
   Token(std::string_view TheData, TokenType TheType, unsigned TheLineNo,
-        unsigned TheColumnNo);
+        unsigned TheColumnNo, unsigned TheAttribute = 0U);
 
   bool operator==(const Token &rhs) const;
 
