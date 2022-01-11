@@ -247,4 +247,48 @@
 			The whole program must be placed in one file to simplify translation
 			and linking (lack of it as such).
 			
+	\section{Implementation}
+	
+		\subsection{Intermediate representation format}
+			The IR is formed from a few of simple constructions:
+			\begin{itemize}
+				\item two-register (binary) operations
+				\begin{itemize}
+					\item \textbf{mov} -- move right register or immediate to left register
+					\item \textbf{add} -- addition
+					\item \textbf{sub} -- subtraction
+					\item \textbf{mul} -- multiplication
+					\item \textbf{div} -- division
+					\item \textbf{and} -- bitwise AND
+					\item \textbf{or} -- bitwise OR
+					\item \textbf{shl} -- bitwise shift left
+					\item \textbf{shr} -- bitwise shift right
+					\item \textbf{cmpge} -- greater or equal comparison
+					\item \textbf{cmple} -- less or equal comparison
+					\item \textbf{cmpgt} -- greater comparison
+					\item \textbf{cmplt} -- less comparison
+					\item \textbf{cmpeq} -- equality comparison
+					\item \textbf{cmpneq} -- not equal comparison
+				\end{itemize}
+				
+				\item one-register (unary) operations
+				\begin{itemize}
+					\item \textbf{push} -- push register value to stack
+					\item \textbf{pop} -- get value from stack to register
+					\item \textbf{inc} -- increment register value
+					\item \textbf{dec} -- decrement register value
+				\end{itemize}
+				
+				\item jump operations
+				\begin{itemize}
+					\item \textbf{jmp} -- jump to label (address)					
+				\end{itemize}
+				
+				\item jump labels
+				\begin{itemize}
+					\item L\$(NUMBER) -- label
+				\end{itemize}
+				
+			\end{itemize}
+			
 \end{document}
