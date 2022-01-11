@@ -329,7 +329,6 @@ std::shared_ptr<CFGBlock> CFGBuilder::Visit(std::unique_ptr<ASTForStmt> &&For) {
   ForInitBlock->AddSequentialSuccessor(ForConditionBlock);
   ForConditionBlock->AddSequentialSuccessor(ForIncrementBlock);
   ForIncrementBlock->AddSequentialSuccessor(ForBodyBlock);
-//  ForBodyBlock->AddSequentialSuccessor(ForIncrementBlock);
   /// Don't link this to simplify tree traversal.
   /// ForIncrementBlock->AddSequentialSuccessor(ForConditionBlock);
 
