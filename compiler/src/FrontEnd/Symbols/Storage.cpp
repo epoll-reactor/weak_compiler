@@ -4,8 +4,8 @@
 
 using namespace weak::frontEnd;
 
-static const auto &FindByAttribute(const Storage::RecordMap &RecordMap,
-                                   unsigned Attribute) {
+static auto &FindByAttribute(Storage::RecordMap &RecordMap,
+                             unsigned Attribute) {
   using StorageRecord = Storage::StorageRecord;
   auto Found =
       std::find_if(RecordMap.begin(), RecordMap.end(),
@@ -24,6 +24,28 @@ static const auto &FindByAttribute(const Storage::RecordMap &RecordMap,
   weak::DiagnosticError(0U, 0U)
       << "Type error: " << TokenToString(Type) << " expected.";
   weak::UnreachablePoint();
+}
+
+static void CheckIfVariableTypeIsSet(const Storage::StorageRecord &Record) {
+  if (Record.DataType == TokenType::NONE) {
+    weak::DiagnosticError(0U, 0U)
+        << "Internal error: type for " << Record.Name << " isn't set.";
+    weak::UnreachablePoint();
+  }
+}
+
+template <typename T>
+static void SetVariableImpl(Storage::RecordMap &Records, TokenType Type,
+                            unsigned Attribute, unsigned ScopeDepth,
+                            T &&Value) {
+  auto &[RecordAttribute, Record] = FindByAttribute(Records, Attribute);
+  CheckIfVariableTypeIsSet(Record);
+
+  if (Record.DataType != Type)
+    EmitTypeError(Record.DataType);
+
+  Record.Depth = ScopeDepth;
+  Record.StoredValue = std::forward<T>(Value);
 }
 
 namespace weak {
@@ -92,48 +114,28 @@ void Storage::SetSymbolType(unsigned Attribute, TokenType Type) {
 }
 
 void Storage::SetIntValue(unsigned Attribute, signed Value) {
-  auto [RecordAttribute, Record] = FindByAttribute(Records, Attribute);
-
-  if (Record.DataType != TokenType::INTEGRAL_LITERAL)
-    EmitTypeError(Record.DataType);
-
-  Record.StoredValue = Value;
+  SetVariableImpl(Records, TokenType::INTEGRAL_LITERAL, Attribute,
+                  CurrentScopeDepth, Value);
 }
 
 void Storage::SetFloatValue(unsigned Attribute, float Value) {
-  auto [RecordAttribute, Record] = FindByAttribute(Records, Attribute);
-
-  if (Record.DataType != TokenType::FLOATING_POINT_LITERAL)
-    EmitTypeError(Record.DataType);
-
-  Record.StoredValue = Value;
+  SetVariableImpl(Records, TokenType::FLOATING_POINT_LITERAL, Attribute,
+                  CurrentScopeDepth, Value);
 }
 
 void Storage::SetCharValue(unsigned Attribute, char Value) {
-  auto [RecordAttribute, Record] = FindByAttribute(Records, Attribute);
-
-  if (Record.DataType != TokenType::CHAR) //< Char isn't implemented yet...
-    EmitTypeError(Record.DataType);
-
-  Record.StoredValue = Value;
+  SetVariableImpl(Records, TokenType::CHAR, Attribute, CurrentScopeDepth,
+                  Value);
 }
 
 void Storage::SetBoolValue(unsigned Attribute, bool Value) {
-  auto [RecordAttribute, Record] = FindByAttribute(Records, Attribute);
-
-  if (Record.DataType != TokenType::BOOLEAN)
-    EmitTypeError(Record.DataType);
-
-  Record.StoredValue = Value;
+  SetVariableImpl(Records, TokenType::BOOLEAN, Attribute, CurrentScopeDepth,
+                  Value);
 }
 
 void Storage::SetStringValue(unsigned Attribute, std::string Value) {
-  auto [RecordAttribute, Record] = FindByAttribute(Records, Attribute);
-
-  if (Record.DataType != TokenType::STRING_LITERAL)
-    EmitTypeError(Record.DataType);
-
-  Record.StoredValue = std::move(Value);
+  SetVariableImpl(Records, TokenType::STRING_LITERAL, Attribute,
+                  CurrentScopeDepth, std::move(Value));
 }
 
 } // namespace frontEnd
