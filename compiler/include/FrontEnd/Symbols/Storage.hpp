@@ -8,9 +8,9 @@
 namespace weak {
 namespace frontEnd {
 class Storage {
+public:
   using AnyDataType = std::variant<signed, float, char, bool, std::string>;
 
-public:
   Storage();
 
   struct StorageRecord {
@@ -47,6 +47,8 @@ public:
   void SetCharValue(unsigned Attribute, char Value);
   void SetBoolValue(unsigned Attribute, bool Value);
   void SetStringValue(unsigned Attribute, std::string Value);
+
+  unsigned TotalVariables() { return Records.size(); }
 
 private:
   unsigned CurrentScopeDepth;
