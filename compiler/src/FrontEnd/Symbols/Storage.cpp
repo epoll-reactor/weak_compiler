@@ -2,9 +2,10 @@
 #include "Utility/Diagnostic.hpp"
 #include <algorithm>
 
-static auto FindByAttribute(const weak::frontEnd::Storage::RecordMap &RecordMap,
-                            unsigned Attribute) {
-  using namespace weak::frontEnd;
+using namespace weak::frontEnd;
+
+static const auto &FindByAttribute(const Storage::RecordMap &RecordMap,
+                                   unsigned Attribute) {
   using StorageRecord = Storage::StorageRecord;
   auto Found =
       std::find_if(RecordMap.begin(), RecordMap.end(),
@@ -16,7 +17,13 @@ static auto FindByAttribute(const weak::frontEnd::Storage::RecordMap &RecordMap,
         << "Variable with attribute " << Attribute << " not found.";
     weak::UnreachablePoint();
   }
-  return Found;
+  return *Found;
+}
+
+[[noreturn]] static void EmitTypeError(TokenType Type) {
+  weak::DiagnosticError(0U, 0U)
+      << "Type error: " << TokenToString(Type) << " expected.";
+  weak::UnreachablePoint();
 }
 
 namespace weak {
@@ -34,7 +41,6 @@ void Storage::ScopeEnd() {
 
   for (auto It = Records.begin(); It != Records.end();) {
     if (It->second.Depth == CurrentScopeDepth) {
-      DiagnosticWarning(0U, 0U) << "Cleaning " << It->second.Name;
       It = Records.erase(It);
     } else {
       ++It;
@@ -50,7 +56,6 @@ unsigned Storage::AddSymbol(std::string_view Name) {
                      return R.second.Name == Name;
                    });
   if (Found == Records.end()) {
-    DiagnosticWarning(0U, 0U) << "Attribute: " << CurrentAttribute;
     StorageRecord Record{/*Depth=*/CurrentScopeDepth,
                          /*Attribute=*/CurrentAttribute,
                          /*Name=*/Name.data(),
@@ -61,8 +66,7 @@ unsigned Storage::AddSymbol(std::string_view Name) {
     return SavedAttribute;
   }
 
-  /// Suppress possible warning about unused Record variable.
-  [[maybe_unused]] const auto &[RecordAttribute, Record] = *Found;
+  const auto &[RecordAttribute, Record] = *Found;
   return RecordAttribute;
 }
 
@@ -71,62 +75,65 @@ Storage::StorageRecord *Storage::GetSymbol(unsigned Attribute) {
 
   if (Found == Records.end() || Found->second.Depth > CurrentScopeDepth) {
     DiagnosticError(0U, 0U) << "Variable not found.";
+    UnreachablePoint();
   }
 
   return &Found->second;
 }
 
-void Storage::SetSymbolValue(unsigned Attribute, signed Value) {
-  auto FoundIterator = *FindByAttribute(Records, Attribute);
-  [[maybe_unused]] auto &[RecordAttribute, Record] = FoundIterator;
+void Storage::SetSymbolType(unsigned Attribute, TokenType Type) {
+  auto Found = Records.find(Attribute);
+  if (Found == Records.end()) {
+    DiagnosticError(0U, 0U)
+        << "Attempt to set type for variable that not exists.";
+    UnreachablePoint();
+  }
+  Found->second.DataType = Type;
+}
 
-  //  if (Record.DataType != TokenType::INTEGRAL_LITERAL) {
-  //    DiagnosticError(0U, 0U) << "Type error: integer expected.";
-  //  }
+void Storage::SetIntValue(unsigned Attribute, signed Value) {
+  auto [RecordAttribute, Record] = FindByAttribute(Records, Attribute);
+
+  if (Record.DataType != TokenType::INTEGRAL_LITERAL)
+    EmitTypeError(Record.DataType);
+
   Record.StoredValue = Value;
 }
 
-void Storage::SetSymbolValue(unsigned Attribute, float Value) {
-  auto FoundIterator = *FindByAttribute(Records, Attribute);
-  [[maybe_unused]] auto &[RecordAttribute, Record] = FoundIterator;
+void Storage::SetFloatValue(unsigned Attribute, float Value) {
+  auto [RecordAttribute, Record] = FindByAttribute(Records, Attribute);
 
-  //  if (Record.DataType != TokenType::FLOATING_POINT_LITERAL) {
-  //    DiagnosticError(0U, 0U) << "Type error: float expected.";
-  //  }
+  if (Record.DataType != TokenType::FLOATING_POINT_LITERAL)
+    EmitTypeError(Record.DataType);
+
   Record.StoredValue = Value;
 }
 
-void Storage::SetSymbolValue(unsigned Attribute, char Value) {
-  auto FoundIterator = *FindByAttribute(Records, Attribute);
-  [[maybe_unused]] auto &[RecordAttribute, Record] = FoundIterator;
+void Storage::SetCharValue(unsigned Attribute, char Value) {
+  auto [RecordAttribute, Record] = FindByAttribute(Records, Attribute);
 
-  //  if (Record.DataType != TokenType::CHAR) { //< Char isn't implemented
-  //  yet...
-  //    DiagnosticError(0U, 0U) << "Type error: char expected.";
-  //  }
+  if (Record.DataType != TokenType::CHAR) //< Char isn't implemented yet...
+    EmitTypeError(Record.DataType);
+
   Record.StoredValue = Value;
 }
 
-void Storage::SetSymbolValue(unsigned Attribute, bool Value) {
-  auto FoundIterator = *FindByAttribute(Records, Attribute);
-  [[maybe_unused]] auto &[RecordAttribute, Record] = FoundIterator;
+void Storage::SetBoolValue(unsigned Attribute, bool Value) {
+  auto [RecordAttribute, Record] = FindByAttribute(Records, Attribute);
 
-  //  if (TokenType Stored = Record.DataType;
-  //      Stored != TokenType::TRUE && Stored != TokenType::FALSE) {
-  //    DiagnosticError(0U, 0U) << "Type error: boolean expected.";
-  //  }
+  if (Record.DataType != TokenType::BOOLEAN)
+    EmitTypeError(Record.DataType);
+
   Record.StoredValue = Value;
 }
 
-void Storage::SetSymbolValue(unsigned Attribute, std::string Value) {
-  auto FoundIterator = *FindByAttribute(Records, Attribute);
-  [[maybe_unused]] auto &[RecordAttribute, Record] = FoundIterator;
+void Storage::SetStringValue(unsigned Attribute, std::string Value) {
+  auto [RecordAttribute, Record] = FindByAttribute(Records, Attribute);
 
-  //  if (Record.DataType != TokenType::STRING_LITERAL) {
-  //    DiagnosticError(0U, 0U) << "Type error: string literal expected.";
-  //  }
+  if (Record.DataType != TokenType::STRING_LITERAL)
+    EmitTypeError(Record.DataType);
 
-  Record.StoredValue = Value;
+  Record.StoredValue = std::move(Value);
 }
 
 } // namespace frontEnd
