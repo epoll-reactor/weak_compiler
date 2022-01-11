@@ -2,8 +2,8 @@
 #define WEAK_COMPILER_FRONTEND_SYMBOLS_STORAGE_HPP
 
 #include "FrontEnd/Lex/Token.hpp"
-#include <variant>
 #include <map>
+#include <variant>
 
 namespace weak {
 namespace frontEnd {
@@ -31,7 +31,7 @@ public:
     AnyDataType StoredValue;
   };
 
-  using RecordMap = std::map</*Attribute*/unsigned, StorageRecord>;
+  using RecordMap = std::map</*Attribute*/ unsigned, StorageRecord>;
 
   void ScopeBegin();
   void ScopeEnd();
@@ -40,11 +40,13 @@ public:
 
   StorageRecord *GetSymbol(unsigned Attribute);
 
-  void SetSymbolValue(unsigned Attribute, signed Value);
-  void SetSymbolValue(unsigned Attribute, float Value);
-  void SetSymbolValue(unsigned Attribute, char Value);
-  void SetSymbolValue(unsigned Attribute, bool Value);
-  void SetSymbolValue(unsigned Attribute, std::string Value);
+  void SetSymbolType(unsigned Attribute, TokenType Type);
+
+  void SetIntValue(unsigned Attribute, signed Value);
+  void SetFloatValue(unsigned Attribute, float Value);
+  void SetCharValue(unsigned Attribute, char Value);
+  void SetBoolValue(unsigned Attribute, bool Value);
+  void SetStringValue(unsigned Attribute, std::string Value);
 
 private:
   unsigned CurrentScopeDepth;
