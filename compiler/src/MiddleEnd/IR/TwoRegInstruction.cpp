@@ -19,7 +19,7 @@ Reg TwoRegInstruction::GetReg1() const { return Reg1; }
 
 Reg TwoRegInstruction::GetReg2() const {
   if (RegOrImm != IsRegOrImm::REG) {
-    DiagnosticError(0U, 0U) << "Second register is not set.";
+    DiagnosticError() << "Second register is not set.";
     UnreachablePoint();
   }
   return Reg2;
@@ -27,7 +27,7 @@ Reg TwoRegInstruction::GetReg2() const {
 
 signed TwoRegInstruction::GetImm() const {
   if (RegOrImm != IsRegOrImm::IMM) {
-    DiagnosticError(0U, 0U) << "Second immediate is not set.";
+    DiagnosticError() << "Second immediate is not set.";
     UnreachablePoint();
   }
   return Imm;

@@ -13,7 +13,7 @@ static auto &FindByAttribute(Storage::RecordMap &RecordMap,
                      return R.second.Attribute == Attribute;
                    });
   if (Found == RecordMap.end()) {
-    weak::DiagnosticError(0U, 0U)
+    weak::DiagnosticError()
         << "Variable with attribute " << Attribute << " not found.";
     weak::UnreachablePoint();
   }
@@ -21,14 +21,14 @@ static auto &FindByAttribute(Storage::RecordMap &RecordMap,
 }
 
 [[noreturn]] static void EmitTypeError(TokenType Type) {
-  weak::DiagnosticError(0U, 0U)
+  weak::DiagnosticError()
       << "Type error: " << TokenToString(Type) << " expected.";
   weak::UnreachablePoint();
 }
 
 static void CheckIfVariableTypeIsSet(const Storage::StorageRecord &Record) {
   if (Record.DataType == TokenType::NONE) {
-    weak::DiagnosticError(0U, 0U)
+    weak::DiagnosticError()
         << "Internal error: type for " << Record.Name << " isn't set.";
     weak::UnreachablePoint();
   }
@@ -57,7 +57,7 @@ void Storage::ScopeBegin() { ++CurrentScopeDepth; }
 
 void Storage::ScopeEnd() {
   if (CurrentScopeDepth == 0) {
-    DiagnosticError(0U, 0U) << "No scopes left.";
+    DiagnosticError() << "No scopes left.";
     UnreachablePoint();
   }
 
@@ -96,7 +96,7 @@ Storage::StorageRecord *Storage::GetSymbol(unsigned Attribute) {
   auto Found = Records.find(Attribute);
 
   if (Found == Records.end() || Found->second.Depth > CurrentScopeDepth) {
-    DiagnosticError(0U, 0U) << "Variable not found.";
+    DiagnosticError() << "Variable not found.";
     UnreachablePoint();
   }
 
@@ -106,7 +106,7 @@ Storage::StorageRecord *Storage::GetSymbol(unsigned Attribute) {
 void Storage::SetSymbolType(unsigned Attribute, TokenType Type) {
   auto Found = Records.find(Attribute);
   if (Found == Records.end()) {
-    DiagnosticError(0U, 0U)
+    DiagnosticError()
         << "Attempt to set type for variable that not exists.";
     UnreachablePoint();
   }

@@ -11,6 +11,11 @@ Diagnostic::Diagnostic(DiagLevel TheType, unsigned TheLineNo,
   EmitLabel();
 }
 
+Diagnostic::Diagnostic(DiagLevel TheType)
+    : Level(TheType), LineNo(0U), ColumnNo(0U) {
+  EmitEmptyLabel();
+}
+
 Diagnostic::~Diagnostic() {
   std::cerr << std::endl;
   if (Level == DiagLevel::ERROR) {
@@ -58,8 +63,24 @@ void Diagnostic::EmitLabel() const {
   }
 }
 
+void Diagnostic::EmitEmptyLabel() const {
+  if (Level == DiagLevel::ERROR) {
+    std::cerr << "ERROR : ";
+  } else {
+    std::cerr << "WARN: ";
+  }
+}
+
+Diagnostic DiagnosticWarning() {
+  return Diagnostic(Diagnostic::DiagLevel::WARN);
+}
+
 Diagnostic DiagnosticWarning(unsigned LineNo, unsigned ColumnNo) {
   return Diagnostic(Diagnostic::DiagLevel::WARN, LineNo, ColumnNo);
+}
+
+Diagnostic DiagnosticError() {
+  return Diagnostic(Diagnostic::DiagLevel::ERROR);
 }
 
 Diagnostic DiagnosticError(unsigned LineNo, unsigned ColumnNo) {
