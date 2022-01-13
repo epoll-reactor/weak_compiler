@@ -12,18 +12,16 @@ namespace middleEnd {
 /// This is used to simplify the formation of program represented in IR.
 class CodeEmitter {
 public:
-  void Emit2Reg(Op, Reg, Reg);
-  void Emit2Reg(Op, Reg, signed);
+  CodeEmitter();
 
-  void Emit1Reg(Op, Reg);
-
-  void EmitJumpInstr(signed Label);
-  void EmitJumpLabel(signed Label);
+  void Emit(frontEnd::TokenType, const Instruction::OperandVariant &,
+            const Instruction::OperandVariant &);
 
   void Dump();
 
 private:
   std::vector<Instruction> Instructions;
+  unsigned CurrentLabel;
 };
 
 } // namespace middleEnd

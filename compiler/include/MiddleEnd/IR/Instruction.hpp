@@ -1,111 +1,55 @@
 #ifndef WEAK_COMPILER_MIDDLE_END_IR_INSTRUCTION_HPP
 #define WEAK_COMPILER_MIDDLE_END_IR_INSTRUCTION_HPP
 
+#include "FrontEnd/Lex/Token.hpp"
 #include "MiddleEnd/IR/Operations.hpp"
 #include "MiddleEnd/IR/Registers.hpp"
-#include <string>
+#include <functional>
 #include <variant>
 
 namespace weak {
 namespace middleEnd {
-/*! One-register instruction representation.
+
+/*!
+ * This is a three-adress code instruction representation.
  *
- *  Supported operations: OPERATION REGISTER
- *
- *  +------+----------------------------------+
- *  | push | push register value to stack     |
- *  |  pop | get value from stack to register |
- *  |  inc | increment register value         |
- *  |  dec | decrement register value         |
- *  +------+----------------------------------+
+ * This instruction has format <ID> = <L> <OP> <R>
  */
-class OneRegInstruction {
+class Instruction {
 public:
-  OneRegInstruction(Op TheOp, Reg TheReg);
+  using OperandVariant =
+      std::variant<signed, Reg, std::reference_wrapper<Instruction>>;
 
-  Op GetOperation() const;
-  Reg GetOperand() const;
+  Instruction(unsigned TheLabelNo, frontEnd::TokenType TheOperation,
+              const OperandVariant &TheLeft, const OperandVariant &TheRight);
+
+  unsigned GetLabelNo() const;
+  frontEnd::TokenType GetOp() const;
+
+  bool IsLeftImm() const;
+  bool IsLeftReg() const;
+  bool IsLeftVar() const;
+
+  bool IsRightImm() const;
+  bool IsRightReg() const;
+  bool IsRightVar() const;
+
+  signed GetLeftImm() const;
+  signed GetRightImm() const;
+  Reg GetLeftReg() const;
+  Reg GetRightReg() const;
 
   std::string Dump() const;
 
 private:
-  Op Operation;
-  Reg Register;
+  /// Used to identify the temporary variable and refer to it later.
+  unsigned LabelNo;
+
+  frontEnd::TokenType Operation;
+
+  OperandVariant LeftOperand;
+  OperandVariant RightOperand;
 };
-
-/*! Two-register instruction representation.
- *
- *  Supported operations: OPERATION REGISTER1 REGISTER2
- *                        OPERATION REGISTER1       IMM
- *
- *  +--------+---------------------------------------------------+
- *  |    mov | move right register or immediate to left register |
- *  |    add | addition                                          |
- *  |    sub | subtraction                                       |
- *  |    mul | multiplication                                    |
- *  |    div | division                                          |
- *  |    and | bitwise AND                                       |
- *  |     or | bitwise OR                                        |
- *  |    shl | bitwise shift left                                |
- *  |    shr | bitwise shift right                               |
- *  |  cmpge | greater or equal comparison                       |
- *  |  cmple | less or equal comparison                          |
- *  |  cmpgt | greater comparison                                |
- *  |  cmplt | less comparison                                   |
- *  |  cmpeq | equality comparison                               |
- *  | cmpneq | not equal comparison                              |
- *  +--------+---------------------------------------------------+
- */
-class TwoRegInstruction {
-public:
-  enum struct IsRegOrImm { REG, IMM };
-
-  TwoRegInstruction(Op TheOp, Reg TheReg1, Reg TheReg2);
-  TwoRegInstruction(Op TheOp, Reg TheReg1, signed TheImm);
-
-  Op GetOp() const;
-  Reg GetReg1() const;
-  Reg GetReg2() const;
-  signed GetImm() const;
-  IsRegOrImm GetRegOrImm() const;
-
-  std::string Dump() const;
-
-private:
-  Op Operation;
-  Reg Reg1, Reg2;
-  signed Imm;
-  IsRegOrImm RegOrImm;
-};
-
-/// L$(NUMBER).
-class JumpLabel {
-public:
-  JumpLabel(signed TheLabelNo);
-
-  signed GetLabelNo() const;
-
-  std::string Dump() const;
-
-private:
-  signed LabelNo;
-};
-
-/// jmp L$(NUMBER).
-class JumpInstruction {
-public:
-  JumpInstruction(signed TheLabelNo);
-
-  signed GetLabelNo() const;
-
-  std::string Dump() const;
-
-private:
-  signed LabelNo;
-};
-
-using Instruction = std::variant<OneRegInstruction, TwoRegInstruction,
-                                 JumpLabel, JumpInstruction>;
 
 } // namespace middleEnd
 } // namespace weak
