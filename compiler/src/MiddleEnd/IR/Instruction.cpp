@@ -10,7 +10,7 @@ template <typename T>
 void CheckForOperand(const Instruction::OperandVariant &Instruction,
                      const char *ErrorMsg) {
   if (!std::holds_alternative<T>(Instruction)) {
-    weak::DiagnosticError(0U, 0U) << ErrorMsg;
+    weak::DiagnosticError() << ErrorMsg;
   }
 }
 

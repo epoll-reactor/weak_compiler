@@ -207,7 +207,7 @@ std::shared_ptr<CFGBlock> CFGBuilder::Visit(std::unique_ptr<ASTNode> &&Node) {
         StaticUniquePtrCast<ASTNode, ASTFunctionCall>(std::move(Node)));
 
   default:
-    DiagnosticError(0U, 0U)
+    DiagnosticError()
         << "Unexpected statement reached while building the CFG.";
     UnreachablePoint();
   }

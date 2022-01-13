@@ -27,7 +27,7 @@ void CFGBlock::AddConditionSuccessor(const std::shared_ptr<CFGBlock> &Block) {
 void CFGBlock::AddPredecessor(const std::shared_ptr<CFGBlock> &Block) {
   if (std::find(Predecessors.begin(), Predecessors.end(), Block) !=
       Predecessors.end()) {
-    DiagnosticError(0U, 0U) << "CFG node is already linked as predecessor.";
+    DiagnosticError() << "CFG node is already linked as predecessor.";
     UnreachablePoint();
   }
 

@@ -32,11 +32,19 @@ private:
   /// Setup diagnostic level and display prompt.
   Diagnostic(DiagLevel TheType, unsigned TheLineNo, unsigned TheColumnNo);
 
+  /// Setup diagnostic level and display prompt without line/column position.
+  Diagnostic(DiagLevel TheType);
+
+  friend Diagnostic DiagnosticWarning();
   friend Diagnostic DiagnosticWarning(unsigned LineNo, unsigned ColumnNo);
+  friend Diagnostic DiagnosticError();
   friend Diagnostic DiagnosticError(unsigned LineNo, unsigned ColumnNo);
 
-  /// Put label with error location (line and column) to stderr.
+  /// Put label with line/column location to stderr.
   void EmitLabel() const;
+
+  /// Put label without line/column location to stderr.
+  void EmitEmptyLabel() const;
 
   /// The line number displayed in the error/warn message.
   unsigned LineNo;
@@ -46,7 +54,13 @@ private:
 };
 
 /// Print diagnostic message with WARN flag.
+Diagnostic DiagnosticWarning();
+
+/// Print diagnostic message with WARN flag.
 Diagnostic DiagnosticWarning(unsigned LineNo, unsigned ColumnNo);
+
+/// Print diagnostic message with ERROR flag and terminate program.
+Diagnostic DiagnosticError();
 
 /// Print diagnostic message with ERROR flag and terminate program.
 Diagnostic DiagnosticError(unsigned LineNo, unsigned ColumnNo);
