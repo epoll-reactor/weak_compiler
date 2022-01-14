@@ -1,5 +1,5 @@
-#include "MiddleEnd/IR/Instruction.hpp"
 #include "MiddleEnd/CodeGen/CodeEmitter.hpp"
+#include "MiddleEnd/IR/Instruction.hpp"
 #include "TestHelpers.hpp"
 
 using namespace weak::middleEnd;

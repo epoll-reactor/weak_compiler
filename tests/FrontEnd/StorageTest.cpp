@@ -21,8 +21,7 @@ int main() {
     Pool.SetBoolValue(Attribute2, true);
 
     unsigned Attribute3 = Pool.AddSymbol("var3");
-    Pool.SetSymbolType(Attribute3,
-                                  TokenType::FLOATING_POINT_LITERAL);
+    Pool.SetSymbolType(Attribute3, TokenType::FLOATING_POINT_LITERAL);
     Pool.SetFloatValue(Attribute3, 1.23f);
 
     Pool.ScopeEnd();
@@ -75,5 +74,19 @@ int main() {
     Pool.ScopeEnd();
     assert(Pool.TotalVariables() == 0);
     // clang-format on
+  }
+  SECTION(GetByName) {
+    Storage Pool;
+
+    Pool.ScopeBegin();
+
+    unsigned Attribute1 = Pool.AddSymbol("var1");
+    Pool.SetSymbolType(Attribute1, TokenType::STRING_LITERAL);
+    Pool.SetStringValue(Attribute1, "String value");
+
+    auto *Record = Pool.GetByName("var1");
+    assert(std::get<std::string>(Record->StoredValue) == "String value");
+
+    Pool.ScopeEnd();
   }
 }
