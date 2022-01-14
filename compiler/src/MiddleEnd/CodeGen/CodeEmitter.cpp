@@ -12,17 +12,22 @@ namespace middleEnd {
 
 CodeEmitter::CodeEmitter() : Instructions(), CurrentLabel(0U) {}
 
-void CodeEmitter::Emit(frontEnd::TokenType Type,
-                       const Instruction::OperandVariant &Left,
-                       const Instruction::OperandVariant &Right) {
+const Instruction *CodeEmitter::Emit(frontEnd::TokenType Type,
+                                     const Instruction::AnyOperand &Left,
+                                     const Instruction::AnyOperand &Right) {
   Instructions.emplace_back(CurrentLabel, Type, Left, Right);
   ++CurrentLabel;
+  return &Instructions.back();
 }
 
 void CodeEmitter::Dump() {
   for (const Instruction &I : Instructions) {
     std::cout << I.Dump() << std::endl;
   }
+}
+
+const std::vector<Instruction> &CodeEmitter::GetInstructions() const {
+  return Instructions;
 }
 
 } // namespace middleEnd
