@@ -21,8 +21,8 @@ static auto &FindByAttribute(Storage::RecordMap &RecordMap,
 }
 
 [[noreturn]] static void EmitTypeError(TokenType Type) {
-  weak::DiagnosticError()
-      << "Type error: " << TokenToString(Type) << " expected.";
+  weak::DiagnosticError() << "Type error: " << TokenToString(Type)
+                          << " expected.";
   weak::UnreachablePoint();
 }
 
@@ -106,8 +106,7 @@ Storage::StorageRecord *Storage::GetSymbol(unsigned Attribute) {
 void Storage::SetSymbolType(unsigned Attribute, TokenType Type) {
   auto Found = Records.find(Attribute);
   if (Found == Records.end()) {
-    DiagnosticError()
-        << "Attempt to set type for variable that not exists.";
+    DiagnosticError() << "Attempt to set type for variable that not exists.";
     UnreachablePoint();
   }
   Found->second.DataType = Type;
