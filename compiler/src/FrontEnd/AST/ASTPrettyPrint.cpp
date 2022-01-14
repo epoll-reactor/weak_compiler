@@ -1,3 +1,9 @@
+/* ASTPrettyPrint.cpp - helper function to dump AST to stdout.
+ * Copyright (C) 2022 epoll-reactor <glibcxx.chrono@gmail.com>
+ *
+ * This file is distributed under the MIT license.
+ */
+
 #include "FrontEnd/AST/ASTPrettyPrint.hpp"
 #include "FrontEnd/AST/ASTBinaryOperator.hpp"
 #include "FrontEnd/AST/ASTBooleanLiteral.hpp"

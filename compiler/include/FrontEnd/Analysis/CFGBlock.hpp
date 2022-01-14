@@ -1,3 +1,9 @@
+/* CFGBlock.hpp - Definition of Control Flow Graph node.
+ * Copyright (C) 2022 epoll-reactor <glibcxx.chrono@gmail.com>
+ *
+ * This file is distributed under the MIT license.
+ */
+
 #ifndef WEAK_COMPILER_FRONTEND_ANALYSIS_CFG_BLOCK_HPP
 #define WEAK_COMPILER_FRONTEND_ANALYSIS_CFG_BLOCK_HPP
 

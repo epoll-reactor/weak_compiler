@@ -1,3 +1,9 @@
+/* Registers.cpp - List of IR registers.
+ * Copyright (C) 2022 epoll-reactor <glibcxx.chrono@gmail.com>
+ *
+ * This file is distributed under the MIT license.
+ */
+
 #include "MiddleEnd/IR/Registers.hpp"
 
 namespace weak {

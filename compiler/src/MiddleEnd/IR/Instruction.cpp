@@ -1,3 +1,9 @@
+/* Instruction.cpp - Definition of IR instruction.
+ * Copyright (C) 2022 epoll-reactor <glibcxx.chrono@gmail.com>
+ *
+ * This file is distributed under the MIT license.
+ */
+
 #include "MiddleEnd/IR/Instruction.hpp"
 #include "Utility/Diagnostic.hpp"
 #include <iomanip>

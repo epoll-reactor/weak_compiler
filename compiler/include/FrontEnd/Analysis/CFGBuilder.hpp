@@ -1,3 +1,9 @@
+/* CFGBuilder.hpp - Transformer from AST to CFG.
+ * Copyright (C) 2022 epoll-reactor <glibcxx.chrono@gmail.com>
+ *
+ * This file is distributed under the MIT license.
+ */
+
 #ifndef WEAK_COMPILER_FRONTEND_ANALYSIS_CFG_BUILDER_HPP
 #define WEAK_COMPILER_FRONTEND_ANALYSIS_CFG_BUILDER_HPP
 

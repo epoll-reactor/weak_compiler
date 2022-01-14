@@ -1,3 +1,9 @@
+/* Lexer.hpp - Implementation of lexical analyzer.
+ * Copyright (C) 2022 epoll-reactor <glibcxx.chrono@gmail.com>
+ *
+ * This file is distributed under the MIT license.
+ */
+
 #ifndef WEAK_COMPILER_FRONTEND_LEX_LEXER_HPP
 #define WEAK_COMPILER_FRONTEND_LEX_LEXER_HPP
 

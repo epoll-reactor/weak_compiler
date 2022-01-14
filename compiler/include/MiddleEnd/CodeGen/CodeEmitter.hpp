@@ -1,3 +1,9 @@
+/* CodeEmitter.hpp - Helper class used to form IR.
+ * Copyright (C) 2022 epoll-reactor <glibcxx.chrono@gmail.com>
+ *
+ * This file is distributed under the MIT license.
+ */
+
 #ifndef WEAK_COMPILER_MIDDLE_END_CODE_EMITTER_HPP
 #define WEAK_COMPILER_MIDDLE_END_CODE_EMITTER_HPP
 

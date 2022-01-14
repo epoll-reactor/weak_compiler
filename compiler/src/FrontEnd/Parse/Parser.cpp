@@ -1,3 +1,9 @@
+/* Parser.cpp - Implementation of syntax analyzer.
+ * Copyright (C) 2022 epoll-reactor <glibcxx.chrono@gmail.com>
+ *
+ * This file is distributed under the MIT license.
+ */
+
 #include "FrontEnd/Parse/Parser.hpp"
 #include "FrontEnd/AST/ASTBinaryOperator.hpp"
 #include "FrontEnd/AST/ASTBooleanLiteral.hpp"
