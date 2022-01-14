@@ -1,19 +1,20 @@
 #include "FrontEnd/Analysis/CFGBuilder.hpp"
 #include "FrontEnd/AST/ASTPrettyPrint.hpp"
+#include "FrontEnd/Symbols/Storage.hpp"
 #include "FrontEnd/Lex/Lexer.hpp"
 #include "FrontEnd/Parse/Parser.hpp"
 #include "TestHelpers.hpp"
-#include <cassert>
 
 using namespace weak::frontEnd;
 
-static Lexer CreateLexer(std::string_view Input) {
-  Lexer Lex(Input.begin(), Input.end());
+static Lexer CreateLexer(Storage *S, std::string_view Input) {
+  Lexer Lex(S, Input.begin(), Input.end());
   return Lex;
 }
 
 static void CreateCFG(std::string_view String) {
-  auto Tokens = CreateLexer(String).Analyze();
+  Storage Storage;
+  auto Tokens = CreateLexer(&Storage, String).Analyze();
   Parser Parse(&*Tokens.begin(), &*Tokens.end());
   auto AST = Parse.Parse();
   CFGBuilder Builder(std::move(AST));
@@ -113,7 +114,7 @@ int main() {
   }
   SECTION(CFGWhileLoop) {
     CreateCFG("void f() {"
-              "  while (f(1)) {"
+              "  while (var) {"
               "    f(2);"
               "  }"
               "  f(3);"
@@ -123,7 +124,7 @@ int main() {
     CreateCFG("void f() {"
               "  do {"
               "    f(1); f(2);"
-              "  } while (f(3));"
+              "  } while (var);"
               "  f(4);"
               "}");
   }

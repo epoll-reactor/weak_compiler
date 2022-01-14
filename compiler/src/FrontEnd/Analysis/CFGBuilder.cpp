@@ -111,11 +111,9 @@ private:
 
   void LinkWhileStmt(size_t Position) {
     auto &WhileCondition = Blocks.at(Position - 1);
-    auto &WhileBody = WhileCondition->GetSequentialSuccessor();
     auto &AfterWhileBlock = Blocks.at(Position);
 
     assert(WhileCondition);
-    assert(WhileBody);
     WhileCondition->AddConditionSuccessor(AfterWhileBlock);
   }
 
