@@ -103,6 +103,20 @@ Storage::StorageRecord *Storage::GetSymbol(unsigned Attribute) {
   return &Found->second;
 }
 
+Storage::StorageRecord *Storage::GetByName(std::string_view Name) {
+  auto Found =
+      std::find_if(Records.begin(), Records.end(),
+                   [&Name](const std::pair<unsigned, StorageRecord> &R) {
+                     return R.second.Name == Name;
+                   });
+  if (Found == Records.end()) {
+    DiagnosticError() << "Variable not found: " << Name;
+  }
+
+  auto &[RecordAttribute, Record] = *Found;
+  return &Record;
+}
+
 void Storage::SetSymbolType(unsigned Attribute, TokenType Type) {
   auto Found = Records.find(Attribute);
   if (Found == Records.end()) {

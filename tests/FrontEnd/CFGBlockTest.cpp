@@ -1,5 +1,5 @@
-#include "ASTMakeFunctions.hpp"
 #include "FrontEnd/Analysis/CFGBlock.hpp"
+#include "ASTMakeFunctions.hpp"
 #include "TestHelpers.hpp"
 #include <cassert>
 

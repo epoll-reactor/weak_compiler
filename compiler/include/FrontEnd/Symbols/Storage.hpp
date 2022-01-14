@@ -39,6 +39,7 @@ public:
   unsigned AddSymbol(std::string_view Name);
 
   StorageRecord *GetSymbol(unsigned Attribute);
+  StorageRecord *GetByName(std::string_view Name);
 
   void SetSymbolType(unsigned Attribute, TokenType Type);
 
