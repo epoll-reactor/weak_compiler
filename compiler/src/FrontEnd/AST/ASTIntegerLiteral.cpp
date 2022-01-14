@@ -1,5 +1,10 @@
+/* ASTIntegerLiteral.cpp - AST node to represent a integer number.
+ * Copyright (C) 2022 epoll-reactor <glibcxx.chrono@gmail.com>
+ *
+ * This file is distributed under the MIT license.
+ */
+
 #include "FrontEnd/AST/ASTIntegerLiteral.hpp"
-#include "FrontEnd/AST/ASTVisitor.hpp"
 
 namespace weak {
 namespace frontEnd {

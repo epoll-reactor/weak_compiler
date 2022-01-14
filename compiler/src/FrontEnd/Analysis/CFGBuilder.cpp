@@ -1,3 +1,9 @@
+/* CFGBuilder.cpp - Transformer from AST to CFG.
+ * Copyright (C) 2022 epoll-reactor <glibcxx.chrono@gmail.com>
+ *
+ * This file is distributed under the MIT license.
+ */
+
 #include "FrontEnd/Analysis/CFGBuilder.hpp"
 #include "FrontEnd/AST/ASTBinaryOperator.hpp"
 #include "FrontEnd/AST/ASTBooleanLiteral.hpp"

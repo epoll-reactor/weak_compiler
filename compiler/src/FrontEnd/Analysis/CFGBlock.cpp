@@ -1,3 +1,9 @@
+/* CFGBlock.cpp - Definition of Control Flow Graph node.
+ * Copyright (C) 2022 epoll-reactor <glibcxx.chrono@gmail.com>
+ *
+ * This file is distributed under the MIT license.
+ */
+
 #include "FrontEnd/Analysis/CFGBlock.hpp"
 #include "Utility/Diagnostic.hpp"
 #include <algorithm>

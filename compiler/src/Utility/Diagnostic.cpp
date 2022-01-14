@@ -1,3 +1,9 @@
+/* Diagnostic.cpp - helper functions, used to emitting errors and warns.
+ * Copyright (C) 2022 epoll-reactor <glibcxx.chrono@gmail.com>
+ *
+ * This file is distributed under the MIT license.
+ */
+
 #include "Utility/Diagnostic.hpp"
 #include <iostream>
 

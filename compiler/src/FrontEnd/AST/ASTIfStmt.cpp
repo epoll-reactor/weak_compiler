@@ -1,5 +1,10 @@
+/* ASTIfStmt.cpp - AST node to represent a if or if-else statements.
+ * Copyright (C) 2022 epoll-reactor <glibcxx.chrono@gmail.com>
+ *
+ * This file is distributed under the MIT license.
+ */
+
 #include "FrontEnd/AST/ASTIfStmt.hpp"
-#include "FrontEnd/AST/ASTVisitor.hpp"
 
 namespace weak {
 namespace frontEnd {

@@ -1,3 +1,9 @@
+/* Instruction.hpp - Definition of IR instruction.
+ * Copyright (C) 2022 epoll-reactor <glibcxx.chrono@gmail.com>
+ *
+ * This file is distributed under the MIT license.
+ */
+
 #ifndef WEAK_COMPILER_MIDDLE_END_IR_INSTRUCTION_HPP
 #define WEAK_COMPILER_MIDDLE_END_IR_INSTRUCTION_HPP
 
@@ -11,9 +17,9 @@ namespace weak {
 namespace middleEnd {
 
 /*!
- * This is a three-adress code instruction representation.
+ * This is a three-address code instruction representation.
  *
- * This instruction has format <ID> = <L> <OP> <R>
+ * This instruction has format <ID> = <L> <OP> <R>.
  */
 class Instruction {
 public:
