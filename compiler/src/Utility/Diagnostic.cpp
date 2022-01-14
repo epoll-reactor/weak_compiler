@@ -1,4 +1,4 @@
-/* Diagnostic.cpp - helper functions, used to emitting errors and warns.
+/* Diagnostic.cpp - Helper functions, used to emitting errors and warns.
  * Copyright (C) 2022 epoll-reactor <glibcxx.chrono@gmail.com>
  *
  * This file is distributed under the MIT license.
@@ -7,90 +7,59 @@
 #include "Utility/Diagnostic.hpp"
 #include <iostream>
 
+namespace {
+
+class Diagnostic {
+public:
+  enum struct DiagLevel { WARN, ERROR } const Level;
+
+  Diagnostic(enum DiagLevel TheLevel, unsigned LineNo, unsigned ColumnNo)
+      : Level(TheLevel) {
+    EmitLabel(LineNo, ColumnNo);
+  }
+
+  Diagnostic(enum DiagLevel TheLevel) : Level(TheLevel) { EmitEmptyLabel(); }
+
+private:
+  void EmitLabel(unsigned LineNo, unsigned ColumnNo) {
+    if (Level == DiagLevel::ERROR) {
+      std::cerr << "ERROR - at line " << LineNo + 1 << ", column "
+                << ColumnNo + 1 << ": ";
+    } else {
+      std::cerr << "WARN - at line " << LineNo + 1 << ", column "
+                << ColumnNo + 1 << ": ";
+    }
+  }
+
+  void EmitEmptyLabel() {
+    if (Level == DiagLevel::ERROR) {
+      std::cerr << "ERROR : ";
+    } else {
+      std::cerr << "WARN: ";
+    }
+  }
+};
+
+} // namespace
+
 void weak::UnreachablePoint() { exit(-1); }
 
-namespace weak {
-
-Diagnostic::Diagnostic(DiagLevel TheType, unsigned TheLineNo,
-                       unsigned TheColumnNo)
-    : Level(TheType), LineNo(TheLineNo), ColumnNo(TheColumnNo) {
-  EmitLabel();
+std::ostream &weak::DiagnosticWarning() {
+  [[maybe_unused]] Diagnostic _(Diagnostic::DiagLevel::WARN);
+  return std::cerr;
 }
 
-Diagnostic::Diagnostic(DiagLevel TheType)
-    : Level(TheType), LineNo(0U), ColumnNo(0U) {
-  EmitEmptyLabel();
+std::ostream &weak::DiagnosticWarning(unsigned LineNo, unsigned ColumnNo) {
+  [[maybe_unused]] Diagnostic _(Diagnostic::DiagLevel::WARN, LineNo, ColumnNo);
+  return std::cerr;
 }
 
-Diagnostic::~Diagnostic() {
-  std::cerr << std::endl;
-  if (Level == DiagLevel::ERROR) {
-    exit(-1);
-  }
+std::ostream &weak::DiagnosticError() {
+  [[maybe_unused]] Diagnostic _(Diagnostic::DiagLevel::ERROR);
+  return std::cerr;
 }
 
-const Diagnostic &Diagnostic::operator<<(const char *Data) const {
-  std::cerr << Data;
-  return *this;
+std::ostream &weak::DiagnosticError(unsigned LineNo, unsigned ColumnNo) {
+  [[maybe_unused]] Diagnostic _(Diagnostic::DiagLevel::ERROR, LineNo, ColumnNo);
+  return std::cerr;
 }
-
-const Diagnostic &Diagnostic::operator<<(std::string_view Data) const {
-  std::cerr << Data;
-  return *this;
-}
-
-const Diagnostic &Diagnostic::operator<<(signed int Data) const {
-  std::cerr << Data;
-  return *this;
-}
-
-const Diagnostic &Diagnostic::operator<<(unsigned int Data) const {
-  std::cerr << Data;
-  return *this;
-}
-
-const Diagnostic &Diagnostic::operator<<(signed long int Data) const {
-  std::cerr << Data;
-  return *this;
-}
-
-const Diagnostic &Diagnostic::operator<<(unsigned long int Data) const {
-  std::cerr << Data;
-  return *this;
-}
-
-void Diagnostic::EmitLabel() const {
-  if (Level == DiagLevel::ERROR) {
-    std::cerr << "ERROR - at line " << LineNo + 1 << ", column " << ColumnNo + 1
-              << ": ";
-  } else {
-    std::cerr << "WARN - at line " << LineNo + 1 << ", column " << ColumnNo + 1
-              << ": ";
-  }
-}
-
-void Diagnostic::EmitEmptyLabel() const {
-  if (Level == DiagLevel::ERROR) {
-    std::cerr << "ERROR : ";
-  } else {
-    std::cerr << "WARN: ";
-  }
-}
-
-Diagnostic DiagnosticWarning() {
-  return Diagnostic(Diagnostic::DiagLevel::WARN);
-}
-
-Diagnostic DiagnosticWarning(unsigned LineNo, unsigned ColumnNo) {
-  return Diagnostic(Diagnostic::DiagLevel::WARN, LineNo, ColumnNo);
-}
-
-Diagnostic DiagnosticError() {
-  return Diagnostic(Diagnostic::DiagLevel::ERROR);
-}
-
-Diagnostic DiagnosticError(unsigned LineNo, unsigned ColumnNo) {
-  return Diagnostic(Diagnostic::DiagLevel::ERROR, LineNo, ColumnNo);
-}
-
-} // namespace weak
