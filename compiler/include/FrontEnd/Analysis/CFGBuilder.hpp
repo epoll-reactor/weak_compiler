@@ -12,6 +12,26 @@
 namespace weak {
 namespace frontEnd {
 
+class ASTNode;
+class ASTBinaryOperator;
+class ASTBooleanLiteral;
+class ASTBreakStmt;
+class ASTCompoundStmt;
+class ASTContinueStmt;
+class ASTDoWhileStmt;
+class ASTFloatingPointLiteral;
+class ASTForStmt;
+class ASTFunctionDecl;
+class ASTFunctionCall;
+class ASTIfStmt;
+class ASTIntegerLiteral;
+class ASTReturnStmt;
+class ASTStringLiteral;
+class ASTSymbol;
+class ASTUnaryOperator;
+class ASTVarDecl;
+class ASTWhileStmt;
+
 /*! This implements transformer from AST to CFG.
  *
  *  CFG retains ownership of given AST and can change it during building.
@@ -60,25 +80,24 @@ public:
 
 private:
   std::shared_ptr<CFGBlock> Visit(std::unique_ptr<ASTNode> &&);
-  std::shared_ptr<CFGBlock> Visit(std::unique_ptr<class ASTBinaryOperator> &&);
-  std::shared_ptr<CFGBlock> Visit(std::unique_ptr<class ASTBooleanLiteral> &&);
-  std::shared_ptr<CFGBlock> Visit(std::unique_ptr<class ASTBreakStmt> &&);
-  std::shared_ptr<CFGBlock> Visit(std::unique_ptr<class ASTCompoundStmt> &&);
-  std::shared_ptr<CFGBlock> Visit(std::unique_ptr<class ASTContinueStmt> &&);
-  std::shared_ptr<CFGBlock> Visit(std::unique_ptr<class ASTDoWhileStmt> &&);
-  std::shared_ptr<CFGBlock>
-  Visit(std::unique_ptr<class ASTFloatingPointLiteral> &&);
-  std::shared_ptr<CFGBlock> Visit(std::unique_ptr<class ASTForStmt> &&);
-  std::shared_ptr<CFGBlock> Visit(std::unique_ptr<class ASTFunctionCall> &&);
-  std::shared_ptr<CFGBlock> Visit(std::unique_ptr<class ASTFunctionDecl> &&);
-  std::shared_ptr<CFGBlock> Visit(std::unique_ptr<class ASTIfStmt> &&);
-  std::shared_ptr<CFGBlock> Visit(std::unique_ptr<class ASTIntegerLiteral> &&);
-  std::shared_ptr<CFGBlock> Visit(std::unique_ptr<class ASTReturnStmt> &&);
-  std::shared_ptr<CFGBlock> Visit(std::unique_ptr<class ASTStringLiteral> &&);
-  std::shared_ptr<CFGBlock> Visit(std::unique_ptr<class ASTSymbol> &&);
-  std::shared_ptr<CFGBlock> Visit(std::unique_ptr<class ASTUnaryOperator> &&);
-  std::shared_ptr<CFGBlock> Visit(std::unique_ptr<class ASTVarDecl> &&);
-  std::shared_ptr<CFGBlock> Visit(std::unique_ptr<class ASTWhileStmt> &&);
+  std::shared_ptr<CFGBlock> Visit(std::unique_ptr<ASTBinaryOperator> &&);
+  std::shared_ptr<CFGBlock> Visit(std::unique_ptr<ASTBooleanLiteral> &&);
+  std::shared_ptr<CFGBlock> Visit(std::unique_ptr<ASTBreakStmt> &&);
+  std::shared_ptr<CFGBlock> Visit(std::unique_ptr<ASTCompoundStmt> &&);
+  std::shared_ptr<CFGBlock> Visit(std::unique_ptr<ASTContinueStmt> &&);
+  std::shared_ptr<CFGBlock> Visit(std::unique_ptr<ASTDoWhileStmt> &&);
+  std::shared_ptr<CFGBlock> Visit(std::unique_ptr<ASTFloatingPointLiteral> &&);
+  std::shared_ptr<CFGBlock> Visit(std::unique_ptr<ASTForStmt> &&);
+  std::shared_ptr<CFGBlock> Visit(std::unique_ptr<ASTFunctionCall> &&);
+  std::shared_ptr<CFGBlock> Visit(std::unique_ptr<ASTFunctionDecl> &&);
+  std::shared_ptr<CFGBlock> Visit(std::unique_ptr<ASTIfStmt> &&);
+  std::shared_ptr<CFGBlock> Visit(std::unique_ptr<ASTIntegerLiteral> &&);
+  std::shared_ptr<CFGBlock> Visit(std::unique_ptr<ASTReturnStmt> &&);
+  std::shared_ptr<CFGBlock> Visit(std::unique_ptr<ASTStringLiteral> &&);
+  std::shared_ptr<CFGBlock> Visit(std::unique_ptr<ASTSymbol> &&);
+  std::shared_ptr<CFGBlock> Visit(std::unique_ptr<ASTUnaryOperator> &&);
+  std::shared_ptr<CFGBlock> Visit(std::unique_ptr<ASTVarDecl> &&);
+  std::shared_ptr<CFGBlock> Visit(std::unique_ptr<ASTWhileStmt> &&);
 
   std::shared_ptr<CFGBlock> CreateCFGBlock();
 

@@ -10,29 +10,49 @@
 namespace weak {
 namespace frontEnd {
 
+class ASTNode;
+class ASTBinaryOperator;
+class ASTBooleanLiteral;
+class ASTBreakStmt;
+class ASTCompoundStmt;
+class ASTContinueStmt;
+class ASTDoWhileStmt;
+class ASTFloatingPointLiteral;
+class ASTForStmt;
+class ASTFunctionDecl;
+class ASTFunctionCall;
+class ASTIfStmt;
+class ASTIntegerLiteral;
+class ASTReturnStmt;
+class ASTStringLiteral;
+class ASTSymbol;
+class ASTUnaryOperator;
+class ASTVarDecl;
+class ASTWhileStmt;
+
 class ASTVisitor {
 public:
   virtual ~ASTVisitor() noexcept = default;
-  /// Visit all types of nodes.
-  void VisitBaseNode(const class ASTNode *) const;
-  virtual void Visit(const class ASTBinaryOperator *) const = 0;
-  virtual void Visit(const class ASTBooleanLiteral *) const = 0;
-  virtual void Visit(const class ASTBreakStmt *) const = 0;
-  virtual void Visit(const class ASTCompoundStmt *) const = 0;
-  virtual void Visit(const class ASTContinueStmt *) const = 0;
-  virtual void Visit(const class ASTDoWhileStmt *) const = 0;
-  virtual void Visit(const class ASTFloatingPointLiteral *) const = 0;
-  virtual void Visit(const class ASTForStmt *) const = 0;
-  virtual void Visit(const class ASTFunctionDecl *) const = 0;
-  virtual void Visit(const class ASTFunctionCall *) const = 0;
-  virtual void Visit(const class ASTIfStmt *) const = 0;
-  virtual void Visit(const class ASTIntegerLiteral *) const = 0;
-  virtual void Visit(const class ASTReturnStmt *) const = 0;
-  virtual void Visit(const class ASTStringLiteral *) const = 0;
-  virtual void Visit(const class ASTSymbol *) const = 0;
-  virtual void Visit(const class ASTUnaryOperator *) const = 0;
-  virtual void Visit(const class ASTVarDecl *) const = 0;
-  virtual void Visit(const class ASTWhileStmt *) const = 0;
+
+  void VisitBaseNode(const ASTNode *) const;
+  virtual void Visit(const ASTBinaryOperator *) const = 0;
+  virtual void Visit(const ASTBooleanLiteral *) const = 0;
+  virtual void Visit(const ASTBreakStmt *) const = 0;
+  virtual void Visit(const ASTCompoundStmt *) const = 0;
+  virtual void Visit(const ASTContinueStmt *) const = 0;
+  virtual void Visit(const ASTDoWhileStmt *) const = 0;
+  virtual void Visit(const ASTFloatingPointLiteral *) const = 0;
+  virtual void Visit(const ASTForStmt *) const = 0;
+  virtual void Visit(const ASTFunctionDecl *) const = 0;
+  virtual void Visit(const ASTFunctionCall *) const = 0;
+  virtual void Visit(const ASTIfStmt *) const = 0;
+  virtual void Visit(const ASTIntegerLiteral *) const = 0;
+  virtual void Visit(const ASTReturnStmt *) const = 0;
+  virtual void Visit(const ASTStringLiteral *) const = 0;
+  virtual void Visit(const ASTSymbol *) const = 0;
+  virtual void Visit(const ASTUnaryOperator *) const = 0;
+  virtual void Visit(const ASTVarDecl *) const = 0;
+  virtual void Visit(const ASTWhileStmt *) const = 0;
 };
 
 } // namespace frontEnd
