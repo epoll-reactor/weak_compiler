@@ -1,16 +1,18 @@
 #include "FrontEnd/Parse/Parser.hpp"
+#include "FrontEnd/Symbols/Storage.hpp"
 #include "FrontEnd/AST/ASTPrettyPrint.hpp"
 #include "FrontEnd/Lex/Lexer.hpp"
 
 using namespace weak::frontEnd;
 
-static Lexer CreateLexer(std::string_view Input) {
-  Lexer Lex(Input.begin(), Input.end());
+static Lexer CreateLexer(Storage *S, std::string_view Input) {
+  Lexer Lex(S, Input.begin(), Input.end());
   return Lex;
 }
 
 static void PrintAST(std::string_view String) {
-  auto Tokens = CreateLexer(String).Analyze();
+  Storage Storage;
+  auto Tokens = CreateLexer(&Storage, String).Analyze();
   Parser Parse(&*Tokens.begin(), &*Tokens.end());
   ASTPrettyPrint(Parse.Parse());
 }
