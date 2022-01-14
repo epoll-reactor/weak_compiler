@@ -16,6 +16,16 @@
 namespace weak {
 namespace middleEnd {
 
+class Instruction;
+
+/// Reference, used as instruction operand.
+class InstructionReference {
+public:
+  InstructionReference(const Instruction &);
+
+  unsigned LabelNo;
+};
+
 /*!
  * This is a three-address code instruction representation.
  *
@@ -23,27 +33,22 @@ namespace middleEnd {
  */
 class Instruction {
 public:
-  using OperandVariant =
-      std::variant<signed, Reg, std::reference_wrapper<Instruction>>;
+  using AnyOperand = std::variant<signed, InstructionReference>;
 
   Instruction(unsigned TheLabelNo, frontEnd::TokenType TheOperation,
-              const OperandVariant &TheLeft, const OperandVariant &TheRight);
+              const AnyOperand &TheLeft, const AnyOperand &TheRight);
 
   unsigned GetLabelNo() const;
   frontEnd::TokenType GetOp() const;
 
   bool IsLeftImm() const;
-  bool IsLeftReg() const;
   bool IsLeftVar() const;
 
   bool IsRightImm() const;
-  bool IsRightReg() const;
   bool IsRightVar() const;
 
   signed GetLeftImm() const;
   signed GetRightImm() const;
-  Reg GetLeftReg() const;
-  Reg GetRightReg() const;
 
   std::string Dump() const;
 
@@ -53,8 +58,8 @@ private:
 
   frontEnd::TokenType Operation;
 
-  OperandVariant LeftOperand;
-  OperandVariant RightOperand;
+  AnyOperand LeftOperand;
+  AnyOperand RightOperand;
 };
 
 } // namespace middleEnd

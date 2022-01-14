@@ -13,7 +13,7 @@ using namespace weak::frontEnd;
 using namespace weak::middleEnd;
 
 template <typename T>
-void CheckForOperand(const Instruction::OperandVariant &Instruction,
+void CheckForOperand(const Instruction::AnyOperand &Instruction,
                      const char *ErrorMsg) {
   if (!std::holds_alternative<T>(Instruction)) {
     weak::DiagnosticError() << ErrorMsg;
@@ -23,9 +23,11 @@ void CheckForOperand(const Instruction::OperandVariant &Instruction,
 namespace weak {
 namespace middleEnd {
 
+InstructionReference::InstructionReference(const Instruction &I)
+    : LabelNo(I.GetLabelNo()) {}
+
 Instruction::Instruction(unsigned TheLabelNo, frontEnd::TokenType TheOperation,
-                         const OperandVariant &TheLeft,
-                         const OperandVariant &TheRight)
+                         const AnyOperand &TheLeft, const AnyOperand &TheRight)
     : LabelNo(TheLabelNo), Operation(TheOperation), LeftOperand(TheLeft),
       RightOperand(TheRight) {}
 
@@ -37,26 +39,16 @@ bool Instruction::IsLeftImm() const {
   return std::holds_alternative<signed>(LeftOperand);
 }
 
-bool Instruction::IsLeftReg() const {
-  return std::holds_alternative<Reg>(LeftOperand);
-}
-
 bool Instruction::IsLeftVar() const {
-  return std::holds_alternative<std::reference_wrapper<Instruction>>(
-      LeftOperand);
+  return std::holds_alternative<InstructionReference>(LeftOperand);
 }
 
 bool Instruction::IsRightImm() const {
   return std::holds_alternative<signed>(RightOperand);
 }
 
-bool Instruction::IsRightReg() const {
-  return std::holds_alternative<Reg>(LeftOperand);
-}
-
 bool Instruction::IsRightVar() const {
-  return std::holds_alternative<std::reference_wrapper<Instruction>>(
-      RightOperand);
+  return std::holds_alternative<InstructionReference>(RightOperand);
 }
 
 signed Instruction::GetLeftImm() const {
@@ -67,16 +59,6 @@ signed Instruction::GetLeftImm() const {
 signed Instruction::GetRightImm() const {
   CheckForOperand<signed>(RightOperand, "Right operand isn't an immediate.");
   return std::get<signed>(RightOperand);
-}
-
-Reg Instruction::GetLeftReg() const {
-  CheckForOperand<Reg>(LeftOperand, "Left operand isn't a register.");
-  return std::get<Reg>(LeftOperand);
-}
-
-Reg Instruction::GetRightReg() const {
-  CheckForOperand<Reg>(RightOperand, "Right operand isn't a register.");
-  return std::get<Reg>(RightOperand);
 }
 
 std::string Instruction::Dump() const {
@@ -92,10 +74,8 @@ std::string Instruction::Dump() const {
 
     if constexpr (std::is_same_v<T, signed>)
       Stream << Arg;
-    else if constexpr (std::is_same_v<T, Reg>)
-      Stream << RegisterToString(Arg);
-    else if constexpr (std::is_same_v<T, std::reference_wrapper<Instruction>>)
-      Stream << std::string{"t" + std::to_string(Arg.get().LabelNo)};
+    else if constexpr (std::is_same_v<T, InstructionReference>)
+      Stream << std::string{"t" + std::to_string(Arg.LabelNo)};
   };
 
   std::visit(OperandVisitor, LeftOperand);

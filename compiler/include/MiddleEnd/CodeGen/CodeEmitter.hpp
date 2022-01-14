@@ -20,10 +20,12 @@ class CodeEmitter {
 public:
   CodeEmitter();
 
-  void Emit(frontEnd::TokenType, const Instruction::OperandVariant &,
-            const Instruction::OperandVariant &);
+  const Instruction *Emit(frontEnd::TokenType, const Instruction::AnyOperand &,
+                          const Instruction::AnyOperand &);
 
   void Dump();
+
+  const std::vector<Instruction> &GetInstructions() const;
 
 private:
   std::vector<Instruction> Instructions;
