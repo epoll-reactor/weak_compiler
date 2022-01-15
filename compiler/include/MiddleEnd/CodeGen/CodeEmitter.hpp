@@ -23,12 +23,20 @@ public:
   const Instruction *Emit(frontEnd::TokenType, const Instruction::AnyOperand &,
                           const Instruction::AnyOperand &);
 
+  const IfInstruction *EmitIf(frontEnd::TokenType Operation,
+                              const Instruction::AnyOperand &Left,
+                              const Instruction::AnyOperand &Right,
+                              unsigned GotoLabel);
+
+  const GotoLabel *EmitGotoLabel(unsigned Label);
+  const Jump *EmitJump(unsigned ToLabel);
+
   void Dump();
 
-  const std::vector<Instruction> &GetInstructions() const;
+  const std::vector<AnyInstruction> &GetInstructions() const;
 
 private:
-  std::vector<Instruction> Instructions;
+  std::vector<AnyInstruction> Instructions;
   unsigned CurrentLabel;
 };
 

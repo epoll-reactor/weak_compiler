@@ -131,7 +131,7 @@ CodeGen::Visit(const frontEnd::ASTBinaryOperator *Binary) {
   }, LHS, RHS);
   // clang-format on
 
-  return Emitter.GetInstructions().back();
+  return std::get<Instruction>(Emitter.GetInstructions().back());
 }
 
 CodeGen::AnyInstruction

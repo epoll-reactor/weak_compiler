@@ -26,6 +26,12 @@ namespace middleEnd {
 InstructionReference::InstructionReference(const Instruction &I)
     : LabelNo(I.GetLabelNo()) {}
 
+} // namespace middleEnd
+} // namespace weak
+
+namespace weak {
+namespace middleEnd {
+
 Instruction::Instruction(unsigned TheLabelNo, frontEnd::TokenType TheOperation,
                          const AnyOperand &TheLeft, const AnyOperand &TheRight)
     : LabelNo(TheLabelNo), Operation(TheOperation), LeftOperand(TheLeft),
@@ -80,11 +86,58 @@ std::string Instruction::Dump() const {
 
   std::visit(OperandVisitor, LeftOperand);
 
-  Stream << std::right << std::setw(3) << TokenToString(Operation) << ' ';
+  Stream << std::right << std::setw(4) << TokenToString(Operation) << ' ';
   Stream << std::right << std::setw(8);
 
   std::visit(OperandVisitor, RightOperand);
 
+  return Stream.str();
+}
+
+} // namespace middleEnd
+} // namespace weak
+
+namespace weak {
+namespace middleEnd {
+
+IfInstruction::IfInstruction(frontEnd::TokenType TheOperation,
+                             const AnyOperand &TheLeft,
+                             const AnyOperand &TheRight, unsigned TheGotoLabel)
+    : Operation(TheOperation), LeftOperand(TheLeft), RightOperand(TheRight),
+      GotoLabel(TheGotoLabel) {}
+
+unsigned IfInstruction::GetGotoLabel() const { return GotoLabel; }
+
+TokenType IfInstruction::GetOperation() const { return Operation; }
+
+const IfInstruction::AnyOperand &IfInstruction::GetLeftOperand() const {
+  return LeftOperand;
+}
+
+const IfInstruction::AnyOperand &IfInstruction::GetRightOperand() const {
+  return RightOperand;
+}
+
+std::string IfInstruction::Dump() const {
+  std::ostringstream Stream;
+  Stream << "if ";
+
+  auto Visitor = [&](auto &&Arg) {
+    using T = std::decay_t<decltype(Arg)>;
+
+    if constexpr (std::is_same_v<T, signed>)
+      Stream << Arg;
+    else if constexpr (std::is_same_v<T, InstructionReference>)
+      Stream << std::string{"t" + std::to_string(Arg.LabelNo)};
+  };
+
+  Stream << std::right << std::setw(11);
+  std::visit(Visitor, LeftOperand);
+  Stream << std::setw(4) << TokenToString(Operation);
+  Stream << std::setw(7) << " ";
+  std::visit(Visitor, RightOperand);
+
+  Stream << " goto L" << GotoLabel;
   return Stream.str();
 }
 
