@@ -1,4 +1,4 @@
-/* Instruction.cpp - Definition of IR instruction.
+/* Instruction.cpp - Definition of IR instructions.
  * Copyright (C) 2022 epoll-reactor <glibcxx.chrono@gmail.com>
  *
  * This file is distributed under the MIT license.
@@ -62,9 +62,21 @@ signed Instruction::GetLeftImm() const {
   return std::get<signed>(LeftOperand);
 }
 
+InstructionReference Instruction::GetLeftInstruction() const {
+  CheckForOperand<InstructionReference>(LeftOperand,
+                                        "Left operand isn't an immediate.");
+  return std::get<InstructionReference>(LeftOperand);
+}
+
 signed Instruction::GetRightImm() const {
   CheckForOperand<signed>(RightOperand, "Right operand isn't an immediate.");
   return std::get<signed>(RightOperand);
+}
+
+InstructionReference Instruction::GetRightInstruction() const {
+  CheckForOperand<InstructionReference>(RightOperand,
+                                        "Right operand isn't an immediate.");
+  return std::get<InstructionReference>(RightOperand);
 }
 
 std::string Instruction::Dump() const {

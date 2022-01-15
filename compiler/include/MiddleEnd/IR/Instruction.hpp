@@ -1,4 +1,4 @@
-/* Instruction.hpp - Definition of IR instruction.
+/* Instruction.hpp - Definition of IR instructions.
  * Copyright (C) 2022 epoll-reactor <glibcxx.chrono@gmail.com>
  *
  * This file is distributed under the MIT license.
@@ -26,11 +26,7 @@ public:
   unsigned LabelNo;
 };
 
-/*!
- * This is a three-address code instruction representation.
- *
- * This instruction has format <ID> = <L> <OP> <R>.
- */
+/// Three-address instruction in format <ID> = <L> <OP> <R>.
 class Instruction {
 public:
   using AnyOperand = std::variant<signed, InstructionReference>;
@@ -48,7 +44,10 @@ public:
   bool IsRightVar() const;
 
   signed GetLeftImm() const;
+  InstructionReference GetLeftInstruction() const;
+
   signed GetRightImm() const;
+  InstructionReference GetRightInstruction() const;
 
   std::string Dump() const;
 
@@ -62,9 +61,7 @@ private:
   AnyOperand RightOperand;
 };
 
-/*! This is a conditional jump instruction, that
- *  has format if <ARG> <OP> <ARG> goto L.
- */
+/// Conditional instruction in format if <ARG> <OP> <ARG> goto L.
 class IfInstruction {
 public:
   using AnyOperand = std::variant<signed, InstructionReference>;
@@ -88,17 +85,14 @@ private:
   unsigned GotoLabel;
 };
 
-/// This is a goto label representation in format L<NUMBER>:.
+/// Goto label in format L<NUMBER>:.
 class GotoLabel {
 public:
-  GotoLabel(unsigned TheLabelNo)
-    : LabelNo(TheLabelNo) {}
+  GotoLabel(unsigned TheLabelNo) : LabelNo(TheLabelNo) {}
 
   unsigned GetLabel() const { return LabelNo; }
 
-  std::string Dump() const {
-    return "L" + std::to_string(LabelNo) + ":";
-  }
+  std::string Dump() const { return "L" + std::to_string(LabelNo) + ":"; }
 
 private:
   unsigned LabelNo;
@@ -107,20 +101,18 @@ private:
 /// This is jump instruction represented in format goto <LABEL_NO>.
 class Jump {
 public:
-  Jump(unsigned TheLabelNo)
-    : LabelNo(TheLabelNo) {}
+  Jump(unsigned TheLabelNo) : LabelNo(TheLabelNo) {}
 
   unsigned GetLabel() const { return LabelNo; }
 
-  std::string Dump() const {
-    return "goto L" + std::to_string(LabelNo);
-  }
+  std::string Dump() const { return "goto L" + std::to_string(LabelNo); }
 
 private:
   unsigned LabelNo;
 };
 
-using AnyInstruction = std::variant<Instruction, IfInstruction, GotoLabel, Jump>;
+using AnyInstruction =
+    std::variant<Instruction, IfInstruction, GotoLabel, Jump>;
 
 } // namespace middleEnd
 } // namespace weak

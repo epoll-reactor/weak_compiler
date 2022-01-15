@@ -28,21 +28,22 @@ const Instruction *CodeEmitter::Emit(frontEnd::TokenType Type,
   return I;
 }
 
-const IfInstruction *CodeEmitter::EmitIf(
-    frontEnd::TokenType Operation, const Instruction::AnyOperand &Left,
-    const Instruction::AnyOperand &Right, unsigned GotoLabel) {
+const IfInstruction *CodeEmitter::EmitIf(frontEnd::TokenType Operation,
+                                         const Instruction::AnyOperand &Left,
+                                         const Instruction::AnyOperand &Right,
+                                         unsigned GotoLabel) {
   Instructions.emplace_back(IfInstruction(Operation, Left, Right, GotoLabel));
   IfInstruction *I = &std::get<IfInstruction>(Instructions.back());
   return I;
 }
 
-const GotoLabel* CodeEmitter::EmitGotoLabel(unsigned Label) {
+const GotoLabel *CodeEmitter::EmitGotoLabel(unsigned Label) {
   Instructions.emplace_back(GotoLabel(Label));
   GotoLabel *I = &std::get<GotoLabel>(Instructions.back());
   return I;
 }
 
-const Jump* CodeEmitter::EmitJump(unsigned ToLabel) {
+const Jump *CodeEmitter::EmitJump(unsigned ToLabel) {
   Instructions.emplace_back(Jump(ToLabel));
   Jump *I = &std::get<Jump>(Instructions.back());
   return I;
