@@ -5,6 +5,7 @@
  */
 
 #include "FrontEnd/AST/ASTUnaryOperator.hpp"
+#include "FrontEnd/AST/ASTVisitor.hpp"
 
 namespace weak {
 namespace frontEnd {
@@ -19,6 +20,10 @@ ASTUnaryOperator::ASTUnaryOperator(UnaryType ThePrefixOrPostfix,
 ASTType ASTUnaryOperator::GetASTType() const {
   return PrefixOrPostfix == UnaryType::POSTFIX ? ASTType::POSTFIX_UNARY
                                                : ASTType::PREFIX_UNARY;
+}
+
+void ASTUnaryOperator::Accept(const ASTVisitor *Visitor) const {
+  Visitor->Visit(this);
 }
 
 TokenType ASTUnaryOperator::GetOperation() const { return Operation; }

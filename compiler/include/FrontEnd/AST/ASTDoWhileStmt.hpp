@@ -20,6 +20,7 @@ public:
                  unsigned TheLineNo = 0U, unsigned TheColumnNo = 0U);
 
   ASTType GetASTType() const override;
+  void Accept(const ASTVisitor *) const override;
 
   std::unique_ptr<ASTCompoundStmt> &&GetBody();
   const std::unique_ptr<ASTCompoundStmt> &GetBody() const;
