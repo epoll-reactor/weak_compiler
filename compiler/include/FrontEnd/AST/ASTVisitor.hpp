@@ -34,7 +34,6 @@ class ASTVisitor {
 public:
   virtual ~ASTVisitor() noexcept = default;
 
-  void VisitBaseNode(const ASTNode *) const;
   virtual void Visit(const ASTBinaryOperator *) const = 0;
   virtual void Visit(const ASTBooleanLiteral *) const = 0;
   virtual void Visit(const ASTBreakStmt *) const = 0;

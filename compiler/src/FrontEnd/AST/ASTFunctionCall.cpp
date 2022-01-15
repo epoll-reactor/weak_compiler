@@ -5,6 +5,7 @@
  */
 
 #include "FrontEnd/AST/ASTFunctionCall.hpp"
+#include "FrontEnd/AST/ASTVisitor.hpp"
 
 namespace weak {
 namespace frontEnd {
@@ -16,6 +17,10 @@ ASTFunctionCall::ASTFunctionCall(
       Arguments(std::move(TheArguments)) {}
 
 ASTType ASTFunctionCall::GetASTType() const { return ASTType::FUNCTION_CALL; }
+
+void ASTFunctionCall::Accept(const ASTVisitor *Visitor) const {
+  Visitor->Visit(this);
+}
 
 const std::string &ASTFunctionCall::GetName() const { return Name; }
 

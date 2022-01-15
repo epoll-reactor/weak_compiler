@@ -5,6 +5,7 @@
  */
 
 #include "FrontEnd/AST/ASTIntegerLiteral.hpp"
+#include "FrontEnd/AST/ASTVisitor.hpp"
 
 namespace weak {
 namespace frontEnd {
@@ -15,6 +16,10 @@ ASTIntegerLiteral::ASTIntegerLiteral(signed TheValue, unsigned TheLineNo,
 
 ASTType ASTIntegerLiteral::GetASTType() const {
   return ASTType::INTEGER_LITERAL;
+}
+
+void ASTIntegerLiteral::Accept(const ASTVisitor *Visitor) const {
+  Visitor->Visit(this);
 }
 
 signed ASTIntegerLiteral::GetValue() const { return Value; }

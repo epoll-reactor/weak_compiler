@@ -35,7 +35,7 @@ class ASTPrintVisitor : public ASTVisitor {
 public:
   ASTPrintVisitor(ASTNode *TheRootNode) : RootNode(TheRootNode), Indent(0U) {}
 
-  void Print() const { VisitBaseNode(RootNode); }
+  void Print() { RootNode->Accept(this); }
 
 private:
   void Visit(const ASTBinaryOperator *Binary) const override {
@@ -44,10 +44,10 @@ private:
     Indent += 2;
 
     PrintIndent();
-    VisitBaseNode(Binary->GetLHS().get());
+    Binary->GetLHS()->Accept(this);
 
     PrintIndent();
-    VisitBaseNode(Binary->GetRHS().get());
+    Binary->GetRHS()->Accept(this);
 
     Indent -= 2;
   }
@@ -67,7 +67,7 @@ private:
     Indent += 2;
     for (const auto &Stmt : CompoundStmt->GetStmts()) {
       PrintIndent();
-      VisitBaseNode(Stmt.get());
+      Stmt->Accept(this);
     }
     Indent -= 2;
   }
@@ -94,7 +94,7 @@ private:
                             /*NewLineNeeded=*/true);
       Indent += 2;
       PrintIndent();
-      VisitBaseNode(Init);
+      Init->Accept(this);
       Indent -= 2;
     }
 
@@ -104,7 +104,7 @@ private:
                             /*NewLineNeeded=*/true);
       Indent += 2;
       PrintIndent();
-      VisitBaseNode(Condition);
+      Condition->Accept(this);
       Indent -= 2;
     }
 
@@ -114,7 +114,7 @@ private:
                             /*NewLineNeeded=*/true);
       Indent += 2;
       PrintIndent();
-      VisitBaseNode(Increment);
+      Increment->Accept(this);
       Indent -= 2;
     }
 
@@ -141,7 +141,7 @@ private:
                             /*NewLineNeeded=*/true);
       Indent += 2;
       PrintIndent();
-      VisitBaseNode(Condition.get());
+      Condition->Accept(this);
       Indent -= 2;
     }
 
@@ -179,7 +179,7 @@ private:
 
     if (ReturnStmt->GetOperand()) {
       PrintIndent();
-      VisitBaseNode(ReturnStmt->GetOperand().get());
+      ReturnStmt->GetOperand()->Accept(this);
     }
 
     Indent -= 2;
@@ -207,7 +207,7 @@ private:
     Indent += 2;
 
     PrintIndent();
-    VisitBaseNode(Unary->GetOperand().get());
+    Unary->GetOperand()->Accept(this);
 
     Indent -= 2;
   }
@@ -220,7 +220,7 @@ private:
     if (const auto &Body = VarDecl->GetDeclareBody()) {
       Indent += 2;
       PrintIndent();
-      VisitBaseNode(Body.get());
+      Body->Accept(this);
       Indent -= 2;
     }
   }
@@ -246,7 +246,7 @@ private:
     Indent += 2;
     for (const auto &Argument : FunctionDecl->GetArguments()) {
       PrintIndent();
-      VisitBaseNode(Argument.get());
+      Argument->Accept(this);
     }
     Indent -= 2;
 
@@ -273,7 +273,7 @@ private:
     Indent += 2;
     for (const auto &Argument : FunctionCall->GetArguments()) {
       PrintIndent();
-      VisitBaseNode(Argument.get());
+      Argument->Accept(this);
     }
     Indent -= 2;
 
@@ -302,7 +302,7 @@ private:
                               /*NewLineNeeded=*/true);
         Indent += 2;
         PrintIndent();
-        VisitBaseNode(Condition);
+        Condition->Accept(this);
         Indent -= 2;
       }
     };
