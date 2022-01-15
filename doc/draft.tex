@@ -11,7 +11,7 @@
 
 \title{Weak language draft}
 \author{epoll-reactor}
-\date{December 2021}
+\date{since December 2021}
 
 \begin{document}
 	\pagestyle{fancy}
@@ -250,45 +250,33 @@
 	\section{Implementation}
 	
 		\subsection{Intermediate representation format}
-			The IR is formed from a few of simple constructions:
+			The IR has three-address format, which consists of following instructions:
+			
 			\begin{itemize}
-				\item two-register (binary) operations
-				\begin{itemize}
-					\item \textbf{mov} -- move right register or immediate to left register
-					\item \textbf{add} -- addition
-					\item \textbf{sub} -- subtraction
-					\item \textbf{mul} -- multiplication
-					\item \textbf{div} -- division
-					\item \textbf{and} -- bitwise AND
-					\item \textbf{or} -- bitwise OR
-					\item \textbf{shl} -- bitwise shift left
-					\item \textbf{shr} -- bitwise shift right
-					\item \textbf{cmpge} -- greater or equal comparison
-					\item \textbf{cmple} -- less or equal comparison
-					\item \textbf{cmpgt} -- greater comparison
-					\item \textbf{cmplt} -- less comparison
-					\item \textbf{cmpeq} -- equality comparison
-					\item \textbf{cmpneq} -- not equal comparison
-				\end{itemize}
+				\item \textit{\textbf{res} = \textbf{arg} op \textbf{arg}};
 				
-				\item one-register (unary) operations
-				\begin{itemize}
-					\item \textbf{push} -- push register value to stack
-					\item \textbf{pop} -- get value from stack to register
-					\item \textbf{inc} -- increment register value
-					\item \textbf{dec} -- decrement register value
-				\end{itemize}
-				
-				\item jump operations
-				\begin{itemize}
-					\item \textbf{jmp} -- jump to label (address)					
-				\end{itemize}
-				
-				\item jump labels
-				\begin{itemize}
-					\item L\$(NUMBER) -- label
-				\end{itemize}
-				
+				\item \textit{\textbf{if} \textbf{arg} op \textbf{arg} goto 
+				\textbf{L}};
+
+				\item \textit{\textbf{L}:} (label);
+
+				\item \textit{goto \textbf{L}}.
 			\end{itemize}
+			
+			\noindent \textbf{NOTE:} \textbf{\textit{arg}} can be either temporary variable
+			or immediate value (integer or float).
+				
+			\bigbreak
+				
+			\noindent \textbf{NOTE:} \textbf{\textit{if}} instruction explicitly has two 
+			operands, so if	we have expression like \[\textbf{\textit{if (condition)}}\],
+			 \textbf{\textit{if}} instruction should be represented as
+			 \[\textbf{\textit{if condition != 0 goto L...}}\].
+			 
+			 \bigbreak
+			 
+			 \noindent \textbf{NOTE:} when \textbf{\textit{if}} instruction argument
+			 cannot explicitly be converted to bool, the result of argument implicitly
+			 converted to bool.
 			
 \end{document}
