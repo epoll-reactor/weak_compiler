@@ -19,6 +19,7 @@ public:
             unsigned TheColumnNo = 0U);
 
   ASTType GetASTType() const override;
+  void Accept(const ASTVisitor *) const override;
 
   const std::string &GetValue() const;
 

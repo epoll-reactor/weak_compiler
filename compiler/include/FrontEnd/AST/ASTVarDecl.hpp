@@ -22,6 +22,7 @@ public:
              unsigned TheColumnNo = 0U);
 
   ASTType GetASTType() const override;
+  void Accept(const ASTVisitor *) const override;
 
   TokenType GetDataType() const;
   const std::string &GetSymbolName() const;

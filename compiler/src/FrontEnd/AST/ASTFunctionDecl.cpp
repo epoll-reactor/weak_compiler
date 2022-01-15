@@ -5,6 +5,7 @@
  */
 
 #include "FrontEnd/AST/ASTFunctionDecl.hpp"
+#include "FrontEnd/AST/ASTVisitor.hpp"
 #include "FrontEnd/Lex/Token.hpp"
 
 namespace weak {
@@ -20,6 +21,10 @@ ASTFunctionDecl::ASTFunctionDecl(
       Body(std::move(TheBody)) {}
 
 ASTType ASTFunctionDecl::GetASTType() const { return ASTType::FUNCTION_DECL; }
+
+void ASTFunctionDecl::Accept(const ASTVisitor *Visitor) const {
+  Visitor->Visit(this);
+}
 
 TokenType ASTFunctionDecl::GetReturnType() const { return ReturnType; }
 

@@ -21,6 +21,7 @@ public:
                   unsigned TheLineNo = 0U, unsigned TheColumnNo = 0U);
 
   ASTType GetASTType() const override;
+  void Accept(const ASTVisitor *) const override;
 
   const std::string &GetName() const;
   const std::vector<std::unique_ptr<ASTNode>> &GetArguments() const;

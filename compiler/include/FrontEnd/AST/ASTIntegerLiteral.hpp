@@ -18,6 +18,7 @@ public:
                     unsigned TheColumnNo = 0U);
 
   ASTType GetASTType() const override;
+  void Accept(const ASTVisitor *) const override;
 
   signed GetValue() const;
 
