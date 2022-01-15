@@ -62,6 +62,66 @@ private:
   AnyOperand RightOperand;
 };
 
+/*! This is a conditional jump instruction, that
+ *  has format if <ARG> <OP> <ARG> goto L.
+ */
+class IfInstruction {
+public:
+  using AnyOperand = std::variant<signed, InstructionReference>;
+
+  IfInstruction(frontEnd::TokenType TheOperation, const AnyOperand &TheLeft,
+                const AnyOperand &TheRight, unsigned TheGotoLabel);
+
+  unsigned GetGotoLabel() const;
+  frontEnd::TokenType GetOperation() const;
+  const AnyOperand &GetLeftOperand() const;
+  const AnyOperand &GetRightOperand() const;
+
+  std::string Dump() const;
+
+private:
+  frontEnd::TokenType Operation;
+
+  AnyOperand LeftOperand;
+  AnyOperand RightOperand;
+
+  unsigned GotoLabel;
+};
+
+/// This is a goto label representation in format L<NUMBER>:.
+class GotoLabel {
+public:
+  GotoLabel(unsigned TheLabelNo)
+    : LabelNo(TheLabelNo) {}
+
+  unsigned GetLabel() const { return LabelNo; }
+
+  std::string Dump() const {
+    return "L" + std::to_string(LabelNo) + ":";
+  }
+
+private:
+  unsigned LabelNo;
+};
+
+/// This is jump instruction represented in format goto <LABEL_NO>.
+class Jump {
+public:
+  Jump(unsigned TheLabelNo)
+    : LabelNo(TheLabelNo) {}
+
+  unsigned GetLabel() const { return LabelNo; }
+
+  std::string Dump() const {
+    return "goto L" + std::to_string(LabelNo);
+  }
+
+private:
+  unsigned LabelNo;
+};
+
+using AnyInstruction = std::variant<Instruction, IfInstruction, GotoLabel, Jump>;
+
 } // namespace middleEnd
 } // namespace weak
 
