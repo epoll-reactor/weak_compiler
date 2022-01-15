@@ -22,21 +22,14 @@ public:
 
 private:
   void EmitLabel(unsigned LineNo, unsigned ColumnNo) {
-    if (Level == DiagLevel::ERROR) {
-      std::cerr << "ERROR - at line " << LineNo + 1 << ", column "
-                << ColumnNo + 1 << ": ";
-    } else {
-      std::cerr << "WARN - at line " << LineNo + 1 << ", column "
-                << ColumnNo + 1 << ": ";
-    }
+    std::cerr << ((Level == DiagLevel::ERROR) ? "ERROR" : "WARN");
+    std::cerr << " at line " << LineNo + 1 << ", column " << ColumnNo + 1
+              << ": ";
   }
 
   void EmitEmptyLabel() {
-    if (Level == DiagLevel::ERROR) {
-      std::cerr << "ERROR : ";
-    } else {
-      std::cerr << "WARN: ";
-    }
+    std::cerr << ((Level == DiagLevel::ERROR) ? "ERROR" : "WARN");
+    std::cerr << ": ";
   }
 };
 
