@@ -22,6 +22,7 @@ enum struct TokenType {
   DO,
   ELSE,
   FALSE,
+  FLOAT,
   FOR,
   IF,
   INT,

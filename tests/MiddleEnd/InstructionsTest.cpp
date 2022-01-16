@@ -11,6 +11,7 @@ int main() {
 
     Instruction I(/*LabelNo=*/0U, TokenType::STAR, 3, 4);
     E.Emit(TokenType::PLUS, 1, 2);
+    E.Emit(TokenType::PLUS, 1.23, 4.56);
     E.EmitGotoLabel(1);
     E.Emit(TokenType::MINUS, I, I);
     E.EmitIf(TokenType::EQ, I, 10, /*Label*/1);

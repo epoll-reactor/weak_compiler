@@ -16,11 +16,11 @@ static const std::unordered_map<std::string_view, TokenType> LexKeywords = {
     {"bool", TokenType::BOOLEAN},  {"break", TokenType::BREAK},
     {"char", TokenType::CHAR},     {"continue", TokenType::CONTINUE},
     {"do", TokenType::DO},         {"else", TokenType::ELSE},
-    {"false", TokenType::FALSE},   {"for", TokenType::FOR},
-    {"if", TokenType::IF},         {"int", TokenType::INT},
-    {"return", TokenType::RETURN}, {"string", TokenType::STRING},
-    {"true", TokenType::TRUE},     {"void", TokenType::VOID},
-    {"while", TokenType::WHILE}};
+    {"false", TokenType::FALSE},   {"float", TokenType::FLOAT},
+    {"for", TokenType::FOR},       {"if", TokenType::IF},
+    {"int", TokenType::INT},       {"return", TokenType::RETURN},
+    {"string", TokenType::STRING}, {"true", TokenType::TRUE},
+    {"void", TokenType::VOID},     {"while", TokenType::WHILE}};
 
 static const std::unordered_map<std::string_view, TokenType> LexOperators = {
     {"=", TokenType::ASSIGN},
@@ -118,6 +118,7 @@ static void NormalizeColumnPosition(std::string_view Data,
       {TokenType::DO, "do"sv.length()},
       {TokenType::ELSE, "else"sv.length()},
       {TokenType::FALSE, "false"sv.length()},
+      {TokenType::FLOAT, "float"sv.length()},
       {TokenType::FOR, "for"sv.length()},
       {TokenType::IF, "if"sv.length()},
       {TokenType::INT, "int"sv.length()},

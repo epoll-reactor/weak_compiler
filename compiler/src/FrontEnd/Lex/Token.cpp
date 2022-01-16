@@ -24,6 +24,8 @@ const char *weak::frontEnd::TokenToString(TokenType Type) {
     return "<ELSE>";
   case TokenType::FALSE:
     return "<FALSE>";
+  case TokenType::FLOAT:
+    return "<FLOAT>";
   case TokenType::FOR:
     return "<FOR>";
   case TokenType::IF:
