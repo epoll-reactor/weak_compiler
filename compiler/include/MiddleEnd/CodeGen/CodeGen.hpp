@@ -19,7 +19,8 @@ public:
   using AnyInstruction = std::variant<
       /* If statement produces another instruction. */ Instruction,
       /* If statement produces digit. */ signed,
-      /* If statement produces float. */ double>;
+      /* If statement produces float. */ double,
+      /* If statement produces boolean. */ bool>;
 
   CodeGen(frontEnd::ASTNode *TheRootNode);
 

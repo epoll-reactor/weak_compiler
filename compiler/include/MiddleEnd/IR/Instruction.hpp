@@ -29,7 +29,7 @@ public:
 /// Three-address instruction in format <ID> = <L> <OP> <R>.
 class Instruction {
 public:
-  using AnyOperand = std::variant<signed, double, InstructionReference>;
+  using AnyOperand = std::variant<signed, double, bool, InstructionReference>;
 
   Instruction(unsigned TheLabelNo, frontEnd::TokenType TheOperation,
               const AnyOperand &TheLeft, const AnyOperand &TheRight);
@@ -64,7 +64,7 @@ private:
 /// Conditional instruction in format if <ARG> <OP> <ARG> goto L.
 class IfInstruction {
 public:
-  using AnyOperand = std::variant<signed, double, InstructionReference>;
+  using AnyOperand = Instruction::AnyOperand;
 
   IfInstruction(frontEnd::TokenType TheOperation, const AnyOperand &TheLeft,
                 const AnyOperand &TheRight, unsigned TheGotoLabel);

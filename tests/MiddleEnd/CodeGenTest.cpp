@@ -45,11 +45,11 @@ int main() {
   }
   SECTION(DeepNestedIf) {
     RunCodeGenTest("void f() {"
-                   "  if (0) {"
-                   "    if (1) {"
-                   "      if (2) {"
-                   "        if (3) {"
-                   "          if (4) {"
+                   "  if (true) {"
+                   "    if (false) {"
+                   "      if (true) {"
+                   "        if (false) {"
+                   "          if (true) {"
                    "            int a = 10.11 - 0.99;"
                    "          }"
                    "          int b = 9.99 - 0.99;"
