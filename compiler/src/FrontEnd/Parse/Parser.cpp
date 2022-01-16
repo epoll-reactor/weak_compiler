@@ -711,7 +711,7 @@ std::unique_ptr<ASTNode> Parser::ParseConstant() {
   case TokenType::FALSE:
   case TokenType::TRUE:
     return std::make_unique<ASTBooleanLiteral>(
-      Current.Type == TokenType::TRUE, Current.LineNo, Current.ColumnNo);
+        Current.Type == TokenType::TRUE, Current.LineNo, Current.ColumnNo);
 
   default:
     DiagnosticError(Current.LineNo, Current.ColumnNo) << "Literal expected.";

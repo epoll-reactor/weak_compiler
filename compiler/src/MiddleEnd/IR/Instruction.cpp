@@ -92,7 +92,9 @@ std::string Instruction::Dump() const {
 
     if constexpr (std::is_same_v<T, signed>)
       Stream << Arg;
-    if constexpr (std::is_same_v<T, double>)
+    else if constexpr (std::is_same_v<T, double>)
+      Stream << Arg;
+    else if constexpr (std::is_same_v<T, bool>)
       Stream << Arg;
     else if constexpr (std::is_same_v<T, InstructionReference>)
       Stream << std::string{"t" + std::to_string(Arg.LabelNo)};
@@ -140,6 +142,10 @@ std::string IfInstruction::Dump() const {
     using T = std::decay_t<decltype(Arg)>;
 
     if constexpr (std::is_same_v<T, signed>)
+      Stream << Arg;
+    else if constexpr (std::is_same_v<T, double>)
+      Stream << Arg;
+    else if constexpr (std::is_same_v<T, bool>)
       Stream << Arg;
     else if constexpr (std::is_same_v<T, InstructionReference>)
       Stream << std::string{"t" + std::to_string(Arg.LabelNo)};

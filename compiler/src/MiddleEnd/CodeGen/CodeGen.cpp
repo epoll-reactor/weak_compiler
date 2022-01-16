@@ -91,7 +91,10 @@ void CodeGen::Visit(const frontEnd::ASTVarDecl *VarDecl) const {
   VarDecl->GetDeclareBody()->Accept(this);
 }
 
-void CodeGen::Visit(const frontEnd::ASTBooleanLiteral *) const {}
+void CodeGen::Visit(const frontEnd::ASTBooleanLiteral *Boolean) const {
+  LastInstruction = Boolean->GetValue();
+}
+
 void CodeGen::Visit(const frontEnd::ASTBreakStmt *) const {}
 void CodeGen::Visit(const frontEnd::ASTContinueStmt *) const {}
 void CodeGen::Visit(const frontEnd::ASTDoWhileStmt *) const {}
@@ -123,6 +126,13 @@ void CodeGen::Visit(const frontEnd::ASTIfStmt *If) const {
   case ASTType::INTEGER_LITERAL: {
     auto *Int = static_cast<ASTIntegerLiteral *>(If->GetCondition().get());
     Emitter.EmitIf(TokenType::NEQ, Int->GetValue(), 0, SavedGotoLabel + 1);
+    Emitter.EmitJump(SavedGotoLabel);
+    Emitter.EmitGotoLabel(SavedGotoLabel + 1);
+    break;
+  }
+  case ASTType::BOOLEAN_LITERAL: {
+    auto *Boolean = static_cast<ASTBooleanLiteral *>(If->GetCondition().get());
+    Emitter.EmitIf(TokenType::NEQ, Boolean->GetValue(), 0, SavedGotoLabel + 1);
     Emitter.EmitJump(SavedGotoLabel);
     Emitter.EmitGotoLabel(SavedGotoLabel + 1);
     break;
