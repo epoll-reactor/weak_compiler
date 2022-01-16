@@ -95,7 +95,11 @@ void CodeGen::Visit(const frontEnd::ASTBooleanLiteral *) const {}
 void CodeGen::Visit(const frontEnd::ASTBreakStmt *) const {}
 void CodeGen::Visit(const frontEnd::ASTContinueStmt *) const {}
 void CodeGen::Visit(const frontEnd::ASTDoWhileStmt *) const {}
-void CodeGen::Visit(const frontEnd::ASTFloatingPointLiteral *) const {}
+
+void CodeGen::Visit(const frontEnd::ASTFloatingPointLiteral *Float) const {
+  LastInstruction = Float->GetValue();
+}
+
 void CodeGen::Visit(const frontEnd::ASTForStmt *) const {}
 void CodeGen::Visit(const frontEnd::ASTFunctionCall *) const {}
 

@@ -18,7 +18,8 @@ class CodeGen : private frontEnd::ASTVisitor {
 public:
   using AnyInstruction = std::variant<
       /* If statement produces another instruction. */ Instruction,
-      /* If statement produces digit. */ signed>;
+      /* If statement produces digit. */ signed,
+      /* If statement produces float. */ double>;
 
   CodeGen(frontEnd::ASTNode *TheRootNode);
 
