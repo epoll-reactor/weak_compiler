@@ -24,7 +24,6 @@
 #include "FrontEnd/AST/ASTUnaryOperator.hpp"
 #include "FrontEnd/AST/ASTVarDecl.hpp"
 #include "FrontEnd/AST/ASTWhileStmt.hpp"
-#include "Utility/Diagnostic.hpp"
 
 using namespace weak::frontEnd;
 
@@ -38,80 +37,29 @@ template <class... Ts> Overload(Ts...) -> Overload<Ts...>;
 namespace weak {
 namespace middleEnd {
 
-CodeGen::CodeGen(frontEnd::ASTNode *TheRootNode) : RootNode(TheRootNode) {}
+CodeGen::CodeGen(frontEnd::ASTNode *TheRootNode)
+    : RootNode(TheRootNode), Emitter(), LastInstruction(0), Instructions() {}
 
 void CodeGen::CreateCode() {
-  VisitBaseNode(RootNode);
+  RootNode->Accept(this);
   Emitter.Dump();
 }
 
-CodeGen::AnyInstruction CodeGen::VisitBaseNode(const frontEnd::ASTNode *Node) {
-  switch (Node->GetASTType()) {
-  case ASTType::BASE_NODE:
-    break;
-  case ASTType::INTEGER_LITERAL:
-    return Visit(static_cast<const ASTIntegerLiteral *>(Node));
-  case ASTType::FLOATING_POINT_LITERAL:
-    return Visit(static_cast<const ASTFloatingPointLiteral *>(Node));
-  case ASTType::STRING_LITERAL:
-    return Visit(static_cast<const ASTStringLiteral *>(Node));
-  case ASTType::BOOLEAN_LITERAL:
-    return Visit(static_cast<const ASTBooleanLiteral *>(Node));
-  case ASTType::SYMBOL:
-    return Visit(static_cast<const ASTSymbol *>(Node));
-  case ASTType::VAR_DECL:
-    return Visit(static_cast<const ASTVarDecl *>(Node));
-  case ASTType::PARAMETER:
-    break;
-  case ASTType::BREAK_STMT:
-    return Visit(static_cast<const ASTBreakStmt *>(Node));
-  case ASTType::CONTINUE_STMT:
-    return Visit(static_cast<const ASTContinueStmt *>(Node));
-  case ASTType::BINARY:
-    return Visit(static_cast<const ASTBinaryOperator *>(Node));
-  case ASTType::PREFIX_UNARY: // Fall through.
-  case ASTType::POSTFIX_UNARY:
-    return Visit(static_cast<const ASTUnaryOperator *>(Node));
-  case ASTType::IF_STMT:
-    return Visit(static_cast<const ASTIfStmt *>(Node));
-  case ASTType::FOR_STMT:
-    return Visit(static_cast<const ASTForStmt *>(Node));
-  case ASTType::WHILE_STMT:
-    return Visit(static_cast<const ASTWhileStmt *>(Node));
-  case ASTType::DO_WHILE_STMT:
-    return Visit(static_cast<const ASTDoWhileStmt *>(Node));
-  case ASTType::RETURN_STMT:
-    return Visit(static_cast<const ASTReturnStmt *>(Node));
-  case ASTType::COMPOUND_STMT:
-    return Visit(static_cast<const ASTCompoundStmt *>(Node));
-  case ASTType::FUNCTION_DECL:
-    return Visit(static_cast<const ASTFunctionDecl *>(Node));
-  case ASTType::FUNCTION_CALL:
-    return Visit(static_cast<const ASTFunctionCall *>(Node));
-  }
-  DiagnosticError() << "Should not reach here.";
-  UnreachablePoint();
-}
-
-CodeGen::AnyInstruction
-CodeGen::Visit(const frontEnd::ASTCompoundStmt *Compound) {
+void CodeGen::Visit(const frontEnd::ASTCompoundStmt *Compound) const {
   for (const auto &Stmt : Compound->GetStmts())
-    VisitBaseNode(Stmt.get());
-
-  return 0;
+    Stmt->Accept(this);
 }
 
-CodeGen::AnyInstruction
-CodeGen::Visit(const frontEnd::ASTFunctionDecl *FunctionDecl) {
-  VisitBaseNode(FunctionDecl->GetBody().get());
-
-  return 0;
+void CodeGen::Visit(const frontEnd::ASTFunctionDecl *FunctionDecl) const {
+  FunctionDecl->GetBody()->Accept(this);
 }
 
-CodeGen::AnyInstruction
-CodeGen::Visit(const frontEnd::ASTBinaryOperator *Binary) {
-  auto LHS = VisitBaseNode(Binary->GetLHS().get());
-  auto RHS = VisitBaseNode(Binary->GetRHS().get());
+void CodeGen::Visit(const frontEnd::ASTBinaryOperator *Binary) const {
+  Binary->GetLHS()->Accept(this);
+  auto LHS = LastInstruction;
+
+  Binary->GetRHS()->Accept(this);
+  auto RHS = LastInstruction;
 
   using Ref = InstructionReference;
   // clang-format off
@@ -131,69 +79,41 @@ CodeGen::Visit(const frontEnd::ASTBinaryOperator *Binary) {
   }, LHS, RHS);
   // clang-format on
 
-  return std::get<Instruction>(Emitter.GetInstructions().back());
+  LastInstruction = std::get<Instruction>(Emitter.GetInstructions().back());
 }
 
-CodeGen::AnyInstruction
-CodeGen::Visit(const frontEnd::ASTIntegerLiteral *Integer) {
-  return Integer->GetValue();
+void CodeGen::Visit(const frontEnd::ASTIntegerLiteral *Integer) const {
+  LastInstruction = Integer->GetValue();
 }
 
-CodeGen::AnyInstruction CodeGen::Visit(const frontEnd::ASTVarDecl *VarDecl) {
-  VisitBaseNode(VarDecl->GetDeclareBody().get());
-
-  return 0;
+void CodeGen::Visit(const frontEnd::ASTVarDecl *VarDecl) const {
+  VarDecl->GetDeclareBody()->Accept(this);
 }
 
-CodeGen::AnyInstruction CodeGen::Visit(const frontEnd::ASTBooleanLiteral *) {
-  return 0;
-}
-CodeGen::AnyInstruction CodeGen::Visit(const frontEnd::ASTBreakStmt *) {
-  return 0;
-}
-CodeGen::AnyInstruction CodeGen::Visit(const frontEnd::ASTContinueStmt *) {
-  return 0;
-}
-CodeGen::AnyInstruction CodeGen::Visit(const frontEnd::ASTDoWhileStmt *) {
-  return 0;
-}
-CodeGen::AnyInstruction
-CodeGen::Visit(const frontEnd::ASTFloatingPointLiteral *) {
-  return 0;
-}
-CodeGen::AnyInstruction CodeGen::Visit(const frontEnd::ASTForStmt *) {
-  return 0;
-}
-CodeGen::AnyInstruction CodeGen::Visit(const frontEnd::ASTFunctionCall *) {
-  return 0;
+void CodeGen::Visit(const frontEnd::ASTBooleanLiteral *) const {}
+void CodeGen::Visit(const frontEnd::ASTBreakStmt *) const {}
+void CodeGen::Visit(const frontEnd::ASTContinueStmt *) const {}
+void CodeGen::Visit(const frontEnd::ASTDoWhileStmt *) const {}
+void CodeGen::Visit(const frontEnd::ASTFloatingPointLiteral *) const {}
+void CodeGen::Visit(const frontEnd::ASTForStmt *) const {}
+void CodeGen::Visit(const frontEnd::ASTFunctionCall *) const {}
+
+void CodeGen::Visit(const frontEnd::ASTIfStmt *) const {
+  //  auto Condition = VisitBaseNode(If->GetCondition().get());
+  //
+  //  VisitBaseNode(If->GetThenBody().get());
+  //
+  //  if (auto *Else = If->GetElseBody().get())
+  //    VisitBaseNode(Else);
+  //
+  //  return 0;
 }
 
-CodeGen::AnyInstruction CodeGen::Visit(const frontEnd::ASTIfStmt *If) {
-  auto Condition = VisitBaseNode(If->GetCondition().get());
-
-  VisitBaseNode(If->GetThenBody().get());
-
-  if (auto *Else = If->GetElseBody().get())
-    VisitBaseNode(Else);
-
-  return 0;
-}
-
-CodeGen::AnyInstruction CodeGen::Visit(const frontEnd::ASTReturnStmt *) {
-  return 0;
-}
-CodeGen::AnyInstruction CodeGen::Visit(const frontEnd::ASTStringLiteral *) {
-  return 0;
-}
-CodeGen::AnyInstruction CodeGen::Visit(const frontEnd::ASTSymbol *) {
-  return 0;
-}
-CodeGen::AnyInstruction CodeGen::Visit(const frontEnd::ASTUnaryOperator *) {
-  return 0;
-}
-CodeGen::AnyInstruction CodeGen::Visit(const frontEnd::ASTWhileStmt *) {
-  return 0;
-}
+void CodeGen::Visit(const frontEnd::ASTReturnStmt *) const {}
+void CodeGen::Visit(const frontEnd::ASTStringLiteral *) const {}
+void CodeGen::Visit(const frontEnd::ASTSymbol *) const {}
+void CodeGen::Visit(const frontEnd::ASTUnaryOperator *) const {}
+void CodeGen::Visit(const frontEnd::ASTWhileStmt *) const {}
 
 } // namespace middleEnd
 } // namespace weak
