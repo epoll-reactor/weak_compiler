@@ -11,6 +11,12 @@
 #include <vector>
 
 namespace weak {
+namespace middleEnd {
+class Storage;
+} // namespace middleEnd
+} // namespace weak
+
+namespace weak {
 namespace frontEnd {
 
 /*!
@@ -19,7 +25,7 @@ namespace frontEnd {
  */
 class Lexer {
 public:
-  Lexer(class Storage *TheStorage, const char *TheBufferStart,
+  Lexer(middleEnd::Storage *TheStorage, const char *TheBufferStart,
         const char *TheBufferEnd);
 
   /// Walk through input text and generate stream of tokens.
@@ -40,7 +46,7 @@ private:
   Token MakeToken(std::string_view Data, TokenType Type) const;
 
   /// Used to accumulate symbols with their attributes.
-  class Storage *Storage;
+  middleEnd::Storage *Storage;
 
   /// First symbol in buffer.
   const char *BufferStart;

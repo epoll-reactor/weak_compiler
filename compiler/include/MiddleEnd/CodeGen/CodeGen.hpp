@@ -10,6 +10,8 @@
 #include "FrontEnd/AST/ASTVisitor.hpp"
 #include "MiddleEnd/CodeGen/CodeEmitter.hpp"
 #include "MiddleEnd/IR/Instruction.hpp"
+#include "MiddleEnd/Symbols/Storage.hpp"
+#include <map>
 
 namespace weak {
 namespace middleEnd {
@@ -18,11 +20,12 @@ class CodeGen : private frontEnd::ASTVisitor {
 public:
   using AnyInstruction = std::variant<
       /* If statement produces another instruction. */ Instruction,
+      /* If statement produces unary instruction. */ UnaryInstruction,
       /* If statement produces digit. */ signed,
       /* If statement produces float. */ double,
       /* If statement produces boolean. */ bool>;
 
-  CodeGen(frontEnd::ASTNode *TheRootNode);
+  CodeGen(Storage *TheVariablePool, frontEnd::ASTNode *TheRootNode);
 
   void CreateCode();
 
@@ -53,6 +56,8 @@ private:
   mutable AnyInstruction LastInstruction;
 
   mutable unsigned CurrentGotoLabel;
+
+  mutable Storage *VariablePool;
 
   std::vector<Instruction> Instructions;
 };

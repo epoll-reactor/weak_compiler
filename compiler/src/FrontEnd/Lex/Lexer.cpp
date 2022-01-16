@@ -5,7 +5,7 @@
  */
 
 #include "FrontEnd/Lex/Lexer.hpp"
-#include "FrontEnd/Symbols/Storage.hpp"
+#include "MiddleEnd/Symbols/Storage.hpp"
 #include "Utility/Diagnostic.hpp"
 #include <cassert>
 #include <unordered_map>
@@ -139,7 +139,7 @@ static void NormalizeColumnPosition(std::string_view Data,
 namespace weak {
 namespace frontEnd {
 
-Lexer::Lexer(weak::frontEnd::Storage *TheStorage, const char *TheBufferStart,
+Lexer::Lexer(weak::middleEnd::Storage *TheStorage, const char *TheBufferStart,
              const char *TheBufferEnd)
     : Storage(TheStorage), BufferStart(TheBufferStart), BufferEnd(TheBufferEnd),
       CurrentBufferPtr(TheBufferStart), CurrentLineNo(0U), CurrentColumnNo(0U) {

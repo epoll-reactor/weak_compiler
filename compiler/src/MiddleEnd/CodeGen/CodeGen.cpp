@@ -24,6 +24,7 @@
 #include "FrontEnd/AST/ASTUnaryOperator.hpp"
 #include "FrontEnd/AST/ASTVarDecl.hpp"
 #include "FrontEnd/AST/ASTWhileStmt.hpp"
+#include "Utility/Diagnostic.hpp"
 
 using namespace weak::frontEnd;
 
@@ -37,9 +38,9 @@ template <class... Ts> Overload(Ts...) -> Overload<Ts...>;
 namespace weak {
 namespace middleEnd {
 
-CodeGen::CodeGen(frontEnd::ASTNode *TheRootNode)
+CodeGen::CodeGen(Storage *TheVariablePool, frontEnd::ASTNode *TheRootNode)
     : RootNode(TheRootNode), Emitter(), LastInstruction(0),
-      CurrentGotoLabel(0U), Instructions() {}
+      CurrentGotoLabel(0U), VariablePool(TheVariablePool), Instructions() {}
 
 void CodeGen::CreateCode() {
   RootNode->Accept(this);
@@ -47,8 +48,12 @@ void CodeGen::CreateCode() {
 }
 
 void CodeGen::Visit(const frontEnd::ASTCompoundStmt *Compound) const {
+  VariablePool->ScopeBegin();
+
   for (const auto &Stmt : Compound->GetStmts())
     Stmt->Accept(this);
+
+  VariablePool->ScopeEnd();
 }
 
 void CodeGen::Visit(const frontEnd::ASTFunctionDecl *FunctionDecl) const {
@@ -89,6 +94,28 @@ void CodeGen::Visit(const frontEnd::ASTIntegerLiteral *Integer) const {
 
 void CodeGen::Visit(const frontEnd::ASTVarDecl *VarDecl) const {
   VarDecl->GetDeclareBody()->Accept(this);
+
+  // clang-format off
+  std::visit(Overload {
+    [    ](const UnaryInstruction &) { /* Do nothing. */ },
+    [    ](const Instruction      &) { /* Do nothing. */ },
+    [this](signed I) {
+      LastInstruction = *Emitter.Emit(I);
+    },
+    [this](double I) {
+      LastInstruction = *Emitter.Emit(I);
+    },
+    [this](bool I) {
+      LastInstruction = *Emitter.Emit(I);
+    }
+  }, LastInstruction);
+  // clang-format on
+
+  auto *Record = VariablePool->GetByName(VarDecl->GetSymbolName());
+  Record->DataType = VarDecl->GetDataType();
+
+  std::visit([&Record](const auto &I) { Record->StoredValue = I; },
+             LastInstruction);
 }
 
 void CodeGen::Visit(const frontEnd::ASTBooleanLiteral *Boolean) const {
@@ -164,7 +191,19 @@ void CodeGen::Visit(const frontEnd::ASTIfStmt *If) const {
 
 void CodeGen::Visit(const frontEnd::ASTReturnStmt *) const {}
 void CodeGen::Visit(const frontEnd::ASTStringLiteral *) const {}
-void CodeGen::Visit(const frontEnd::ASTSymbol *) const {}
+
+void CodeGen::Visit(const frontEnd::ASTSymbol *Symbol) const {
+  auto *Record = VariablePool->GetByName(Symbol->GetValue());
+
+  /// If variable type was not set, we have not the complete definition.
+  if (Record->DataType == TokenType::NONE) {
+    DiagnosticError(Symbol->GetLineNo(), Symbol->GetColumnNo())
+        << "Variable not found: " << Symbol->GetValue();
+    UnreachablePoint();
+  }
+
+  std::visit([this](auto I) { LastInstruction = I; }, Record->StoredValue);
+}
 
 void CodeGen::Visit(const frontEnd::ASTUnaryOperator *Unary) const {
   Unary->GetOperand()->Accept(this);
@@ -193,6 +232,8 @@ void CodeGen::Visit(const frontEnd::ASTUnaryOperator *Unary) const {
   default:
     break;
   }
+
+  LastInstruction = std::get<Instruction>(Emitter.GetInstructions().back());
 }
 
 void CodeGen::Visit(const frontEnd::ASTWhileStmt *) const {}
