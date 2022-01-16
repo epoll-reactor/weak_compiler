@@ -38,7 +38,8 @@ namespace weak {
 namespace middleEnd {
 
 CodeGen::CodeGen(frontEnd::ASTNode *TheRootNode)
-    : RootNode(TheRootNode), Emitter(), LastInstruction(0), Instructions() {}
+    : RootNode(TheRootNode), Emitter(), LastInstruction(0),
+      CurrentGotoLabel(0U), Instructions() {}
 
 void CodeGen::CreateCode() {
   RootNode->Accept(this);
@@ -98,21 +99,82 @@ void CodeGen::Visit(const frontEnd::ASTFloatingPointLiteral *) const {}
 void CodeGen::Visit(const frontEnd::ASTForStmt *) const {}
 void CodeGen::Visit(const frontEnd::ASTFunctionCall *) const {}
 
-void CodeGen::Visit(const frontEnd::ASTIfStmt *) const {
-  //  auto Condition = VisitBaseNode(If->GetCondition().get());
-  //
-  //  VisitBaseNode(If->GetThenBody().get());
-  //
-  //  if (auto *Else = If->GetElseBody().get())
-  //    VisitBaseNode(Else);
-  //
-  //  return 0;
+/*!               if !cond then goto EXIT
+ *                instr1
+ *                instr2
+ *  EXIT:         after if instr
+ *
+ *                if !cond then goto ELSE
+ *                instr1
+ *                instr2
+ *                goto EXIT
+ *  ELSE:         else instr1
+ *                else instr2
+ *  EXIT:         after if instr
+ */
+void CodeGen::Visit(const frontEnd::ASTIfStmt *If) const {
+  unsigned SavedGotoLabel = CurrentGotoLabel++;
+
+  switch (If->GetCondition()->GetASTType()) {
+  case ASTType::INTEGER_LITERAL: {
+    auto *Int = static_cast<ASTIntegerLiteral *>(If->GetCondition().get());
+    Emitter.EmitIf(TokenType::NEQ, Int->GetValue(), 0, SavedGotoLabel + 1);
+    Emitter.EmitJump(SavedGotoLabel);
+    Emitter.EmitGotoLabel(SavedGotoLabel + 1);
+    break;
+  }
+  case ASTType::BINARY: {
+    If->GetCondition()->Accept(this);
+    Emitter.EmitJump(SavedGotoLabel);
+    Emitter.EmitGotoLabel(SavedGotoLabel + 1);
+    break;
+  }
+  default:
+    break;
+  }
+
+  If->GetThenBody()->Accept(this);
+
+  Emitter.EmitGotoLabel(SavedGotoLabel);
+
+  if (If->GetElseBody().get()) {
+    If->GetElseBody()->Accept(this);
+  }
 }
 
 void CodeGen::Visit(const frontEnd::ASTReturnStmt *) const {}
 void CodeGen::Visit(const frontEnd::ASTStringLiteral *) const {}
 void CodeGen::Visit(const frontEnd::ASTSymbol *) const {}
-void CodeGen::Visit(const frontEnd::ASTUnaryOperator *) const {}
+
+void CodeGen::Visit(const frontEnd::ASTUnaryOperator *Unary) const {
+  Unary->GetOperand()->Accept(this);
+  using Ref = InstructionReference;
+
+  auto VisitUnary = [this](TokenType Operation, auto &&Instr) {
+    // clang-format off
+    std::visit(Overload {
+      [this, Op = Operation](const Instruction &I) {
+        Emitter.Emit(Op, Ref(I), 1);
+      },
+      [this, Op = Operation](auto I) {
+        Emitter.Emit(Op, I, 1);
+      }
+    }, Instr);
+    // clang-format on
+  };
+
+  switch (Unary->GetOperation()) {
+  case TokenType::INC:
+    VisitUnary(TokenType::PLUS, LastInstruction);
+    break;
+  case TokenType::DEC:
+    VisitUnary(TokenType::MINUS, LastInstruction);
+    break;
+  default:
+    break;
+  }
+}
+
 void CodeGen::Visit(const frontEnd::ASTWhileStmt *) const {}
 
 } // namespace middleEnd
