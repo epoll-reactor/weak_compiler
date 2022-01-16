@@ -50,6 +50,8 @@ private:
 
   mutable AnyInstruction LastInstruction;
 
+  mutable unsigned CurrentGotoLabel;
+
   std::vector<Instruction> Instructions;
 };
 
