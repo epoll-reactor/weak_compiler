@@ -28,6 +28,14 @@ const Instruction *CodeEmitter::Emit(frontEnd::TokenType Type,
   return I;
 }
 
+const UnaryInstruction *
+CodeEmitter::Emit(const UnaryInstruction::AnyOperand &Op) {
+  Instructions.emplace_back(UnaryInstruction(CurrentLabel, Op));
+  ++CurrentLabel;
+  UnaryInstruction *I = &std::get<UnaryInstruction>(Instructions.back());
+  return I;
+}
+
 const IfInstruction *CodeEmitter::EmitIf(frontEnd::TokenType Operation,
                                          const Instruction::AnyOperand &Left,
                                          const Instruction::AnyOperand &Right,
@@ -54,6 +62,9 @@ void CodeEmitter::Dump() {
     // clang-format off
     std::visit(Overload {
       [](const Instruction &I) {
+        std::cout << I.Dump() << std::endl;
+      },
+      [](const UnaryInstruction &I) {
         std::cout << I.Dump() << std::endl;
       },
       [](const IfInstruction &I) {

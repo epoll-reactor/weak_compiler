@@ -1,6 +1,6 @@
 #include "FrontEnd/Lex/Lexer.hpp"
 #include "FrontEnd/Parse/Parser.hpp"
-#include "FrontEnd/Symbols/Storage.hpp"
+#include "MiddleEnd/Symbols/Storage.hpp"
 #include "MiddleEnd/CodeGen/CodeGen.hpp"
 #include "TestHelpers.hpp"
 
@@ -8,10 +8,10 @@ namespace fe = weak::frontEnd;
 namespace me = weak::middleEnd;
 
 void RunCodeGenTest(std::string_view Program) {
-  fe::Storage Storage;
+  me::Storage Storage;
   auto Tokens = fe::Lexer(&Storage, &*Program.begin(), &*Program.end()).Analyze();
   auto AST = fe::Parser(Tokens.begin().base(), Tokens.end().base()).Parse();
-  me::CodeGen(AST.get()).CreateCode();
+  me::CodeGen(&Storage, AST.get()).CreateCode();
 }
 
 int main() {
@@ -62,5 +62,20 @@ int main() {
                    "  }"
                    "  int f = 5.55 - 0.99;"
                    "}");
+  }
+  SECTION(Variables) {
+    RunCodeGenTest("void f() {"
+                   "  int a = 2++ + ++2;"
+                   "  int b = 3 + 4;"
+                   "  int c = b + a;"
+                   "  int d = c + a;"
+                   "  int e = d + a;"
+                   "  int f = e + a;"
+                   "}");
+  }
+  SECTION(VariableNotFound) {
+//    RunCodeGenTest("void f() {"
+//                   "  int c = b + a;"
+//                   "}");
   }
 }

@@ -22,6 +22,7 @@ public:
 
   const Instruction *Emit(frontEnd::TokenType, const Instruction::AnyOperand &,
                           const Instruction::AnyOperand &);
+  const UnaryInstruction *Emit(const UnaryInstruction::AnyOperand &);
 
   const IfInstruction *EmitIf(frontEnd::TokenType Operation,
                               const Instruction::AnyOperand &Left,

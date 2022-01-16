@@ -17,11 +17,13 @@ namespace weak {
 namespace middleEnd {
 
 class Instruction;
+class UnaryInstruction;
 
 /// Reference, used as instruction operand.
 class InstructionReference {
 public:
   InstructionReference(const Instruction &);
+  InstructionReference(const UnaryInstruction &);
 
   unsigned LabelNo;
 };
@@ -59,6 +61,23 @@ private:
 
   AnyOperand LeftOperand;
   AnyOperand RightOperand;
+};
+
+/// Instruction in format <ID> = <VALUE>;
+class UnaryInstruction {
+public:
+  using AnyOperand = Instruction::AnyOperand;
+
+  UnaryInstruction(unsigned TheLabelNo, const AnyOperand &TheOperand);
+
+  unsigned GetLabelNo() const;
+  const AnyOperand &GetOperand() const;
+
+  std::string Dump() const;
+
+private:
+  unsigned LabelNo;
+  AnyOperand Operand;
 };
 
 /// Conditional instruction in format if <ARG> <OP> <ARG> goto L.
@@ -112,7 +131,7 @@ private:
 };
 
 using AnyInstruction =
-    std::variant<Instruction, IfInstruction, GotoLabel, Jump>;
+    std::variant<Instruction, UnaryInstruction, IfInstruction, GotoLabel, Jump>;
 
 } // namespace middleEnd
 } // namespace weak
