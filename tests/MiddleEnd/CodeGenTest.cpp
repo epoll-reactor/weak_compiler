@@ -17,7 +17,7 @@ void RunCodeGenTest(std::string_view Program) {
 int main() {
   SECTION(BasicCodeGen) {
     RunCodeGenTest("void f() {"
-                   "  int a = 1 * 2 + 3 * 4;"
+                   "  int a = 1 * 2 + 3 * 4 * 5 + 6 ^ 7 & 8 & 9;"
                    "}");
   }
 }

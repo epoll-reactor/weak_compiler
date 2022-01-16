@@ -7,40 +7,14 @@
 #ifndef WEAK_COMPILER_MIDDLE_END_CODE_GEN_HPP
 #define WEAK_COMPILER_MIDDLE_END_CODE_GEN_HPP
 
-#include "FrontEnd/AST/ASTNode.hpp"
+#include "FrontEnd/AST/ASTVisitor.hpp"
 #include "MiddleEnd/CodeGen/CodeEmitter.hpp"
 #include "MiddleEnd/IR/Instruction.hpp"
 
 namespace weak {
-namespace frontEnd {
-
-class ASTNode;
-class ASTBinaryOperator;
-class ASTBooleanLiteral;
-class ASTBreakStmt;
-class ASTCompoundStmt;
-class ASTContinueStmt;
-class ASTDoWhileStmt;
-class ASTFloatingPointLiteral;
-class ASTForStmt;
-class ASTFunctionDecl;
-class ASTFunctionCall;
-class ASTIfStmt;
-class ASTIntegerLiteral;
-class ASTReturnStmt;
-class ASTStringLiteral;
-class ASTSymbol;
-class ASTUnaryOperator;
-class ASTVarDecl;
-class ASTWhileStmt;
-
-} // namespace frontEnd
-} // namespace weak
-
-namespace weak {
 namespace middleEnd {
 
-class CodeGen {
+class CodeGen : private frontEnd::ASTVisitor {
 public:
   using AnyInstruction = std::variant<
       /* If statement produces another instruction. */ Instruction,
@@ -51,29 +25,30 @@ public:
   void CreateCode();
 
 private:
-  AnyInstruction VisitBaseNode(const frontEnd::ASTNode *);
-  AnyInstruction Visit(const frontEnd::ASTBinaryOperator *);
-  AnyInstruction Visit(const frontEnd::ASTBooleanLiteral *);
-  AnyInstruction Visit(const frontEnd::ASTBreakStmt *);
-  AnyInstruction Visit(const frontEnd::ASTCompoundStmt *);
-  AnyInstruction Visit(const frontEnd::ASTContinueStmt *);
-  AnyInstruction Visit(const frontEnd::ASTDoWhileStmt *);
-  AnyInstruction Visit(const frontEnd::ASTFloatingPointLiteral *);
-  AnyInstruction Visit(const frontEnd::ASTForStmt *);
-  AnyInstruction Visit(const frontEnd::ASTFunctionDecl *);
-  AnyInstruction Visit(const frontEnd::ASTFunctionCall *);
-  AnyInstruction Visit(const frontEnd::ASTIfStmt *);
-  AnyInstruction Visit(const frontEnd::ASTIntegerLiteral *);
-  AnyInstruction Visit(const frontEnd::ASTReturnStmt *);
-  AnyInstruction Visit(const frontEnd::ASTStringLiteral *);
-  AnyInstruction Visit(const frontEnd::ASTSymbol *);
-  AnyInstruction Visit(const frontEnd::ASTUnaryOperator *);
-  AnyInstruction Visit(const frontEnd::ASTVarDecl *);
-  AnyInstruction Visit(const frontEnd::ASTWhileStmt *);
+  void Visit(const frontEnd::ASTBinaryOperator *) const override;
+  void Visit(const frontEnd::ASTBooleanLiteral *) const override;
+  void Visit(const frontEnd::ASTBreakStmt *) const override;
+  void Visit(const frontEnd::ASTCompoundStmt *) const override;
+  void Visit(const frontEnd::ASTContinueStmt *) const override;
+  void Visit(const frontEnd::ASTDoWhileStmt *) const override;
+  void Visit(const frontEnd::ASTFloatingPointLiteral *) const override;
+  void Visit(const frontEnd::ASTForStmt *) const override;
+  void Visit(const frontEnd::ASTFunctionDecl *) const override;
+  void Visit(const frontEnd::ASTFunctionCall *) const override;
+  void Visit(const frontEnd::ASTIfStmt *) const override;
+  void Visit(const frontEnd::ASTIntegerLiteral *) const override;
+  void Visit(const frontEnd::ASTReturnStmt *) const override;
+  void Visit(const frontEnd::ASTStringLiteral *) const override;
+  void Visit(const frontEnd::ASTSymbol *) const override;
+  void Visit(const frontEnd::ASTUnaryOperator *) const override;
+  void Visit(const frontEnd::ASTVarDecl *) const override;
+  void Visit(const frontEnd::ASTWhileStmt *) const override;
 
   frontEnd::ASTNode *RootNode;
 
-  CodeEmitter Emitter;
+  mutable CodeEmitter Emitter;
+
+  mutable AnyInstruction LastInstruction;
 
   std::vector<Instruction> Instructions;
 };
