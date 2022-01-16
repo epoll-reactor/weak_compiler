@@ -29,6 +29,8 @@ int main() {
            "  var1++;\n"
            "  var2++;"
            "  float value = 3.1415;\n"
+           "  bool good_boolean = true;\n"
+           "  bool malevolent_boolean = false;\n"
            "  for (int i = 0; i < 10; ++i) { a << b + c = x <= e == f >= g; }\n"
            "  while (a << b + c + x) {\n"
            "    while (0) {\n"
