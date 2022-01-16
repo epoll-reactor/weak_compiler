@@ -122,19 +122,25 @@ void CodeGen::Visit(const frontEnd::ASTFunctionCall *) const {}
 void CodeGen::Visit(const frontEnd::ASTIfStmt *If) const {
   unsigned SavedGotoLabel = CurrentGotoLabel++;
 
-  switch (If->GetCondition()->GetASTType()) {
-  case ASTType::INTEGER_LITERAL: {
-    auto *Int = static_cast<ASTIntegerLiteral *>(If->GetCondition().get());
-    Emitter.EmitIf(TokenType::NEQ, Int->GetValue(), 0, SavedGotoLabel + 1);
+  auto EmitIfCode = [this, &SavedGotoLabel, &If](auto &&DataType) {
+    using T = std::decay_t<decltype(DataType)>;
+    auto *Value = static_cast<T *>(If->GetCondition().get());
+    Emitter.EmitIf(TokenType::NEQ, Value->GetValue(), 0, SavedGotoLabel + 1);
     Emitter.EmitJump(SavedGotoLabel);
     Emitter.EmitGotoLabel(SavedGotoLabel + 1);
+  };
+
+  switch (If->GetCondition()->GetASTType()) {
+  case ASTType::INTEGER_LITERAL: {
+    EmitIfCode(ASTIntegerLiteral{0});
     break;
   }
   case ASTType::BOOLEAN_LITERAL: {
-    auto *Boolean = static_cast<ASTBooleanLiteral *>(If->GetCondition().get());
-    Emitter.EmitIf(TokenType::NEQ, Boolean->GetValue(), 0, SavedGotoLabel + 1);
-    Emitter.EmitJump(SavedGotoLabel);
-    Emitter.EmitGotoLabel(SavedGotoLabel + 1);
+    EmitIfCode(ASTBooleanLiteral{false});
+    break;
+  }
+  case ASTType::FLOATING_POINT_LITERAL: {
+    EmitIfCode(ASTFloatingPointLiteral{0.0});
     break;
   }
   case ASTType::BINARY: {
