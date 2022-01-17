@@ -46,10 +46,10 @@ public:
   bool IsRightVar() const;
 
   signed GetLeftImm() const;
-  InstructionReference GetLeftInstruction() const;
+  const AnyOperand &GetLeftInstruction() const;
 
   signed GetRightImm() const;
-  InstructionReference GetRightInstruction() const;
+  const AnyOperand &GetRightInstruction() const;
 
   std::string Dump() const;
 
@@ -87,6 +87,8 @@ public:
 
   IfInstruction(frontEnd::TokenType TheOperation, const AnyOperand &TheLeft,
                 const AnyOperand &TheRight, unsigned TheGotoLabel);
+
+  void SetGotoLabel(unsigned);
 
   unsigned GetGotoLabel() const;
   frontEnd::TokenType GetOperation() const;

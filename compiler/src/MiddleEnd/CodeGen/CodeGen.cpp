@@ -25,6 +25,7 @@
 #include "FrontEnd/AST/ASTVarDecl.hpp"
 #include "FrontEnd/AST/ASTWhileStmt.hpp"
 #include "Utility/Diagnostic.hpp"
+#include <cassert>
 
 using namespace weak::frontEnd;
 
@@ -40,7 +41,7 @@ namespace middleEnd {
 
 CodeGen::CodeGen(Storage *TheVariablePool, frontEnd::ASTNode *TheRootNode)
     : RootNode(TheRootNode), Emitter(), LastInstruction(0),
-      CurrentGotoLabel(0U), VariablePool(TheVariablePool), Instructions() {}
+      CurrentGotoLabel(0U), VariablePool(TheVariablePool) {}
 
 void CodeGen::CreateCode() {
   RootNode->Accept(this);
@@ -236,7 +237,63 @@ void CodeGen::Visit(const frontEnd::ASTUnaryOperator *Unary) const {
   LastInstruction = std::get<Instruction>(Emitter.GetInstructions().back());
 }
 
-void CodeGen::Visit(const frontEnd::ASTWhileStmt *) const {}
+/*  while (cond) { body() } after_body()
+ *
+ *  COND:           if !cond goto EXIT
+ *                  body instr1
+ *                  body instr2
+ *                  goto COND
+ *  EXIT:           after while instr
+ */
+void CodeGen::Visit(const frontEnd::ASTWhileStmt *While) const {
+  unsigned SavedGotoLabel = CurrentGotoLabel++;
+  Emitter.EmitGotoLabel(SavedGotoLabel);
+
+  IfInstruction *ConditionInstruction = nullptr;
+
+  auto EmitCondition = [this, &ConditionInstruction, While](auto &&DataType) {
+    using T = std::decay_t<decltype(DataType)>;
+    auto *Value = static_cast<T *>(While->GetCondition().get());
+    ConditionInstruction =
+        Emitter.EmitIf(TokenType::NEQ, Value->GetValue(), 0, /* Label */ 0);
+  };
+
+  switch (While->GetCondition()->GetASTType()) {
+  case ASTType::INTEGER_LITERAL: {
+    EmitCondition(ASTIntegerLiteral{0});
+    break;
+  }
+  case ASTType::BOOLEAN_LITERAL: {
+    EmitCondition(ASTBooleanLiteral{false});
+    break;
+  }
+  case ASTType::FLOATING_POINT_LITERAL: {
+    EmitCondition(ASTFloatingPointLiteral{0.0});
+    break;
+  }
+  case ASTType::BINARY: {
+    While->GetCondition()->Accept(this);
+    Instruction *Instr = &std::get<Instruction>(LastInstruction);
+    Emitter.RemoveLast();
+    ConditionInstruction = Emitter.EmitIf(*Instr, /*GotoLabel=*/0);
+    break;
+  }
+  default:
+    break;
+  }
+
+  While->GetBody()->Accept(this);
+
+  /// Return back to while condition.
+  Emitter.EmitJump(SavedGotoLabel);
+
+  /// If while condition failed, we should fall there.
+  Emitter.EmitGotoLabel(CurrentGotoLabel);
+
+  assert(ConditionInstruction);
+  ConditionInstruction->SetGotoLabel(CurrentGotoLabel);
+  CurrentGotoLabel++;
+}
 
 } // namespace middleEnd
 } // namespace weak

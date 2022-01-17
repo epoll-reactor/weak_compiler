@@ -11,6 +11,7 @@
 #include "MiddleEnd/CodeGen/CodeEmitter.hpp"
 #include "MiddleEnd/IR/Instruction.hpp"
 #include "MiddleEnd/Symbols/Storage.hpp"
+#include <list>
 #include <map>
 
 namespace weak {
@@ -58,8 +59,6 @@ private:
   mutable unsigned CurrentGotoLabel;
 
   mutable Storage *VariablePool;
-
-  std::vector<Instruction> Instructions;
 };
 
 } // namespace middleEnd

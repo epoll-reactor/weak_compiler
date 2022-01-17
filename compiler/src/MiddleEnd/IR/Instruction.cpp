@@ -83,10 +83,8 @@ signed Instruction::GetLeftImm() const {
   return std::get<signed>(LeftOperand);
 }
 
-InstructionReference Instruction::GetLeftInstruction() const {
-  CheckForOperand<InstructionReference>(LeftOperand,
-                                        "Left operand isn't an immediate.");
-  return std::get<InstructionReference>(LeftOperand);
+const Instruction::AnyOperand &Instruction::GetLeftInstruction() const {
+  return LeftOperand;
 }
 
 signed Instruction::GetRightImm() const {
@@ -94,10 +92,8 @@ signed Instruction::GetRightImm() const {
   return std::get<signed>(RightOperand);
 }
 
-InstructionReference Instruction::GetRightInstruction() const {
-  CheckForOperand<InstructionReference>(RightOperand,
-                                        "Right operand isn't an immediate.");
-  return std::get<InstructionReference>(RightOperand);
+const Instruction::AnyOperand &Instruction::GetRightInstruction() const {
+  return RightOperand;
 }
 
 std::string Instruction::Dump() const {
@@ -160,6 +156,8 @@ IfInstruction::IfInstruction(frontEnd::TokenType TheOperation,
 
 unsigned IfInstruction::GetGotoLabel() const { return GotoLabel; }
 
+void IfInstruction::SetGotoLabel(unsigned Label) { GotoLabel = Label; }
+
 TokenType IfInstruction::GetOperation() const { return Operation; }
 
 const IfInstruction::AnyOperand &IfInstruction::GetLeftOperand() const {
@@ -181,7 +179,7 @@ std::string IfInstruction::Dump() const {
   Stream << std::setw(4) << TokenToString(Operation);
   Stream << std::setw(7) << " ";
 
-  DumpTo(Stream, LeftOperand);
+  DumpTo(Stream, RightOperand);
 
   Stream << " goto L" << GotoLabel;
   return Stream.str();

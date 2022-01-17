@@ -1,7 +1,7 @@
 #include "FrontEnd/Parse/Parser.hpp"
-#include "FrontEnd/Symbols/Storage.hpp"
 #include "FrontEnd/AST/ASTPrettyPrint.hpp"
 #include "FrontEnd/Lex/Lexer.hpp"
+#include "FrontEnd/Symbols/Storage.hpp"
 
 using namespace weak::frontEnd;
 
