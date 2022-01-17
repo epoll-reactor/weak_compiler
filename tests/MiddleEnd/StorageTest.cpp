@@ -1,8 +1,9 @@
-#include "FrontEnd/Symbols/Storage.hpp"
-#include "../TestHelpers.hpp"
+#include "MiddleEnd/Symbols/Storage.hpp"
+#include "TestHelpers.hpp"
 #include <cassert>
 
 using namespace weak::frontEnd;
+using namespace weak::middleEnd;
 
 int main() {
   SECTION(BasicSymbols) {
@@ -43,25 +44,14 @@ int main() {
       Pool.SetSymbolType(Attribute1, TokenType::INTEGRAL_LITERAL);
       Pool.SetIntValue(Attribute1, 1);
 
-      const Storage::AnyDataType &Value1 = Pool.GetSymbol(Attribute1)->StoredValue;
-      assert(std::get<signed>(Value1) == 1);
 
       Pool.SetSymbolType(Attribute2, TokenType::STRING_LITERAL);
       Pool.SetStringValue(Attribute2, "Variable two");
-
-      const Storage::AnyDataType &Value2 = Pool.GetSymbol(Attribute2)->StoredValue;
-      assert(std::get<std::string>(Value2) == "Variable two");
 
       Pool.ScopeBegin();
 
         Pool.SetSymbolType(Attribute3, TokenType::INTEGRAL_LITERAL);
         Pool.SetIntValue(Attribute3, 3);
-
-        const Storage::AnyDataType &Value3 = Pool.GetSymbol(Attribute3)->StoredValue;
-        assert(std::get<signed>(Value3) == 3);
-
-        Pool.SetIntValue(Attribute3, 4);
-        assert(std::get<signed>(Value3) == 4);
 
       assert(Pool.TotalVariables() == 3);
       Pool.ScopeEnd();
@@ -83,9 +73,6 @@ int main() {
     unsigned Attribute1 = Pool.AddSymbol("var1");
     Pool.SetSymbolType(Attribute1, TokenType::STRING_LITERAL);
     Pool.SetStringValue(Attribute1, "String value");
-
-    auto *Record = Pool.GetByName("var1");
-    assert(std::get<std::string>(Record->StoredValue) == "String value");
 
     Pool.ScopeEnd();
   }
