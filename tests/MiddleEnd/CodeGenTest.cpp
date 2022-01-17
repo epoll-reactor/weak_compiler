@@ -10,23 +10,26 @@ namespace me = weak::middleEnd;
 void RunCodeGenTest(std::string_view Program) {
   me::Storage Storage;
   auto Tokens =
-      fe::Lexer(&Storage, &*Program.begin(), &*Program.end()).Analyze();
+    fe::Lexer(&Storage, &*Program.begin(), &*Program.end()).Analyze();
   auto AST = fe::Parser(Tokens.begin().base(), Tokens.end().base()).Parse();
   me::CodeGen(&Storage, AST.get()).CreateCode();
 }
 
 int main() {
-  SECTION(Binary) {
+  SECTION(Binary)
+  {
     RunCodeGenTest("void f() {"
                    "  int a = 1 * 2 + 3 * 4 * 5 + 6 ^ 7 & 8 & 9;"
                    "}");
   }
-  SECTION(Unary) {
+  SECTION(Unary)
+  {
     RunCodeGenTest("void f() {"
                    "  int a =  1++ + ++1;"
                    "}");
   }
-  SECTION(If) {
+  SECTION(If)
+  {
     RunCodeGenTest("void f() {"
                    "  if (1) {"
                    "    int a = 2 + 3;"
@@ -34,7 +37,8 @@ int main() {
                    "  int b = 4 + 5;"
                    "}");
   }
-  SECTION(IfElse) {
+  SECTION(IfElse)
+  {
     RunCodeGenTest("void f() {"
                    "  if (2) {"
                    "    int a = 3 + 4;"
@@ -44,7 +48,8 @@ int main() {
                    "  int c = 7 + 8;"
                    "}");
   }
-  SECTION(DeepNestedIf) {
+  SECTION(DeepNestedIf)
+  {
     RunCodeGenTest("void f() {"
                    "  if (true) {"
                    "    if (false) {"
@@ -64,7 +69,8 @@ int main() {
                    "  int f = 5.55 - 0.99;"
                    "}");
   }
-  SECTION(While) {
+  SECTION(While)
+  {
     /*!
      *  L0:  if 1 != 0 goto L13
      *  L1:  if 2 != 0 goto L11
@@ -98,17 +104,38 @@ int main() {
                    "  int var = 14 + 15;"
                    "}");
   }
-    SECTION(Variables) {
-      RunCodeGenTest("void f() {"
-                     "  int a = 2++ + ++2;"
-                     "  int b = 3 + 4;"
-                     "  int c = b + a;"
-                     "  int d = c + a;"
-                     "  int e = d + a;"
-                     "  int f = e + a;"
-                     "}");
-    }
-  SECTION(ComplexTest) {
+  SECTION(DoWhile)
+  {
+    RunCodeGenTest("void f() {"
+                   "  do {"
+                   "    do {"
+                   "      do {"
+                   "        do {"
+                   "          int var = 1 + 2;"
+                   "          int var = 3 + 4;"
+                   "        } while (5);"
+                   "        int var = 6 + 7;"
+                   "      } while (8);"
+                   "      int var = 9 + 10;"
+                   "    } while (11);"
+                   "    int var = 12 + 13;"
+                   "  } while (14);"
+                   "  int var = 15 + 16;"
+                   "}");
+  }
+  SECTION(Variables)
+  {
+    RunCodeGenTest("void f() {"
+                   "  int a = 2++ + ++2;"
+                   "  int b = 3 + 4;"
+                   "  int c = b + a;"
+                   "  int d = c + a;"
+                   "  int e = d + a;"
+                   "  int f = e + a;"
+                   "}");
+  }
+  SECTION(ComplexTest)
+  {
     RunCodeGenTest("void f() {"
                    "  int factorial = 1;"
                    "  int i = 1;"
@@ -116,5 +143,34 @@ int main() {
                    "    factorial = factorial * i;"
                    "  }"
                    "}");
+  }
+  SECTION(ComplexTest2)
+  {
+    RunCodeGenTest(
+      R"(
+      void f() {
+        int v11 = 0; int v21 = 0; int v31 = 0; int v41 = 0; int v51 = 0;
+        int v12 = 0; int v22 = 0; int v32 = 0; int v42 = 0; int v52 = 0;
+        int v13 = 0; int v23 = 0; int v33 = 0; int v43 = 0; int v53 = 0;
+        int v14 = 0; int v24 = 0; int v34 = 0; int v44 = 0; int v54 = 0;
+        int v15 = 0; int v25 = 0; int v35 = 0; int v45 = 0; int v55 = 0;
+        int v16 = 0; int v26 = 0; int v36 = 0; int v46 = 0; int v56 = 0;
+        while (
+          (    (v11 + v12 + v13 + v14 + v15 + v16)
+             < (v21 + v22 + v23 + v24 + v25 + v26)
+          ) && (
+               (v31 + v32 + v33 + v34 + v35 + v36)
+             < (v41 + v42 + v43 + v44 + v45 + v46)
+          )
+        ) {
+          ++v11; ++v21; ++v31; ++v41; ++v51;
+          ++v12; ++v22; ++v32; ++v42; ++v52;
+          ++v13; ++v23; ++v33; ++v43; ++v53;
+          ++v14; ++v24; ++v34; ++v44; ++v54;
+          ++v15; ++v25; ++v35; ++v45; ++v55;
+          ++v16; ++v26; ++v36; ++v46; ++v56;
+        }
+      }
+    )");
   }
 }
