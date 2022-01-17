@@ -8,8 +8,6 @@
 #define WEAK_COMPILER_MIDDLE_END_CODE_EMITTER_HPP
 
 #include "MiddleEnd/IR/Instruction.hpp"
-#include "MiddleEnd/IR/Operations.hpp"
-#include "MiddleEnd/IR/Registers.hpp"
 #include <list>
 
 namespace weak {
