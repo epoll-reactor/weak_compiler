@@ -50,16 +50,8 @@ public:
 
   frontEnd::TokenType GetOp() const;
 
-  bool IsLeftImm() const;
-  bool IsLeftVar() const;
-
-  bool IsRightImm() const;
-  bool IsRightVar() const;
-
-  signed GetLeftImm() const;
   const AnyOperand &GetLeftInstruction() const;
 
-  signed GetRightImm() const;
   const AnyOperand &GetRightInstruction() const;
 
   std::string Dump() const;

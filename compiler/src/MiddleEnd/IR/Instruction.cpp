@@ -92,34 +92,8 @@ unsigned Instruction::GetCapacity() const { return ReservedCapacity; }
 
 TokenType Instruction::GetOp() const { return Operation; }
 
-bool Instruction::IsLeftImm() const {
-  return std::holds_alternative<signed>(LeftOperand);
-}
-
-bool Instruction::IsLeftVar() const {
-  return std::holds_alternative<InstructionReference>(LeftOperand);
-}
-
-bool Instruction::IsRightImm() const {
-  return std::holds_alternative<signed>(RightOperand);
-}
-
-bool Instruction::IsRightVar() const {
-  return std::holds_alternative<InstructionReference>(RightOperand);
-}
-
-signed Instruction::GetLeftImm() const {
-  CheckForOperand<signed>(LeftOperand, "Left operand isn't an immediate.");
-  return std::get<signed>(LeftOperand);
-}
-
 const Instruction::AnyOperand &Instruction::GetLeftInstruction() const {
   return LeftOperand;
-}
-
-signed Instruction::GetRightImm() const {
-  CheckForOperand<signed>(RightOperand, "Right operand isn't an immediate.");
-  return std::get<signed>(RightOperand);
 }
 
 const Instruction::AnyOperand &Instruction::GetRightInstruction() const {
@@ -130,8 +104,8 @@ std::string Instruction::Dump() const {
   std::ostringstream Stream;
   std::string Label = "t" + std::to_string(LabelNo);
 
-  Stream << Label;
-  Stream << " " << ReservedCapacity << " bytes ";
+  Stream << std::right << std::setw(6) << Label;
+  Stream << std::right << std::setw(4) << ReservedCapacity << " bytes ";
   Stream << std::left << std::setw(4) << " = ";
   Stream << std::right << std::setw(8);
 
@@ -169,8 +143,8 @@ std::string UnaryInstruction::Dump() const {
   std::ostringstream Stream;
   std::string Label = "t" + std::to_string(LabelNo);
 
-  Stream << Label;
-  Stream << " " << ReservedCapacity << " bytes ";
+  Stream << std::right << std::setw(6) << Label;
+  Stream << std::right << std::setw(4) << ReservedCapacity << " bytes ";
   Stream << std::left << std::setw(4) << " = ";
   Stream << std::right << std::setw(8);
 
@@ -207,9 +181,9 @@ const IfInstruction::AnyOperand &IfInstruction::GetRightOperand() const {
 
 std::string IfInstruction::Dump() const {
   std::ostringstream Stream;
-  Stream << "if ";
+  Stream << "if";
 
-  Stream << std::right << std::setw(11);
+  Stream << std::right << std::setw(27);
 
   DumpTo(Stream, LeftOperand);
 
