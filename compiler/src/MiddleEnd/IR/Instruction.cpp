@@ -12,6 +12,13 @@
 using namespace weak::frontEnd;
 using namespace weak::middleEnd;
 
+namespace {
+
+template <class... Ts> struct Overload : Ts... { using Ts::operator()...; };
+template <class... Ts> Overload(Ts...) -> Overload<Ts...>;
+
+} // namespace
+
 template <typename T>
 static void CheckForOperand(const Instruction::AnyOperand &Instruction,
                             const char *ErrorMsg) {
@@ -20,32 +27,50 @@ static void CheckForOperand(const Instruction::AnyOperand &Instruction,
   }
 }
 
+static constexpr unsigned
+ResolveInstructionSize(const Instruction::AnyOperand &Operand) {
+  unsigned Size = 0U;
+  // clang-format off
+  std::visit(Overload {
+    [&Size](signed) { Size = sizeof(signed); },
+    [&Size](double) { Size = sizeof(double); },
+    [&Size](bool  ) { Size = sizeof(  bool); },
+    [&Size](InstructionReference
+                 I) { Size = I.GetCapacity(); }
+  }, Operand);
+  // clang-format on
+  return Size;
+}
+
 static void DumpTo(std::ostringstream &Stream,
                    const Instruction::AnyOperand &Operand) {
-  auto OperandVisitor = [&](auto &&Arg) {
-    using T = std::decay_t<decltype(Arg)>;
-
-    if constexpr (std::is_same_v<T, signed>)
-      Stream << Arg;
-    else if constexpr (std::is_same_v<T, double>)
-      Stream << Arg;
-    else if constexpr (std::is_same_v<T, bool>)
-      Stream << Arg;
-    else if constexpr (std::is_same_v<T, InstructionReference>)
-      Stream << std::string{"t" + std::to_string(Arg.LabelNo)};
-  };
-
-  std::visit(OperandVisitor, Operand);
+  // clang-format off
+  std::visit(Overload {
+    [&Stream](signed I) { Stream << I; },
+    [&Stream](double I) { Stream << I; },
+    [&Stream](bool   I) { Stream << std::boolalpha << I; },
+    [&Stream](InstructionReference
+                     I) { Stream << std::string{"t" + std::to_string(I.GetLabelNo())}; }
+  }, Operand);
+  // clang-format on
 }
 
 namespace weak {
 namespace middleEnd {
 
 InstructionReference::InstructionReference(const Instruction &I)
-    : LabelNo(I.GetLabelNo()) {}
+    : LabelNo(I.GetLabelNo()) {
+  ReservedCapacity = I.GetCapacity();
+}
 
 InstructionReference::InstructionReference(const UnaryInstruction &I)
-    : LabelNo(I.GetLabelNo()) {}
+    : LabelNo(I.GetLabelNo()) {
+  ReservedCapacity = I.GetCapacity();
+}
+
+unsigned InstructionReference::GetLabelNo() const { return LabelNo; }
+
+unsigned InstructionReference::GetCapacity() const { return ReservedCapacity; }
 
 } // namespace middleEnd
 } // namespace weak
@@ -56,9 +81,14 @@ namespace middleEnd {
 Instruction::Instruction(unsigned TheLabelNo, frontEnd::TokenType TheOperation,
                          const AnyOperand &TheLeft, const AnyOperand &TheRight)
     : LabelNo(TheLabelNo), Operation(TheOperation), LeftOperand(TheLeft),
-      RightOperand(TheRight) {}
+      RightOperand(TheRight) {
+  ReservedCapacity = std::max(ResolveInstructionSize(LeftOperand),
+                              ResolveInstructionSize(RightOperand));
+}
 
 unsigned Instruction::GetLabelNo() const { return LabelNo; }
+
+unsigned Instruction::GetCapacity() const { return ReservedCapacity; }
 
 TokenType Instruction::GetOp() const { return Operation; }
 
@@ -101,6 +131,7 @@ std::string Instruction::Dump() const {
   std::string Label = "t" + std::to_string(LabelNo);
 
   Stream << Label;
+  Stream << " " << ReservedCapacity << " bytes ";
   Stream << std::left << std::setw(4) << " = ";
   Stream << std::right << std::setw(8);
 
@@ -122,7 +153,9 @@ namespace middleEnd {
 
 UnaryInstruction::UnaryInstruction(unsigned TheLabelNo,
                                    const AnyOperand &TheOperand)
-    : LabelNo(TheLabelNo), Operand(TheOperand) {}
+    : LabelNo(TheLabelNo), Operand(TheOperand) {
+  ReservedCapacity = ResolveInstructionSize(Operand);
+}
 
 unsigned UnaryInstruction::GetLabelNo() const { return LabelNo; }
 
@@ -130,15 +163,19 @@ const UnaryInstruction::AnyOperand &UnaryInstruction::GetOperand() const {
   return Operand;
 }
 
+unsigned UnaryInstruction::GetCapacity() const { return ReservedCapacity; }
+
 std::string UnaryInstruction::Dump() const {
   std::ostringstream Stream;
   std::string Label = "t" + std::to_string(LabelNo);
 
   Stream << Label;
+  Stream << " " << ReservedCapacity << " bytes ";
   Stream << std::left << std::setw(4) << " = ";
   Stream << std::right << std::setw(8);
 
   DumpTo(Stream, Operand);
+
   return Stream.str();
 }
 
