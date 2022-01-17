@@ -1,8 +1,8 @@
 #include "FrontEnd/Analysis/CFGBuilder.hpp"
 #include "FrontEnd/AST/ASTPrettyPrint.hpp"
-#include "FrontEnd/Symbols/Storage.hpp"
 #include "FrontEnd/Lex/Lexer.hpp"
 #include "FrontEnd/Parse/Parser.hpp"
+#include "FrontEnd/Symbols/Storage.hpp"
 #include "TestHelpers.hpp"
 
 using namespace weak::frontEnd;

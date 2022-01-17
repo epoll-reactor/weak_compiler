@@ -14,10 +14,10 @@ int main() {
     E.Emit(TokenType::PLUS, 1.23, 4.56);
     E.EmitGotoLabel(1);
     E.Emit(TokenType::MINUS, I, I);
-    E.EmitIf(TokenType::EQ, I, 10, /*Label*/1);
+    E.EmitIf(TokenType::EQ, I, 10, /*Label*/ 1);
     E.Emit(TokenType::STAR, I, 0xFFF);
     E.Emit(1);
-    E.EmitJump(/*Label*/1);
+    E.EmitJump(/*Label*/ 1);
     E.Dump();
   }
 }

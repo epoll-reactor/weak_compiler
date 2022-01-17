@@ -10,7 +10,7 @@
 #include "MiddleEnd/IR/Instruction.hpp"
 #include "MiddleEnd/IR/Operations.hpp"
 #include "MiddleEnd/IR/Registers.hpp"
-#include <vector>
+#include <list>
 
 namespace weak {
 namespace middleEnd {
@@ -22,22 +22,27 @@ public:
 
   const Instruction *Emit(frontEnd::TokenType, const Instruction::AnyOperand &,
                           const Instruction::AnyOperand &);
+  const Instruction *Emit(const Instruction &);
+
   const UnaryInstruction *Emit(const UnaryInstruction::AnyOperand &);
 
-  const IfInstruction *EmitIf(frontEnd::TokenType Operation,
-                              const Instruction::AnyOperand &Left,
-                              const Instruction::AnyOperand &Right,
-                              unsigned GotoLabel);
+  IfInstruction *EmitIf(frontEnd::TokenType Operation,
+                        const Instruction::AnyOperand &Left,
+                        const Instruction::AnyOperand &Right,
+                        unsigned GotoLabel);
+  IfInstruction *EmitIf(const Instruction &Instr, unsigned GotoLabel);
 
   const GotoLabel *EmitGotoLabel(unsigned Label);
   const Jump *EmitJump(unsigned ToLabel);
 
+  void RemoveLast();
+
   void Dump();
 
-  const std::vector<AnyInstruction> &GetInstructions() const;
+  const std::list<AnyInstruction> &GetInstructions() const;
 
 private:
-  std::vector<AnyInstruction> Instructions;
+  std::list<AnyInstruction> Instructions;
   unsigned CurrentLabel;
 };
 
