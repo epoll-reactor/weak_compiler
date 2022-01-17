@@ -177,7 +177,7 @@ std::string IfInstruction::Dump() const {
   DumpTo(Stream, LeftOperand);
 
   Stream << std::setw(4) << TokenToString(Operation);
-  Stream << std::setw(7) << " ";
+  Stream << std::setw(9);
 
   DumpTo(Stream, RightOperand);
 

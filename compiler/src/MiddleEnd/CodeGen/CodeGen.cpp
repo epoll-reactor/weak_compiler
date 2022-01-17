@@ -125,7 +125,62 @@ void CodeGen::Visit(const frontEnd::ASTBooleanLiteral *Boolean) const {
 
 void CodeGen::Visit(const frontEnd::ASTBreakStmt *) const {}
 void CodeGen::Visit(const frontEnd::ASTContinueStmt *) const {}
-void CodeGen::Visit(const frontEnd::ASTDoWhileStmt *) const {}
+
+/*!               do { body } while (cond); after
+ *
+ *  LOOP:         instr1
+ *                instr2
+ *                if cond then goto LOOP
+ *                goto EXIT
+ *  EXIT:         after instr1
+ *                after instr2
+ */
+void CodeGen::Visit(const frontEnd::ASTDoWhileStmt *DoWhile) const {
+  unsigned SavedGotoLabel = CurrentGotoLabel++;
+  Emitter.EmitGotoLabel(SavedGotoLabel);
+
+  DoWhile->GetBody()->Accept(this);
+
+  IfInstruction *ConditionInstruction = nullptr;
+
+  auto EmitCondition = [this, &ConditionInstruction, DoWhile](auto &&DataType) {
+    using T = std::decay_t<decltype(DataType)>;
+    auto *Value = static_cast<T *>(DoWhile->GetCondition().get());
+    ConditionInstruction =
+      Emitter.EmitIf(TokenType::NEQ, Value->GetValue(), 0, /* Label */ 0);
+  };
+
+  switch (DoWhile->GetCondition()->GetASTType()) {
+    case ASTType::INTEGER_LITERAL: {
+      EmitCondition(ASTIntegerLiteral{0});
+      break;
+    }
+    case ASTType::BOOLEAN_LITERAL: {
+      EmitCondition(ASTBooleanLiteral{false});
+      break;
+    }
+    case ASTType::FLOATING_POINT_LITERAL: {
+      EmitCondition(ASTFloatingPointLiteral{0.0});
+      break;
+    }
+    case ASTType::BINARY: {
+      DoWhile->GetCondition()->Accept(this);
+      Instruction *Instr = &std::get<Instruction>(LastInstruction);
+      Emitter.RemoveLast();
+      ConditionInstruction = Emitter.EmitIf(*Instr, /*GotoLabel=*/0);
+      break;
+    }
+    default:
+      break;
+  }
+
+  Emitter.EmitJump(SavedGotoLabel);
+
+  Emitter.EmitGotoLabel(CurrentGotoLabel);
+
+  ConditionInstruction->SetGotoLabel(CurrentGotoLabel);
+  CurrentGotoLabel++;
+}
 
 void CodeGen::Visit(const frontEnd::ASTFloatingPointLiteral *Float) const {
   LastInstruction = Float->GetValue();
