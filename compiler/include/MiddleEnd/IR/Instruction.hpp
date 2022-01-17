@@ -8,8 +8,6 @@
 #define WEAK_COMPILER_MIDDLE_END_IR_INSTRUCTION_HPP
 
 #include "FrontEnd/Lex/Token.hpp"
-#include "MiddleEnd/IR/Operations.hpp"
-#include "MiddleEnd/IR/Registers.hpp"
 #include <functional>
 #include <variant>
 
