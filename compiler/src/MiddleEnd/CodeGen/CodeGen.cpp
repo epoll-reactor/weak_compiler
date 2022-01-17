@@ -147,31 +147,31 @@ void CodeGen::Visit(const frontEnd::ASTDoWhileStmt *DoWhile) const {
     using T = std::decay_t<decltype(DataType)>;
     auto *Value = static_cast<T *>(DoWhile->GetCondition().get());
     ConditionInstruction =
-      Emitter.EmitIf(TokenType::NEQ, Value->GetValue(), 0, /* Label */ 0);
+        Emitter.EmitIf(TokenType::NEQ, Value->GetValue(), 0, /* Label */ 0);
   };
 
   switch (DoWhile->GetCondition()->GetASTType()) {
-    case ASTType::INTEGER_LITERAL: {
-      EmitCondition(ASTIntegerLiteral{0});
-      break;
-    }
-    case ASTType::BOOLEAN_LITERAL: {
-      EmitCondition(ASTBooleanLiteral{false});
-      break;
-    }
-    case ASTType::FLOATING_POINT_LITERAL: {
-      EmitCondition(ASTFloatingPointLiteral{0.0});
-      break;
-    }
-    case ASTType::BINARY: {
-      DoWhile->GetCondition()->Accept(this);
-      Instruction *Instr = &std::get<Instruction>(LastInstruction);
-      Emitter.RemoveLast();
-      ConditionInstruction = Emitter.EmitIf(*Instr, /*GotoLabel=*/0);
-      break;
-    }
-    default:
-      break;
+  case ASTType::INTEGER_LITERAL: {
+    EmitCondition(ASTIntegerLiteral{0});
+    break;
+  }
+  case ASTType::BOOLEAN_LITERAL: {
+    EmitCondition(ASTBooleanLiteral{false});
+    break;
+  }
+  case ASTType::FLOATING_POINT_LITERAL: {
+    EmitCondition(ASTFloatingPointLiteral{0.0});
+    break;
+  }
+  case ASTType::BINARY: {
+    DoWhile->GetCondition()->Accept(this);
+    Instruction *Instr = &std::get<Instruction>(LastInstruction);
+    Emitter.RemoveLast();
+    ConditionInstruction = Emitter.EmitIf(*Instr, /*GotoLabel=*/0);
+    break;
+  }
+  default:
+    break;
   }
 
   Emitter.EmitJump(SavedGotoLabel);
