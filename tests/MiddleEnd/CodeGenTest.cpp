@@ -10,26 +10,30 @@ namespace me = weak::middleEnd;
 void RunCodeGenTest(std::string_view Program) {
   me::Storage Storage;
   auto Tokens =
-    fe::Lexer(&Storage, &*Program.begin(), &*Program.end()).Analyze();
+      fe::Lexer(&Storage, &*Program.begin(), &*Program.end()).Analyze();
   auto AST = fe::Parser(Tokens.begin().base(), Tokens.end().base()).Parse();
   me::CodeGen(&Storage, AST.get()).CreateCode();
 }
 
 int main() {
-  SECTION(Binary)
-  {
+  SECTION(Binary) {
     RunCodeGenTest("void f() {"
                    "  int a = 1 * 2 + 3 * 4 * 5 + 6 ^ 7 & 8 & 9;"
                    "}");
   }
-  SECTION(Unary)
-  {
+  SECTION(Unary) {
     RunCodeGenTest("void f() {"
                    "  int a =  1++ + ++1;"
                    "}");
   }
-  SECTION(If)
-  {
+  SECTION(OperandSize) {
+    RunCodeGenTest("void f() {"
+                   "  int a = 3;"
+                   "  bool b = true;"
+                   "  int c = a + b;"
+                   "}");
+  }
+  SECTION(If) {
     RunCodeGenTest("void f() {"
                    "  if (1) {"
                    "    int a = 2 + 3;"
@@ -37,8 +41,7 @@ int main() {
                    "  int b = 4 + 5;"
                    "}");
   }
-  SECTION(IfElse)
-  {
+  SECTION(IfElse) {
     RunCodeGenTest("void f() {"
                    "  if (2) {"
                    "    int a = 3 + 4;"
@@ -48,8 +51,7 @@ int main() {
                    "  int c = 7 + 8;"
                    "}");
   }
-  SECTION(DeepNestedIf)
-  {
+  SECTION(DeepNestedIf) {
     RunCodeGenTest("void f() {"
                    "  if (true) {"
                    "    if (false) {"
@@ -69,8 +71,7 @@ int main() {
                    "  int f = 5.55 - 0.99;"
                    "}");
   }
-  SECTION(While)
-  {
+  SECTION(While) {
     /*!
      *  L0:  if 1 != 0 goto L13
      *  L1:  if 2 != 0 goto L11
@@ -104,8 +105,7 @@ int main() {
                    "  int var = 14 + 15;"
                    "}");
   }
-  SECTION(DoWhile)
-  {
+  SECTION(DoWhile) {
     RunCodeGenTest("void f() {"
                    "  do {"
                    "    do {"
@@ -123,8 +123,7 @@ int main() {
                    "  int var = 15 + 16;"
                    "}");
   }
-  SECTION(Variables)
-  {
+  SECTION(Variables) {
     RunCodeGenTest("void f() {"
                    "  int a = 2++ + ++2;"
                    "  int b = 3 + 4;"
@@ -134,8 +133,7 @@ int main() {
                    "  int f = e + a;"
                    "}");
   }
-  SECTION(ComplexTest)
-  {
+  SECTION(ComplexTest) {
     RunCodeGenTest("void f() {"
                    "  int factorial = 1;"
                    "  int i = 1;"
@@ -144,10 +142,9 @@ int main() {
                    "  }"
                    "}");
   }
-  SECTION(ComplexTest2)
-  {
+  SECTION(ComplexTest2) {
     RunCodeGenTest(
-      R"(
+        R"(
       void f() {
         int v11 = 0; int v21 = 0; int v31 = 0; int v41 = 0; int v51 = 0;
         int v12 = 0; int v22 = 0; int v32 = 0; int v42 = 0; int v52 = 0;

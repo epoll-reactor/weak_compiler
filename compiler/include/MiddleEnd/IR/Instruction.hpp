@@ -23,7 +23,16 @@ public:
   InstructionReference(const Instruction &);
   InstructionReference(const UnaryInstruction &);
 
+  unsigned GetLabelNo() const;
+
+  /// Get the size of referred unary/binary instruction in bytes.
+  unsigned GetCapacity() const;
+
+private:
   unsigned LabelNo;
+
+  /// The size of referred instruction.
+  unsigned ReservedCapacity;
 };
 
 /// Three-address instruction in format <ID> = <L> <OP> <R>.
@@ -35,6 +44,10 @@ public:
               const AnyOperand &TheLeft, const AnyOperand &TheRight);
 
   unsigned GetLabelNo() const;
+
+  /// Get the size of instruction in bytes.
+  unsigned GetCapacity() const;
+
   frontEnd::TokenType GetOp() const;
 
   bool IsLeftImm() const;
@@ -55,6 +68,9 @@ private:
   /// Used to identify the temporary variable and refer to it later.
   unsigned LabelNo;
 
+  /// The instruction size in bytes.
+  unsigned ReservedCapacity;
+
   frontEnd::TokenType Operation;
 
   AnyOperand LeftOperand;
@@ -69,12 +85,20 @@ public:
   UnaryInstruction(unsigned TheLabelNo, const AnyOperand &TheOperand);
 
   unsigned GetLabelNo() const;
+
+  /// Get the size of instruction in bytes.
+  unsigned GetCapacity() const;
+
   const AnyOperand &GetOperand() const;
 
   std::string Dump() const;
 
 private:
   unsigned LabelNo;
+
+  /// The instruction size in bytes.
+  unsigned ReservedCapacity;
+
   AnyOperand Operand;
 };
 
