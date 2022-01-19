@@ -43,6 +43,7 @@ public:
   Instruction(unsigned TheLabelNo, frontEnd::TokenType TheOperation,
               const AnyOperand &TheLeft, const AnyOperand &TheRight);
 
+  void SetLabelNo(unsigned);
   unsigned GetLabelNo() const;
 
   /// Get the size of instruction in bytes.
@@ -76,6 +77,7 @@ public:
 
   UnaryInstruction(unsigned TheLabelNo, const AnyOperand &TheOperand);
 
+  void SetLabelNo(unsigned);
   unsigned GetLabelNo() const;
 
   /// Get the size of instruction in bytes.
@@ -138,6 +140,7 @@ class Jump {
 public:
   Jump(unsigned TheLabelNo) : LabelNo(TheLabelNo) {}
 
+  void SetLabelNo(unsigned L) { LabelNo = L; }
   unsigned GetLabel() const { return LabelNo; }
 
   std::string Dump() const { return "goto L" + std::to_string(LabelNo); }

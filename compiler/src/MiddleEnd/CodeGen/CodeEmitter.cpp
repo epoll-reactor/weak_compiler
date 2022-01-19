@@ -5,14 +5,8 @@
  */
 
 #include "MiddleEnd/CodeGen/CodeEmitter.hpp"
+#include "Utility/VariantOverload.hpp"
 #include <iostream>
-
-namespace {
-
-template <class... Ts> struct Overload : Ts... { using Ts::operator()...; };
-template <class... Ts> Overload(Ts...) -> Overload<Ts...>;
-
-} // namespace
 
 namespace weak {
 namespace middleEnd {
@@ -35,8 +29,7 @@ const Instruction *CodeEmitter::Emit(const Instruction &Copy) {
   return I;
 }
 
-const UnaryInstruction *
-CodeEmitter::Emit(const UnaryInstruction::AnyOperand &Op) {
+UnaryInstruction *CodeEmitter::Emit(const UnaryInstruction::AnyOperand &Op) {
   Instructions.emplace_back(UnaryInstruction(CurrentLabel, Op));
   ++CurrentLabel;
   UnaryInstruction *I = &std::get<UnaryInstruction>(Instructions.back());
@@ -96,7 +89,7 @@ const GotoLabel *CodeEmitter::EmitGotoLabel(unsigned Label) {
   return I;
 }
 
-const Jump *CodeEmitter::EmitJump(unsigned ToLabel) {
+Jump *CodeEmitter::EmitJump(unsigned ToLabel) {
   Instructions.emplace_back(Jump(ToLabel));
   Jump *I = &std::get<Jump>(Instructions.back());
   return I;
