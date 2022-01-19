@@ -110,30 +110,43 @@ static void NormalizeColumnPosition(std::string_view Data,
                                     unsigned &ColumnNo) {
   using weak::frontEnd::TokenType;
   using namespace std::string_view_literals;
-  std::unordered_map<weak::frontEnd::TokenType, int> TokenLengths = {
-      {TokenType::BOOLEAN, "bool"sv.length()},
-      {TokenType::BREAK, "break"sv.length()},
-      {TokenType::CHAR, "char"sv.length()},
-      {TokenType::CONTINUE, "continue"sv.length()},
-      {TokenType::DO, "do"sv.length()},
-      {TokenType::ELSE, "else"sv.length()},
-      {TokenType::FALSE, "false"sv.length()},
-      {TokenType::FLOAT, "float"sv.length()},
-      {TokenType::FOR, "for"sv.length()},
-      {TokenType::IF, "if"sv.length()},
-      {TokenType::INT, "int"sv.length()},
-      {TokenType::RETURN, "return"sv.length()},
-      {TokenType::STRING, "string"sv.length()},
-      {TokenType::TRUE, "true"sv.length()},
-      {TokenType::VOID, "void"sv.length()},
-      {TokenType::WHILE, "while"sv.length()},
+  static constexpr std::array TokenLengths{
+      std::make_pair(TokenType::BOOLEAN, "bool"sv.length()),
+      std::make_pair(TokenType::BREAK, "break"sv.length()),
+      std::make_pair(TokenType::CHAR, "char"sv.length()),
+      std::make_pair(TokenType::CONTINUE, "continue"sv.length()),
+      std::make_pair(TokenType::DO, "do"sv.length()),
+      std::make_pair(TokenType::ELSE, "else"sv.length()),
+      std::make_pair(TokenType::FALSE, "false"sv.length()),
+      std::make_pair(TokenType::FLOAT, "float"sv.length()),
+      std::make_pair(TokenType::FOR, "for"sv.length()),
+      std::make_pair(TokenType::IF, "if"sv.length()),
+      std::make_pair(TokenType::INT, "int"sv.length()),
+      std::make_pair(TokenType::RETURN, "return"sv.length()),
+      std::make_pair(TokenType::STRING, "string"sv.length()),
+      std::make_pair(TokenType::TRUE, "true"sv.length()),
+      std::make_pair(TokenType::VOID, "void"sv.length()),
+      std::make_pair(TokenType::WHILE, "while"sv.length())};
 
-      {TokenType::INTEGRAL_LITERAL, Data.length()},
-      {TokenType::FLOATING_POINT_LITERAL, Data.length()},
-      {TokenType::STRING_LITERAL, Data.length() + 2 /* quotes */},
-      {TokenType::SYMBOL, Data.length()}};
-
-  ColumnNo -= TokenLengths.at(Type);
+  if (const auto *It = std::find_if(
+          TokenLengths.begin(), TokenLengths.end(),
+          [&Type](const auto &Pair) { return Type == Pair.first; });
+      It != TokenLengths.end()) {
+    ColumnNo -= It->second;
+  } else {
+    switch (Type) {
+    case TokenType::INTEGRAL_LITERAL:
+    case TokenType::FLOATING_POINT_LITERAL:
+    case TokenType::SYMBOL:
+      ColumnNo -= Data.length();
+      break;
+    case TokenType::STRING_LITERAL:
+      ColumnNo -= (Data.length() + 2 /* Quotes. */);
+      break;
+    default:
+      break;
+    }
+  }
 }
 
 namespace weak {
