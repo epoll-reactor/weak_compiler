@@ -138,4 +138,15 @@ int main() {
     )__",
                  Assertion);
   }
+  SECTION(LexerSpeedTest) {
+    Storage S;
+    std::string Body = "1.1 1.1 1.1 1.1 1.1 1.1 1.1 1.1 1.1 1.1 1.1 1.1 1.1 1.1"
+                       "+++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+                       "\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\""
+                       "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa ";
+    for (size_t It = 0; It < 16; ++It)
+      Body += std::string(Body);
+    printf("Body size: %zu\n", Body.size());
+    CreateLexer(&S, Body).Analyze();
+  }
 }

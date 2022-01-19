@@ -258,18 +258,12 @@ Token Lexer::AnalyzeSymbol() {
 Token Lexer::AnalyzeOperator() {
   std::string Operator(1, PeekNext());
   unsigned SavedColumnNo = 0U;
+  bool SearchFailed = false;
+  char WrongOperator = '\0';
 
-  while (LexOperators.find(Operator) != LexOperators.end()) {
-    char Next = *CurrentBufferPtr++;
-    SavedColumnNo = CurrentColumnNo;
-    if (Next == '\n') {
-      CurrentColumnNo = 0U;
-      CurrentLineNo++;
-    }
-    ++CurrentColumnNo;
-    Operator += Next;
-
+  while (true) {
     if (LexOperators.find(Operator) == LexOperators.end()) {
+      WrongOperator = Operator.front();
       Operator.pop_back();
       --CurrentBufferPtr;
 
@@ -279,18 +273,28 @@ Token Lexer::AnalyzeOperator() {
       if (PeekCurrent() == '\n')
         --CurrentLineNo;
 
+      SearchFailed = true;
       break;
     }
+
+    char Next = *CurrentBufferPtr++;
+    SavedColumnNo = CurrentColumnNo;
+    if (Next == '\n') {
+      CurrentColumnNo = 0U;
+      CurrentLineNo++;
+    }
+    ++CurrentColumnNo;
+    Operator += Next;
   }
 
-  if (LexOperators.find(Operator) != LexOperators.end()) {
+  if (SearchFailed && !Operator.empty()) {
     return Token("", LexOperators.at(Operator), CurrentLineNo + 1,
                  SavedColumnNo - Operator.length() + 1);
   }
 
   --CurrentColumnNo;
   DiagnosticError(CurrentLineNo, CurrentColumnNo)
-      << "Unknown character sequence " << Operator;
+      << "Unknown character sequence: " << WrongOperator;
   UnreachablePoint();
 }
 
