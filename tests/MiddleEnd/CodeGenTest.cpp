@@ -43,12 +43,15 @@ int main() {
   }
   SECTION(IfElse) {
     RunCodeGenTest("void f() {"
-                   "  if (2) {"
-                   "    int a = 3 + 4;"
+                   "  if (1 < 1) {"
+                   "    if (2 < 2) {"
+                   "      int a = 3 + 3;"
+                   "    }"
+                   "    int b = 4 + 4;"
                    "  } else {"
-                   "    int b = 5 + 6;"
+                   "    int c = 5 + 5;"
                    "  }"
-                   "  int c = 7 + 8;"
+                   "  int d = 6 + 6;"
                    "}");
   }
   SECTION(DeepNestedIf) {
@@ -72,37 +75,38 @@ int main() {
                    "}");
   }
   SECTION(While) {
-    /*!
-     *  L0:  if 1 != 0 goto L13
-     *  L1:  if 2 != 0 goto L11
-     *  L2:  if 3 != 0 goto L9
-     *  L3:  if 4 != 0 goto L7
-     *  L4:  t1 = 4 + 5
-     *  L5:  t2 = 6 + 7
-     *  L6:  goto L3
-     *  L7:  t3 = 8 + 9
-     *  L8:  goto L2
-     *  L9:  t4 = 10 + 11
-     *  L10: goto L1
-     *  L11: t5 = 12 + 13
-     *  L12: goto L0
-     *  L13: t6 = 14 + 15
-     */
     RunCodeGenTest("void f() {"
-                   "  while (1) {"
-                   "    while (2) {"
-                   "      while (3) {"
-                   "        while (4) {"
-                   "          int var = 4 + 5;"
-                   "          int var = 6 + 7;"
-                   "        }"
-                   "        int var = 8 + 9;"
-                   "      }"
-                   "      int var = 10 + 11;"
+                   "  while (1 < 1) {"
+                   "    while (2 < 2) {"
+                   "      int var = 4 + 5;"
+                   "      int var = 6 + 7;"
                    "    }"
                    "    int var = 12 + 13;"
                    "  }"
                    "  int var = 14 + 15;"
+                   "}");
+  }
+  SECTION(DeepNestedWhile) {
+    RunCodeGenTest("void f() {"
+                   "  while (1 < 1) {"
+                   "    while (2 < 2) {"
+                   "      while (3 < 3) {"
+                   "        while (4 < 4) {"
+                   "          while (5 < 5) {"
+                   "            if (111 != 222) {"
+                   "              int a1 = 6 + 6;"
+                   "            }"
+                   "            int av = 999 + 999;"
+                   "          }"
+                   "          int a2 = 7 + 7;"
+                   "        }"
+                   "        int a3 = 8 + 8;"
+                   "      }"
+                   "      int a4 = 9 + 9;"
+                   "    }"
+                   "    int a5 = 10 + 10;"
+                   "  }"
+                   "  int a6 = 11 + 11;"
                    "}");
   }
   SECTION(DoWhile) {
@@ -123,6 +127,39 @@ int main() {
                    "  int var = 15 + 16;"
                    "}");
   }
+  SECTION(For) {
+    RunCodeGenTest("void f() {"
+                   "  int counter = 10;"
+                   "  for (int i = 0; i < 20; ++i) {"
+                   "    counter = counter + 30;"
+                   "  }"
+                   "  int result = counter;"
+                   "}");
+  }
+  SECTION(NestedFor) {
+    RunCodeGenTest("void f() {"
+                   "  for (int i = 0; i < 10; ++i) {"
+                   "    for (int j = 0; j < 20; ++j) {"
+                   "      for (int k = 0; k < 30; ++k) {"
+                   "        int result = 0;"
+                   "      }"
+                   "      int result = 1;"
+                   "    }"
+                   "    int result = 2;"
+                   "  }"
+                   "  int result = 3;"
+                   "}");
+  }
+  SECTION(Assignment) {
+    RunCodeGenTest("void f() {"
+                   "  int a = 1;"
+                   "  a = 2;"
+                   "  a = 3;"
+                   "  int b = a;"
+                   "  b = a;"
+                   "  b = 5;"
+                   "}");
+  }
   SECTION(Variables) {
     RunCodeGenTest("void f() {"
                    "  int a = 2++ + ++2;"
@@ -135,10 +172,15 @@ int main() {
   }
   SECTION(ComplexTest) {
     RunCodeGenTest("void f() {"
-                   "  int factorial = 1;"
-                   "  int i = 1;"
-                   "  while (i < 5) {"
-                   "    factorial = factorial * i;"
+                   "  int a = 1;"
+                   "  int b = 1;"
+                   "  while (a < 5) {"
+                   "    int c = b * a;"
+                   "    for (int d = 0; d < 10; ++d) {"
+                   "      do {"
+                   "        int e = a + b + c + d;"
+                   "      } while (a < b);"
+                   "    }"
                    "  }"
                    "}");
   }

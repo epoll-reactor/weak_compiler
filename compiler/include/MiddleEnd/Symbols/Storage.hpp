@@ -35,6 +35,9 @@ private:
     /// operations.
     unsigned Attribute;
 
+    /// This is used by IR generator.
+    unsigned TemporaryLabel;
+
     /// The name of variable.
     std::string Name;
 

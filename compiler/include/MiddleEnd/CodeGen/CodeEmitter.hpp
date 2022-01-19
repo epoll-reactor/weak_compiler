@@ -22,7 +22,7 @@ public:
                           const Instruction::AnyOperand &);
   const Instruction *Emit(const Instruction &);
 
-  const UnaryInstruction *Emit(const UnaryInstruction::AnyOperand &);
+  UnaryInstruction *Emit(const UnaryInstruction::AnyOperand &);
 
   IfInstruction *EmitIf(frontEnd::TokenType Operation,
                         const Instruction::AnyOperand &Left,
@@ -31,7 +31,7 @@ public:
   IfInstruction *EmitIf(const Instruction &Instr, unsigned GotoLabel);
 
   const GotoLabel *EmitGotoLabel(unsigned Label);
-  const Jump *EmitJump(unsigned ToLabel);
+  Jump *EmitJump(unsigned ToLabel);
 
   void RemoveLast();
 

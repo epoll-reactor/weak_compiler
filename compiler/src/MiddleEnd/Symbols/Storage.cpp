@@ -42,6 +42,7 @@ unsigned Storage::AddSymbol(std::string_view Name) {
   if (Found == Records.end()) {
     Record Variable{/*Depth=*/CurrentScopeDepth,
                     /*Attribute=*/CurrentAttribute,
+                    /*TemporaryLabel=*/0U,
                     /*Name=*/Name.data(),
                     /*DataType=*/TokenType::NONE,
                     /*StoredValue=*/0};

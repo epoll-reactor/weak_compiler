@@ -6,18 +6,11 @@
 
 #include "MiddleEnd/IR/Instruction.hpp"
 #include "Utility/Diagnostic.hpp"
+#include "Utility/VariantOverload.hpp"
 #include <iomanip>
-#include <sstream>
 
 using namespace weak::frontEnd;
 using namespace weak::middleEnd;
-
-namespace {
-
-template <class... Ts> struct Overload : Ts... { using Ts::operator()...; };
-template <class... Ts> Overload(Ts...) -> Overload<Ts...>;
-
-} // namespace
 
 template <typename T>
 static void CheckForOperand(const Instruction::AnyOperand &Instruction,
@@ -31,7 +24,7 @@ static constexpr unsigned
 ResolveInstructionSize(const Instruction::AnyOperand &Operand) {
   unsigned Size = 0U;
   // clang-format off
-  std::visit(Overload {
+  std::visit(weak::Overload {
     [&Size](signed) { Size = sizeof(signed); },
     [&Size](double) { Size = sizeof(double); },
     [&Size](bool  ) { Size = sizeof(  bool); },
@@ -45,7 +38,7 @@ ResolveInstructionSize(const Instruction::AnyOperand &Operand) {
 static void DumpTo(std::ostringstream &Stream,
                    const Instruction::AnyOperand &Operand) {
   // clang-format off
-  std::visit(Overload {
+  std::visit(weak::Overload {
     [&Stream](signed I) { Stream << I; },
     [&Stream](double I) { Stream << I; },
     [&Stream](bool   I) { Stream << std::boolalpha << I; },
@@ -85,6 +78,8 @@ Instruction::Instruction(unsigned TheLabelNo, frontEnd::TokenType TheOperation,
   ReservedCapacity = std::max(ResolveInstructionSize(LeftOperand),
                               ResolveInstructionSize(RightOperand));
 }
+
+void Instruction::SetLabelNo(unsigned L) { LabelNo = L; }
 
 unsigned Instruction::GetLabelNo() const { return LabelNo; }
 
@@ -131,6 +126,8 @@ UnaryInstruction::UnaryInstruction(unsigned TheLabelNo,
   ReservedCapacity = ResolveInstructionSize(Operand);
 }
 
+void UnaryInstruction::SetLabelNo(unsigned L) { LabelNo = L; }
+
 unsigned UnaryInstruction::GetLabelNo() const { return LabelNo; }
 
 const UnaryInstruction::AnyOperand &UnaryInstruction::GetOperand() const {
@@ -167,7 +164,7 @@ IfInstruction::IfInstruction(frontEnd::TokenType TheOperation,
 
 unsigned IfInstruction::GetGotoLabel() const { return GotoLabel; }
 
-void IfInstruction::SetGotoLabel(unsigned Label) { GotoLabel = Label; }
+void IfInstruction::SetGotoLabel(unsigned L) { GotoLabel = L; }
 
 TokenType IfInstruction::GetOperation() const { return Operation; }
 

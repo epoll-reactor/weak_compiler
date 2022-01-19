@@ -50,6 +50,9 @@ private:
   void Visit(const frontEnd::ASTVarDecl *) const override;
   void Visit(const frontEnd::ASTWhileStmt *) const override;
 
+  template <typename DataType>
+  IfInstruction *CreateConditionalInstruction(frontEnd::ASTNode *) const;
+
   frontEnd::ASTNode *RootNode;
 
   mutable CodeEmitter Emitter;
