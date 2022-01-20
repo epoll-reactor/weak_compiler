@@ -28,6 +28,9 @@ public:
   /// Get the size of referred unary/binary instruction in bytes.
   unsigned GetCapacity() const;
 
+  bool operator==(const InstructionReference &RHS) const;
+  bool operator!=(const InstructionReference &RHS) const;
+
 private:
   unsigned LabelNo;
 
@@ -56,6 +59,9 @@ public:
   const AnyOperand &GetRightInstruction() const;
 
   std::string Dump() const;
+
+  bool operator==(const Instruction &RHS) const;
+  bool operator!=(const Instruction &RHS) const;
 
 private:
   /// Used to identify the temporary variable and refer to it later.
@@ -87,6 +93,9 @@ public:
 
   std::string Dump() const;
 
+  bool operator==(const UnaryInstruction &RHS) const;
+  bool operator!=(const UnaryInstruction &RHS) const;
+
 private:
   unsigned LabelNo;
 
@@ -113,6 +122,9 @@ public:
 
   std::string Dump() const;
 
+  bool operator==(const IfInstruction &RHS) const;
+  bool operator!=(const IfInstruction &RHS) const;
+
 private:
   frontEnd::TokenType Operation;
 
@@ -131,6 +143,9 @@ public:
 
   std::string Dump() const { return "L" + std::to_string(LabelNo) + ":"; }
 
+  bool operator==(const GotoLabel &RHS) const { return LabelNo == RHS.LabelNo; }
+  bool operator!=(const GotoLabel &RHS) const { return !(RHS == *this); }
+
 private:
   unsigned LabelNo;
 };
@@ -145,12 +160,26 @@ public:
 
   std::string Dump() const { return "goto L" + std::to_string(LabelNo); }
 
+  bool operator==(const Jump &RHS) const { return LabelNo == RHS.LabelNo; }
+
+  bool operator!=(const Jump &RHS) const { return !(RHS == *this); }
+
 private:
   unsigned LabelNo;
 };
 
 using AnyInstruction =
     std::variant<Instruction, UnaryInstruction, IfInstruction, GotoLabel, Jump>;
+
+std::ostream &operator<<(std::ostream &, const weak::middleEnd::Instruction &);
+std::ostream &operator<<(std::ostream &,
+                         const weak::middleEnd::UnaryInstruction &);
+std::ostream &operator<<(std::ostream &,
+                         const weak::middleEnd::IfInstruction &);
+std::ostream &operator<<(std::ostream &, const weak::middleEnd::GotoLabel &);
+std::ostream &operator<<(std::ostream &, const weak::middleEnd::Jump &);
+std::ostream &operator<<(std::ostream &,
+                         const weak::middleEnd::AnyInstruction &);
 
 } // namespace middleEnd
 } // namespace weak

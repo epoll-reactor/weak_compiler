@@ -23,9 +23,9 @@ namespace middleEnd {
  */
 class Storage {
 private:
-  using AnyDataType =
-      std::variant<signed, double, /*char,*/ bool,
-                   /*std::string,*/ Instruction, UnaryInstruction>;
+  using AnyDataType = std::variant<signed, double, /*char,*/ bool,
+                                   /*std::string,*/ Instruction,
+                                   UnaryInstruction, InstructionReference>;
 
   struct Record {
     /// Scope depth, starts with 0.

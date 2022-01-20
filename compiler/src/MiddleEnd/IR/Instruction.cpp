@@ -65,6 +65,14 @@ unsigned InstructionReference::GetLabelNo() const { return LabelNo; }
 
 unsigned InstructionReference::GetCapacity() const { return ReservedCapacity; }
 
+bool InstructionReference::operator==(const InstructionReference &RHS) const {
+  return LabelNo == RHS.LabelNo && ReservedCapacity == RHS.ReservedCapacity;
+}
+
+bool InstructionReference::operator!=(const InstructionReference &RHS) const {
+  return !(RHS == *this);
+}
+
 } // namespace middleEnd
 } // namespace weak
 
@@ -114,6 +122,16 @@ std::string Instruction::Dump() const {
   return Stream.str();
 }
 
+bool Instruction::operator==(const Instruction &RHS) const {
+  return LabelNo == RHS.LabelNo && ReservedCapacity == RHS.ReservedCapacity &&
+         Operation == RHS.Operation && LeftOperand == RHS.LeftOperand &&
+         RightOperand == RHS.RightOperand;
+}
+
+bool Instruction::operator!=(const Instruction &rhs) const {
+  return !(rhs == *this);
+}
+
 } // namespace middleEnd
 } // namespace weak
 
@@ -148,6 +166,15 @@ std::string UnaryInstruction::Dump() const {
   DumpTo(Stream, Operand);
 
   return Stream.str();
+}
+
+bool UnaryInstruction::operator==(const UnaryInstruction &RHS) const {
+  return LabelNo == RHS.LabelNo && ReservedCapacity == RHS.ReservedCapacity &&
+         Operand == RHS.Operand;
+}
+
+bool UnaryInstruction::operator!=(const UnaryInstruction &rhs) const {
+  return !(rhs == *this);
 }
 
 } // namespace middleEnd
@@ -191,6 +218,39 @@ std::string IfInstruction::Dump() const {
 
   Stream << " goto L" << GotoLabel;
   return Stream.str();
+}
+
+bool IfInstruction::operator==(const IfInstruction &RHS) const {
+  return Operation == RHS.Operation && LeftOperand == RHS.LeftOperand &&
+         RightOperand == RHS.RightOperand && GotoLabel == RHS.GotoLabel;
+}
+
+bool IfInstruction::operator!=(const IfInstruction &RHS) const {
+  return !(RHS == *this);
+}
+
+std::ostream &operator<<(std::ostream &Stream, const Instruction &I) {
+  return Stream << I.Dump();
+}
+std::ostream &operator<<(std::ostream &Stream, const UnaryInstruction &I) {
+  return Stream << I.Dump();
+}
+std::ostream &operator<<(std::ostream &Stream, const IfInstruction &I) {
+  return Stream << I.Dump();
+}
+std::ostream &operator<<(std::ostream &Stream, const GotoLabel &I) {
+  return Stream << I.Dump();
+}
+std::ostream &operator<<(std::ostream &Stream, const Jump &I) {
+  return Stream << I.Dump();
+}
+std::ostream &operator<<(std::ostream &Stream, const AnyInstruction &I) {
+  // clang-format off
+  std::visit([&Stream](const auto &Instruction) {
+    Stream << Instruction.Dump();
+  }, I);
+  // clang-format on
+  return Stream;
 }
 
 } // namespace middleEnd
