@@ -18,9 +18,9 @@ class CodeEmitter {
 public:
   CodeEmitter();
 
-  const Instruction *Emit(frontEnd::TokenType, const Instruction::AnyOperand &,
-                          const Instruction::AnyOperand &);
-  const Instruction *Emit(const Instruction &);
+  Instruction *Emit(frontEnd::TokenType, const Instruction::AnyOperand &,
+                    const Instruction::AnyOperand &);
+  Instruction *Emit(const Instruction &);
 
   UnaryInstruction *Emit(const UnaryInstruction::AnyOperand &);
 
@@ -36,6 +36,7 @@ public:
   void RemoveLast();
 
   void Dump();
+  static void Dump(const std::list<AnyInstruction> &);
 
   const std::list<AnyInstruction> &GetInstructions() const;
 

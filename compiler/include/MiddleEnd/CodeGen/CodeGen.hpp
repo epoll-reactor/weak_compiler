@@ -22,13 +22,14 @@ public:
   using AnyInstruction = std::variant<
       /* If statement produces another instruction. */ Instruction,
       /* If statement produces unary instruction. */ UnaryInstruction,
+      /* If statement produces reference. */ InstructionReference,
       /* If statement produces digit. */ signed,
       /* If statement produces float. */ double,
       /* If statement produces boolean. */ bool>;
 
   CodeGen(Storage *TheVariablePool, frontEnd::ASTNode *TheRootNode);
 
-  void CreateCode();
+  const std::list<weak::middleEnd::AnyInstruction> &CreateCode();
 
 private:
   void Visit(const frontEnd::ASTBinaryOperator *) const override;
@@ -51,7 +52,11 @@ private:
   void Visit(const frontEnd::ASTWhileStmt *) const override;
 
   template <typename DataType>
-  IfInstruction *CreateConditionalInstruction(frontEnd::ASTNode *) const;
+  IfInstruction *CreateConditionalInstruction(const frontEnd::ASTNode *) const;
+
+  void EmitAssignment(const frontEnd::ASTBinaryOperator *) const;
+
+  IfInstruction *EmitCondition(const frontEnd::ASTNode *) const;
 
   frontEnd::ASTNode *RootNode;
 
