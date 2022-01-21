@@ -37,22 +37,28 @@ private:
 
 void weak::UnreachablePoint() { exit(-1); }
 
-std::ostream &weak::DiagnosticWarning() {
+weak::OstreamRAII::~OstreamRAII() { std::cerr << std::endl; }
+
+std::ostream &weak::OstreamRAII::operator<<(const char *String) {
+  return std::cerr << String;
+}
+
+weak::OstreamRAII weak::DiagnosticWarning() {
   [[maybe_unused]] Diagnostic _(Diagnostic::DiagLevel::WARN);
-  return std::cerr;
+  return OstreamRAII{};
 }
 
-std::ostream &weak::DiagnosticWarning(unsigned LineNo, unsigned ColumnNo) {
+weak::OstreamRAII weak::DiagnosticWarning(unsigned LineNo, unsigned ColumnNo) {
   [[maybe_unused]] Diagnostic _(Diagnostic::DiagLevel::WARN, LineNo, ColumnNo);
-  return std::cerr;
+  return OstreamRAII{};
 }
 
-std::ostream &weak::DiagnosticError() {
+weak::OstreamRAII weak::DiagnosticError() {
   [[maybe_unused]] Diagnostic _(Diagnostic::DiagLevel::ERROR);
-  return std::cerr;
+  return OstreamRAII{};
 }
 
-std::ostream &weak::DiagnosticError(unsigned LineNo, unsigned ColumnNo) {
+weak::OstreamRAII weak::DiagnosticError(unsigned LineNo, unsigned ColumnNo) {
   [[maybe_unused]] Diagnostic _(Diagnostic::DiagLevel::ERROR, LineNo, ColumnNo);
-  return std::cerr;
+  return OstreamRAII{};
 }
