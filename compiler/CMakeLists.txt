@@ -6,7 +6,7 @@ add_library(
 target_compile_options(
     Compiler PRIVATE
     -Werror -Wall -Wextra -Wpedantic -Wsign-compare -Wshadow -Wwrite-strings
-    -Wimplicit-fallthrough
+    -Wimplicit-fallthrough -Wunused
     -Wpointer-arith -Winit-self -Wno-sign-conversion -Wredundant-decls
     -fPIC -flto -O3
 )
