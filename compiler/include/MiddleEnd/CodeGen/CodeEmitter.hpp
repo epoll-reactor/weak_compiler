@@ -38,6 +38,7 @@ public:
   void Dump();
   static void Dump(const std::list<AnyInstruction> &);
 
+  const AnyInstruction &GetLast() const;
   const std::list<AnyInstruction> &GetInstructions() const;
 
 private:

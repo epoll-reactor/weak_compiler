@@ -34,11 +34,11 @@ namespace middleEnd {
 
 CodeGen::CodeGen(Storage *TheVariablePool, ASTNode *TheRootNode)
     : RootNode(TheRootNode), Emitter(), LastInstruction(0),
-      CurrentGotoLabel(0U), VariablePool(TheVariablePool) {}
+      CurrentGotoLabel(0U), VariablePool(TheVariablePool), LoopHasBreak(false),
+      LoopHasContinue(false) {}
 
 template <typename DataType>
-IfInstruction *
-CodeGen::CreateConditionalInstruction(const ASTNode *Node) const {
+IfInstruction *CodeGen::CreateUnaryCondition(const ASTNode *Node) const {
   auto *Value = static_cast<const DataType *>(Node);
   IfInstruction *If =
       Emitter.EmitIf(TokenType::NEQ, Value->GetValue(), 0, /*GotoLabel=*/0U);
@@ -46,27 +46,23 @@ CodeGen::CreateConditionalInstruction(const ASTNode *Node) const {
 }
 
 template IfInstruction *
-CodeGen::CreateConditionalInstruction<ASTIntegerLiteral>(const ASTNode *) const;
+CodeGen::CreateUnaryCondition<ASTIntegerLiteral>(const ASTNode *) const;
 template IfInstruction *
-CodeGen::CreateConditionalInstruction<ASTBooleanLiteral>(const ASTNode *) const;
+CodeGen::CreateUnaryCondition<ASTBooleanLiteral>(const ASTNode *) const;
 template IfInstruction *
-CodeGen::CreateConditionalInstruction<ASTFloatingPointLiteral>(
-    const ASTNode *) const;
+CodeGen::CreateUnaryCondition<ASTFloatingPointLiteral>(const ASTNode *) const;
 
 IfInstruction *CodeGen::EmitCondition(const ASTNode *Condition) const {
   switch (Condition->GetASTType()) {
-  case ASTType::INTEGER_LITERAL: {
-    return CreateConditionalInstruction<ASTIntegerLiteral>(Condition);
-    break;
-  }
-  case ASTType::BOOLEAN_LITERAL: {
-    return CreateConditionalInstruction<ASTBooleanLiteral>(Condition);
-    break;
-  }
-  case ASTType::FLOATING_POINT_LITERAL: {
-    return CreateConditionalInstruction<ASTFloatingPointLiteral>(Condition);
-    break;
-  }
+  case ASTType::INTEGER_LITERAL:
+    return CreateUnaryCondition<ASTIntegerLiteral>(Condition);
+
+  case ASTType::BOOLEAN_LITERAL:
+    return CreateUnaryCondition<ASTBooleanLiteral>(Condition);
+
+  case ASTType::FLOATING_POINT_LITERAL:
+    return CreateUnaryCondition<ASTFloatingPointLiteral>(Condition);
+
   case ASTType::BINARY: {
     Condition->Accept(this);
     Instruction *Instr = &std::get<Instruction>(LastInstruction);
@@ -79,25 +75,47 @@ IfInstruction *CodeGen::EmitCondition(const ASTNode *Condition) const {
   }
 }
 
+void CodeGen::EmitLoopBody(Jump *&BreakJump, Jump *&ContinueJump,
+                           const ASTCompoundStmt *Body) const {
+  VariablePool->ScopeBegin();
+
+  for (const auto &Stmt : Body->GetStmts()) {
+    Stmt->Accept(this);
+    if (LoopHasBreak) {
+      BreakJump = Emitter.EmitJump(/*GotoLabel=*/0U);
+      LoopHasBreak = false;
+    }
+    if (LoopHasContinue) {
+      ContinueJump = Emitter.EmitJump(/*GotoLabel=*/0U);
+      LoopHasContinue = false;
+    }
+  }
+
+  VariablePool->ScopeEnd();
+}
+
 const std::list<AnyInstruction> &CodeGen::CreateCode() {
   RootNode->Accept(this);
   return Emitter.GetInstructions();
 }
 
-void CodeGen::Visit(const frontEnd::ASTCompoundStmt *Compound) const {
+void CodeGen::Visit(const ASTCompoundStmt *Compound) const {
   VariablePool->ScopeBegin();
 
   for (const auto &Stmt : Compound->GetStmts())
     Stmt->Accept(this);
 
+  LoopHasBreak = false;
+  LoopHasContinue = false;
+
   VariablePool->ScopeEnd();
 }
 
-void CodeGen::Visit(const frontEnd::ASTFunctionDecl *FunctionDecl) const {
+void CodeGen::Visit(const ASTFunctionDecl *FunctionDecl) const {
   FunctionDecl->GetBody()->Accept(this);
 }
 
-void CodeGen::EmitAssignment(const frontEnd::ASTBinaryOperator *Binary) const {
+void CodeGen::EmitAssignment(const ASTBinaryOperator *Binary) const {
   Binary->GetLHS()->Accept(this);
   InstructionReference Ref = std::get<InstructionReference>(LastInstruction);
   Binary->GetRHS()->Accept(this);
@@ -106,7 +124,7 @@ void CodeGen::EmitAssignment(const frontEnd::ASTBinaryOperator *Binary) const {
   std::visit(Overload {
     /// Instruction is already emitted, so we should to remove it
     /// and emit again to be able to change it's label.
-    [this, &Ref](const Instruction &I) {
+    [this, &Ref](const Instruction &) {
       Emitter.RemoveLast();
       auto *Instr = Emitter.Emit(I);
       Instr->SetLabelNo(Ref.GetLabelNo());
@@ -122,7 +140,7 @@ void CodeGen::EmitAssignment(const frontEnd::ASTBinaryOperator *Binary) const {
   // clang-format on
 }
 
-void CodeGen::Visit(const frontEnd::ASTBinaryOperator *Binary) const {
+void CodeGen::Visit(const ASTBinaryOperator *Binary) const {
   if (Binary->GetOperation() == TokenType::ASSIGN) {
     EmitAssignment(Binary);
     return;
@@ -153,14 +171,14 @@ void CodeGen::Visit(const frontEnd::ASTBinaryOperator *Binary) const {
   }, LHS, RHS);
   // clang-format on
 
-  LastInstruction = std::get<Instruction>(Emitter.GetInstructions().back());
+  LastInstruction = std::get<Instruction>(Emitter.GetLast());
 }
 
-void CodeGen::Visit(const frontEnd::ASTIntegerLiteral *Integer) const {
+void CodeGen::Visit(const ASTIntegerLiteral *Integer) const {
   LastInstruction = Integer->GetValue();
 }
 
-void CodeGen::Visit(const frontEnd::ASTVarDecl *VarDecl) const {
+void CodeGen::Visit(const ASTVarDecl *VarDecl) const {
   VarDecl->GetDeclareBody()->Accept(this);
 
   unsigned Label = 0U;
@@ -184,12 +202,13 @@ void CodeGen::Visit(const frontEnd::ASTVarDecl *VarDecl) const {
              LastInstruction);
 }
 
-void CodeGen::Visit(const frontEnd::ASTBooleanLiteral *Boolean) const {
+void CodeGen::Visit(const ASTBooleanLiteral *Boolean) const {
   LastInstruction = Boolean->GetValue();
 }
 
-void CodeGen::Visit(const frontEnd::ASTBreakStmt *) const {}
-void CodeGen::Visit(const frontEnd::ASTContinueStmt *) const {}
+void CodeGen::Visit(const ASTBreakStmt *) const { LoopHasBreak = true; }
+
+void CodeGen::Visit(const ASTContinueStmt *) const { LoopHasContinue = true; }
 
 /*!               do { body } while (cond); after
  *
@@ -199,21 +218,31 @@ void CodeGen::Visit(const frontEnd::ASTContinueStmt *) const {}
  *                goto EXIT
  *  EXIT:         after instr
  */
-void CodeGen::Visit(const frontEnd::ASTDoWhileStmt *DoWhile) const {
+void CodeGen::Visit(const ASTDoWhileStmt *DoWhile) const {
   unsigned SavedGotoLabel = CurrentGotoLabel++;
   Emitter.EmitGotoLabel(SavedGotoLabel);
 
-  DoWhile->GetBody()->Accept(this);
+  Jump *BreakJump = nullptr;
+  Jump *ContinueJump = nullptr;
+
+  EmitLoopBody(BreakJump, ContinueJump, DoWhile->GetBody().get());
+
+  if (BreakJump)
+    BreakJump->SetLabelNo(CurrentGotoLabel);
+
+  if (ContinueJump)
+    ContinueJump->SetLabelNo(SavedGotoLabel);
 
   IfInstruction *Condition = EmitCondition(DoWhile->GetCondition().get());
 
   Emitter.EmitJump(SavedGotoLabel);
   Emitter.EmitGotoLabel(CurrentGotoLabel);
   Condition->SetGotoLabel(CurrentGotoLabel);
+
   CurrentGotoLabel++;
 }
 
-void CodeGen::Visit(const frontEnd::ASTFloatingPointLiteral *Float) const {
+void CodeGen::Visit(const ASTFloatingPointLiteral *Float) const {
   LastInstruction = Float->GetValue();
 }
 
@@ -227,8 +256,7 @@ void CodeGen::Visit(const frontEnd::ASTFloatingPointLiteral *Float) const {
  *                goto COND
  *  EXIT:         after instr
  */
-/// \todo Clean implementation.
-void CodeGen::Visit(const frontEnd::ASTForStmt *For) const {
+void CodeGen::Visit(const ASTForStmt *For) const {
   For->GetInit()->Accept(this);
 
   unsigned ForStartLabel = CurrentGotoLabel++;
@@ -240,7 +268,18 @@ void CodeGen::Visit(const frontEnd::ASTForStmt *For) const {
 
   Emitter.EmitGotoLabel(CurrentGotoLabel);
   unsigned Saved = CurrentGotoLabel++;
-  For->GetBody()->Accept(this);
+
+  Jump *BreakJump = nullptr;
+  Jump *ContinueJump = nullptr;
+
+  EmitLoopBody(BreakJump, ContinueJump, For->GetBody().get());
+
+  if (BreakJump)
+    BreakJump->SetLabelNo(CurrentGotoLabel);
+
+  if (ContinueJump)
+    ContinueJump->SetLabelNo(Saved - 1);
+
   For->GetIncrement()->Accept(this);
   FailureFallback->SetLabelNo(CurrentGotoLabel);
   Condition->SetGotoLabel(ForStartLabel + 1);
@@ -249,7 +288,7 @@ void CodeGen::Visit(const frontEnd::ASTForStmt *For) const {
   ++CurrentGotoLabel;
 }
 
-void CodeGen::Visit(const frontEnd::ASTFunctionCall *) const {}
+void CodeGen::Visit(const ASTFunctionCall *) const {}
 
 /*!               if !cond then goto EXIT
  *                instr1
@@ -264,7 +303,7 @@ void CodeGen::Visit(const frontEnd::ASTFunctionCall *) const {}
  *                else instr2
  *  EXIT:         after instr
  */
-void CodeGen::Visit(const frontEnd::ASTIfStmt *If) const {
+void CodeGen::Visit(const ASTIfStmt *If) const {
   unsigned SavedGotoLabel = CurrentGotoLabel++;
 
   IfInstruction *Condition = EmitCondition(If->GetCondition().get());
@@ -280,10 +319,10 @@ void CodeGen::Visit(const frontEnd::ASTIfStmt *If) const {
     If->GetElseBody()->Accept(this);
 }
 
-void CodeGen::Visit(const frontEnd::ASTReturnStmt *) const {}
-void CodeGen::Visit(const frontEnd::ASTStringLiteral *) const {}
+void CodeGen::Visit(const ASTReturnStmt *) const {}
+void CodeGen::Visit(const ASTStringLiteral *) const {}
 
-void CodeGen::Visit(const frontEnd::ASTSymbol *Symbol) const {
+void CodeGen::Visit(const ASTSymbol *Symbol) const {
   auto *Record = VariablePool->GetByName(Symbol->GetValue());
 
   /// If variable type was not set, we have not the complete definition.
@@ -296,7 +335,7 @@ void CodeGen::Visit(const frontEnd::ASTSymbol *Symbol) const {
   std::visit([this](auto I) { LastInstruction = I; }, Record->StoredValue);
 }
 
-void CodeGen::Visit(const frontEnd::ASTUnaryOperator *Unary) const {
+void CodeGen::Visit(const ASTUnaryOperator *Unary) const {
   Unary->GetOperand()->Accept(this);
 
   std::function<void(TokenType)> VisitUnary;
@@ -341,18 +380,29 @@ void CodeGen::Visit(const frontEnd::ASTUnaryOperator *Unary) const {
  *                  goto COND
  *  EXIT:           after instr
  */
-void CodeGen::Visit(const frontEnd::ASTWhileStmt *While) const {
-  if (!std::holds_alternative<GotoLabel>(Emitter.GetInstructions().back())) {
+void CodeGen::Visit(const ASTWhileStmt *While) const {
+  if (!std::holds_alternative<GotoLabel>(Emitter.GetLast())) {
     Emitter.EmitGotoLabel(CurrentGotoLabel);
     ++CurrentGotoLabel;
   }
 
   IfInstruction *Condition = EmitCondition(While->GetCondition().get());
   Condition->SetGotoLabel(CurrentGotoLabel);
-  auto *Fallback = Emitter.EmitJump(/*GotoLabel=*/0);
+  auto *Fallback = Emitter.EmitJump(/*GotoLabel=*/0U);
   Emitter.EmitGotoLabel(CurrentGotoLabel);
   unsigned Saved = CurrentGotoLabel++;
-  While->GetBody()->Accept(this);
+
+  Jump *BreakJump = nullptr;
+  Jump *ContinueJump = nullptr;
+
+  EmitLoopBody(BreakJump, ContinueJump, While->GetBody().get());
+
+  if (BreakJump)
+    BreakJump->SetLabelNo(CurrentGotoLabel);
+
+  if (ContinueJump)
+    ContinueJump->SetLabelNo(Saved - 1);
+
   Emitter.EmitJump(Saved - 1);
   Emitter.EmitGotoLabel(CurrentGotoLabel);
   Fallback->SetLabelNo(CurrentGotoLabel);

@@ -111,9 +111,7 @@ Jump *CodeEmitter::EmitJump(unsigned ToLabel) {
   return I;
 }
 
-void CodeEmitter::Dump() {
-  DumpImpl(Instructions);
-}
+void CodeEmitter::Dump() { DumpImpl(Instructions); }
 
 void CodeEmitter::Dump(const std::list<AnyInstruction> &Instructions) {
   DumpImpl(Instructions);
@@ -130,6 +128,10 @@ void CodeEmitter::RemoveLast() {
   }, Instructions.back());
   // clang-format on
   Instructions.pop_back();
+}
+
+const AnyInstruction &CodeEmitter::GetLast() const {
+  return Instructions.back();
 }
 
 const std::list<AnyInstruction> &CodeEmitter::GetInstructions() const {

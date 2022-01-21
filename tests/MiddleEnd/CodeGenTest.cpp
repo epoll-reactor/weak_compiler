@@ -478,4 +478,134 @@ int main() {
       J4, L5, T3Change, J2, L6, J0, L7
     });
   }
+  SECTION(DoWhileBreak) {
+    Label L0(0);
+    Instr T0(0, TokenType::PLUS, 1, 2);
+    Jump J1(1);
+    Instr T1(1, TokenType::PLUS, 3, 4);
+    If If1(TokenType::NEQ, 1, 0, 1);
+    Jump J0(0);
+    Label L1(1);
+    Instr T2(2, TokenType::PLUS, 5, 6);
+    RunCodeGenTest("void f() {"
+                   "  do {"
+                   "    int a = 1 + 2;"
+                   "    break;"
+                   "    int b = 3 + 4;"
+                   "  } while (1);"
+                   "  int a = 5 + 6;"
+                   "}", {
+      L0, T0, J1, T1, If1, J0, L1, T2
+    });
+  }
+  SECTION(DoWhileContinue) {
+    Label L0(0);
+    Instr T0(0, TokenType::PLUS, 1, 2);
+    Jump J0(0);
+    Instr T1(1, TokenType::PLUS, 3, 4);
+    If If1(TokenType::NEQ, 1, 0, 1);
+    Label L1(1);
+    Instr T2(2, TokenType::PLUS, 5, 6);
+    RunCodeGenTest("void f() {"
+                   "  do {"
+                   "    int a = 1 + 2;"
+                   "    continue;"
+                   "    int b = 3 + 4;"
+                   "  } while (1);"
+                   "  int a = 5 + 6;"
+                   "}", {
+      L0, T0, J0, T1, If1, J0, L1, T2
+    });
+  }
+  SECTION(WhileBreak) {
+    Label L0(0);
+    If If1(TokenType::NEQ, 1, 0, 1);
+    Jump J2(2);
+    Label L1(1);
+    Instr T0(0, TokenType::PLUS, 1, 2);
+    // Jump J2(2);
+    Instr T1(1, TokenType::PLUS, 3, 4);
+    Jump J0(0);
+    Label L2(2);
+    Instr T2(2, TokenType::PLUS, 5, 6);
+    RunCodeGenTest("void f() {"
+                   "  while (1) {"
+                   "    int a = 1 + 2;"
+                   "    break;"
+                   "    int b = 3 + 4;"
+                   "  }"
+                   "  int c = 5 + 6;"
+                   "}", {
+      L0, If1, J2, L1, T0, J2, T1, J0, L2, T2
+    });
+  }
+  SECTION(WhileContinue) {
+    Label L0(0);
+    If If1(TokenType::NEQ, 1, 0, 1);
+    Jump J2(2);
+    Label L1(1);
+    Instr T0(0, TokenType::PLUS, 1, 2);
+    Instr T1(1, TokenType::PLUS, 3, 4);
+    Jump J0(0);
+    Label L2(2);
+    Instr T2(2, TokenType::PLUS, 5, 6);
+    RunCodeGenTest("void f() {"
+                   "  while (1) {"
+                   "    int a = 1 + 2;"
+                   "    continue;"
+                   "    int b = 3 + 4;"
+                   "  }"
+                   "  int c = 5 + 6;"
+                   "}", {
+      L0, If1, J2, L1, T0, J0, T1, J0, L2, T2
+    });
+  }
+  SECTION(ForBreak) {
+    Unary T0(0, 0);
+    Label L0(0);
+    If If1(TokenType::LT, T0, 10, 1);
+    Jump J2(2);
+    Label L1(1);
+    Instr T1(1, TokenType::PLUS, 1, 2);
+    // Jump J2(2);
+    Instr T2(2, TokenType::PLUS, 3, 4);
+    Instr T0Change(0, TokenType::PLUS, T0, 1);
+    Jump J0(0);
+    Label L2(2);
+    Instr T4(4, TokenType::PLUS, 5, 6);
+    RunCodeGenTest("void f() {"
+                   "  for (int i = 0; i < 10; ++i) {"
+                   "    int a = 1 + 2;"
+                   "    break;"
+                   "    int b = 3 + 4;"
+                   "  }"
+                   "  int c = 5 + 6;"
+                   "}", {
+      T0, L0, If1, J2, L1, T1, J2, T2, T0Change, J0, L2, T4
+    });
+  }
+  SECTION(ForContinue) {
+    Unary T0(0, 0);
+    Label L0(0);
+    If If1(TokenType::LT, T0, 10, 1);
+    Jump J2(2);
+    Label L1(1);
+    Instr T1(1, TokenType::PLUS, 1, 2);
+    Jump J0(0);
+    Instr T2(2, TokenType::PLUS, 3, 4);
+    Instr T0Change(0, TokenType::PLUS, T0, 1);
+    // Jump J0(0);
+    Label L2(2);
+    Instr T4(4, TokenType::PLUS, 5, 6);
+    RunCodeGenTest("void f() {"
+                   "  for (int i = 0; i < 10; ++i) {"
+                   "    int a = 1 + 2;"
+                   "    continue;"
+                   "    int b = 3 + 4;"
+                   "  }"
+                   "  int c = 5 + 6;"
+                   "}", {
+      T0, L0, If1, J2, L1, T1, J0, T2, T0Change, J0, L2, T4
+    });
+  }
 }
