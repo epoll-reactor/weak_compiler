@@ -124,7 +124,7 @@ void CodeGen::EmitAssignment(const ASTBinaryOperator *Binary) const {
   std::visit(Overload {
     /// Instruction is already emitted, so we should to remove it
     /// and emit again to be able to change it's label.
-    [this, &Ref](const Instruction &) {
+    [this, &Ref](const Instruction &I) {
       Emitter.RemoveLast();
       auto *Instr = Emitter.Emit(I);
       Instr->SetLabelNo(Ref.GetLabelNo());
