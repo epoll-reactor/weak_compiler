@@ -10,7 +10,6 @@
 #include "FrontEnd/Lex/Token.hpp"
 #include "MiddleEnd/IR/Instruction.hpp"
 #include <map>
-#include <variant>
 
 namespace weak {
 namespace middleEnd {
@@ -23,10 +22,6 @@ namespace middleEnd {
  */
 class Storage {
 private:
-  using AnyDataType = std::variant<signed, double, /*char,*/ bool,
-                                   /*std::string,*/ Instruction,
-                                   UnaryInstruction, InstructionReference>;
-
   struct Record {
     /// Scope depth, starts with 0.
     unsigned Depth;
@@ -44,15 +39,13 @@ private:
     /// Data type of stored variable, used for type checking.
     frontEnd::TokenType DataType;
 
-    /// The stored value itself.
-    AnyDataType StoredValue;
+    /// The reference to the stored value.
+    InstructionReference Reference;
   };
 
   using RecordMap = std::map</*Attribute*/ unsigned, Record>;
 
 public:
-  Storage();
-
   /// Open new scope.
   void ScopeBegin();
 
@@ -66,13 +59,6 @@ public:
   /// Specify variable type.
   void SetSymbolType(unsigned Attribute, frontEnd::TokenType Type);
 
-  void setInstruction(unsigned Attribute, const Instruction &);
-  void SetIntValue(unsigned Attribute, signed Value);
-  void SetFloatValue(unsigned Attribute, float Value);
-  void SetCharValue(unsigned Attribute, char Value);
-  void SetBoolValue(unsigned Attribute, bool Value);
-  void SetStringValue(unsigned Attribute, std::string Value);
-
   unsigned TotalVariables() { return Records.size(); }
 
 private:
@@ -81,13 +67,8 @@ private:
   Record *GetSymbol(unsigned Attribute);
   Record *GetByName(std::string_view Name);
 
-  std::pair<const unsigned, Record> &FindByAttribute(unsigned Attribute);
-  void CheckIfVariableTypeIsSet(const Storage::Record &Record);
-  void SetVariableImpl(frontEnd::TokenType Type, unsigned Attribute,
-                       const AnyDataType &Value);
-
-  unsigned CurrentScopeDepth;
-  unsigned CurrentAttribute;
+  unsigned CurrentScopeDepth{0U};
+  unsigned CurrentAttribute{0U};
   RecordMap Records;
 };
 
