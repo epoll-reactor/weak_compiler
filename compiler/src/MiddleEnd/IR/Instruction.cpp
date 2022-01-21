@@ -31,11 +31,10 @@ static void DumpTo(std::ostringstream &Stream,
                    const Instruction::AnyOperand &Operand) {
   // clang-format off
   std::visit(weak::Overload {
-    [&Stream](signed I) { Stream << I; },
-    [&Stream](double I) { Stream << I; },
-    [&Stream](bool   I) { Stream << std::boolalpha << I; },
-    [&Stream](Reference
-                     I) { Stream << std::string{"t" + std::to_string(I.GetLabelNo())}; }
+    [&Stream](signed    I) { Stream << I; },
+    [&Stream](double    I) { Stream << I; },
+    [&Stream](bool      I) { Stream << std::boolalpha << I; },
+    [&Stream](Reference I) { Stream << std::string{"t" + std::to_string(I.GetLabelNo())}; }
   }, Operand);
   // clang-format on
 }
@@ -43,13 +42,11 @@ static void DumpTo(std::ostringstream &Stream,
 namespace weak {
 namespace middleEnd {
 
-Reference::Reference(const Instruction &I)
-    : LabelNo(I.GetLabelNo()) {
+Reference::Reference(const Instruction &I) : LabelNo(I.GetLabelNo()) {
   ReservedCapacity = I.GetCapacity();
 }
 
-Reference::Reference(const UnaryInstruction &I)
-    : LabelNo(I.GetLabelNo()) {
+Reference::Reference(const UnaryInstruction &I) : LabelNo(I.GetLabelNo()) {
   ReservedCapacity = I.GetCapacity();
 }
 

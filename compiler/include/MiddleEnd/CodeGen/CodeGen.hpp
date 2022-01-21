@@ -22,12 +22,12 @@ namespace middleEnd {
 class CodeGen : private frontEnd::ASTVisitor {
 public:
   using AnyInstruction = std::variant<
-    /* If statement produces another instruction. */ Instruction,
-    /* If statement produces unary instruction. */ UnaryInstruction,
-    /* If statement produces reference. */ Reference,
-    /* If statement produces digit. */ signed,
-    /* If statement produces float. */ double,
-    /* If statement produces boolean. */ bool>;
+      /* If statement produces another instruction. */ Instruction,
+      /* If statement produces unary instruction. */ UnaryInstruction,
+      /* If statement produces reference. */ Reference,
+      /* If statement produces digit. */ signed,
+      /* If statement produces float. */ double,
+      /* If statement produces boolean. */ bool>;
 
   CodeGen(Storage *TheVariablePool, frontEnd::ASTNode *TheRootNode);
 

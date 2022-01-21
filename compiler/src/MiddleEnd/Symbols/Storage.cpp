@@ -38,7 +38,7 @@ unsigned Storage::AddSymbol(std::string_view Name) {
                               return R.second.Name == Name;
                             });
   if (Found == Records.end()) {
-    auto CreateBuzzReference = []{
+    auto CreateBuzzReference = [] {
       return Reference(UnaryInstruction(0U, 0));
     };
     Record Variable{/*Depth=*/CurrentScopeDepth,
