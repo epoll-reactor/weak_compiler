@@ -47,15 +47,11 @@ int main() {
 
         Pool.SetSymbolType(Attribute3, TokenType::INTEGRAL_LITERAL);
 
-      assert(Pool.TotalVariables() == 3);
       Pool.ScopeEnd();
-      assert(Pool.TotalVariables() == 2);
 
       Pool.SetSymbolType(Attribute2, TokenType::INTEGRAL_LITERAL);
 
-    assert(Pool.TotalVariables() == 2);
     Pool.ScopeEnd();
-    assert(Pool.TotalVariables() == 0);
     // clang-format on
   }
   SECTION(GetByName) {

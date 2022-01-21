@@ -6,7 +6,7 @@
 #define TEST_CASE(stmt)                                                        \
   if (!(stmt)) {                                                               \
     std::cerr << "ERROR: test case " << #stmt << " failed\n";                  \
-    return EXIT_FAILURE;                                                       \
+    exit(1);                                                                   \
   }
 
 #define SECTION(string)                                                        \

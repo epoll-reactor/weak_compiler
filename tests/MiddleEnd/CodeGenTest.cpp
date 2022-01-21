@@ -16,9 +16,9 @@ void RunCodeGenTest(std::string_view Program, std::list<weak::middleEnd::AnyInst
   auto AST = fe::Parser(Tokens.begin().base(), Tokens.end().base()).Parse();
   auto Code = me::CodeGen(&Storage, AST.get()).CreateCode();
 
-  assert(!Code.empty());
-  assert(!Assert.empty());
-  assert(Code.size() == Assert.size());
+  TEST_CASE(!Code.empty());
+  TEST_CASE(!Assert.empty());
+  TEST_CASE(Code.size() == Assert.size());
 
   auto CodeIt = Code.begin();
   auto AssertIt = Assert.begin();
@@ -30,13 +30,12 @@ void RunCodeGenTest(std::string_view Program, std::list<weak::middleEnd::AnyInst
                               << "showing code...\n";
       me::CodeEmitter::Dump(Code);
       weak::UnreachablePoint();
+      TEST_CASE(false);
     }
 
     ++CodeIt;
     ++AssertIt;
   }
-
-//  assert(Code == Assert);
 }
 
 int main() {
