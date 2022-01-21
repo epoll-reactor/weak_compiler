@@ -189,7 +189,7 @@ void CodeGen::Visit(const ASTVarDecl *VarDecl) const {
     [this        ](bool                    I) { LastInstruction = Reference(*Emitter.Emit(I)); },
     [this, &Label](const UnaryInstruction &I) { LastInstruction = Reference(I); Label = I.GetLabelNo(); },
     [this, &Label](const Instruction      &I) { LastInstruction = Reference(I); Label = I.GetLabelNo(); },
-    [            ](const Reference              & ) { /* Do nothing. */ },
+    [            ](const Reference        & ) { /* Do nothing. */ },
   }, LastInstruction);
   // clang-format on
 
