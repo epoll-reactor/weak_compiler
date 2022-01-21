@@ -25,13 +25,13 @@ public:
   UnaryInstruction *Emit(const UnaryInstruction::AnyOperand &);
 
   IfInstruction *EmitIf(frontEnd::TokenType Operation,
-                        const Instruction::AnyOperand &Left,
-                        const Instruction::AnyOperand &Right,
+                        const Instruction::AnyOperand &LHS,
+                        const Instruction::AnyOperand &RHS,
                         unsigned GotoLabel);
-  IfInstruction *EmitIf(const Instruction &Instr, unsigned GotoLabel);
+  IfInstruction *EmitIf(const Instruction &Copy, unsigned GotoLabel);
 
   const GotoLabel *EmitGotoLabel(unsigned Label);
-  Jump *EmitJump(unsigned ToLabel);
+  Jump *EmitJump(unsigned Label);
 
   void RemoveLast();
 

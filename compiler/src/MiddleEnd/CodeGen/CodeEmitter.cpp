@@ -12,15 +12,7 @@ using namespace weak::middleEnd;
 
 static void DumpImpl(const std::list<AnyInstruction> &Instructions) {
   for (const AnyInstruction &Any : Instructions) {
-    // clang-format off
-    std::visit(weak::Overload {
-      [](const Instruction      &I) { std::cerr << I.Dump() << std::endl; },
-      [](const UnaryInstruction &I) { std::cerr << I.Dump() << std::endl; },
-      [](const IfInstruction    &I) { std::cerr << I.Dump() << std::endl; },
-      [](const GotoLabel        &I) { std::cerr << I.Dump() << std::endl; },
-      [](const Jump             &I) { std::cerr << I.Dump() << std::endl; }
-    }, Any);
-    // clang-format on
+    std::visit([](const auto &I) { std::cerr << I.Dump() << std::endl; }, Any);
   }
 }
 
@@ -30,25 +22,23 @@ namespace middleEnd {
 CodeEmitter::CodeEmitter() : Instructions(), CurrentLabel(0U) {}
 
 Instruction *CodeEmitter::Emit(frontEnd::TokenType Type,
-                               const Instruction::AnyOperand &Left,
-                               const Instruction::AnyOperand &Right) {
-  Instructions.emplace_back(Instruction(CurrentLabel, Type, Left, Right));
+                               const Instruction::AnyOperand &LHS,
+                               const Instruction::AnyOperand &RHS) {
+  Instruction *I = &std::get<Instruction>(
+      Instructions.emplace_back(Instruction(CurrentLabel, Type, LHS, RHS)));
   ++CurrentLabel;
-  Instruction *I = &std::get<Instruction>(Instructions.back());
   return I;
 }
 
 Instruction *CodeEmitter::Emit(const Instruction &Copy) {
-  Instructions.push_back(Copy);
   ++CurrentLabel;
-  Instruction *I = &std::get<Instruction>(Instructions.back());
-  return I;
+  return &std::get<Instruction>(Instructions.emplace_back(Copy));
 }
 
 UnaryInstruction *CodeEmitter::Emit(const UnaryInstruction::AnyOperand &Op) {
-  Instructions.emplace_back(UnaryInstruction(CurrentLabel, Op));
+  UnaryInstruction *I = &std::get<UnaryInstruction>(
+      Instructions.emplace_back(UnaryInstruction(CurrentLabel, Op)));
   ++CurrentLabel;
-  UnaryInstruction *I = &std::get<UnaryInstruction>(Instructions.back());
   return I;
 }
 
@@ -61,54 +51,29 @@ IfInstruction *CodeEmitter::EmitIf(frontEnd::TokenType Operation,
   return I;
 }
 
-IfInstruction *CodeEmitter::EmitIf(const Instruction &Instr,
+IfInstruction *CodeEmitter::EmitIf(const Instruction &Copy,
                                    unsigned GotoLabel) {
   // clang-format off
-  std::visit(Overload {
-    [this, &Instr, &GotoLabel](const Reference &L, const Reference &R) {
+  std::visit(Overload{
+    [&](const auto& LHS, const auto& RHS) {
       Instructions.emplace_back(
         IfInstruction(
-          Instr.GetOp(), L, R, GotoLabel
-        )
-      );
-    },
-    [this, &Instr, &GotoLabel](const auto &L, const Reference &R) {
-      Instructions.emplace_back(
-        IfInstruction(
-          Instr.GetOp(), L, R, GotoLabel
-        )
-      );
-    },
-    [this, &Instr, &GotoLabel](const Reference &L, const auto &R) {
-      Instructions.emplace_back(
-        IfInstruction(
-          Instr.GetOp(), L, R, GotoLabel
-        )
-      );
-    },
-    [this, &Instr, &GotoLabel](const auto &L, const auto &R) {
-      Instructions.emplace_back(
-        IfInstruction(
-          Instr.GetOp(), L, R, GotoLabel
+          Copy.GetOp(), LHS, RHS, GotoLabel
         )
       );
     }
-  }, Instr.GetLeftInstruction(), Instr.GetRightInstruction());
+  }, Copy.GetLeftInstruction(), Copy.GetRightInstruction());
   // clang-format on
   IfInstruction *I = &std::get<IfInstruction>(Instructions.back());
   return I;
 }
 
 const GotoLabel *CodeEmitter::EmitGotoLabel(unsigned Label) {
-  Instructions.emplace_back(GotoLabel(Label));
-  GotoLabel *I = &std::get<GotoLabel>(Instructions.back());
-  return I;
+  return &std::get<GotoLabel>(Instructions.emplace_back(GotoLabel(Label)));
 }
 
-Jump *CodeEmitter::EmitJump(unsigned ToLabel) {
-  Instructions.emplace_back(Jump(ToLabel));
-  Jump *I = &std::get<Jump>(Instructions.back());
-  return I;
+Jump *CodeEmitter::EmitJump(unsigned Label) {
+  return &std::get<Jump>(Instructions.emplace_back(Jump(Label)));
 }
 
 void CodeEmitter::Dump() { DumpImpl(Instructions); }
@@ -119,7 +84,7 @@ void CodeEmitter::Dump(const std::list<AnyInstruction> &Instructions) {
 
 void CodeEmitter::RemoveLast() {
   // clang-format off
-  std::visit(Overload {
+  std::visit(Overload{
     [this](const Instruction      &) { --CurrentLabel;   },
     [this](const UnaryInstruction &) { --CurrentLabel;   },
     [    ](const IfInstruction    &) { /* Do nothing. */ },
