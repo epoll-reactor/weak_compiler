@@ -18,18 +18,18 @@ class Instruction;
 class UnaryInstruction;
 
 /// Reference, used as instruction operand.
-class InstructionReference {
+class Reference {
 public:
-  InstructionReference(const Instruction &);
-  InstructionReference(const UnaryInstruction &);
+  Reference(const Instruction &);
+  Reference(const UnaryInstruction &);
 
   unsigned GetLabelNo() const;
 
   /// Get the size of referred unary/binary instruction in bytes.
   unsigned GetCapacity() const;
 
-  bool operator==(const InstructionReference &RHS) const;
-  bool operator!=(const InstructionReference &RHS) const;
+  bool operator==(const Reference &RHS) const;
+  bool operator!=(const Reference &RHS) const;
 
 private:
   unsigned LabelNo;
@@ -41,7 +41,7 @@ private:
 /// Three-address instruction in format <ID> = <L> <OP> <R>.
 class Instruction {
 public:
-  using AnyOperand = std::variant<signed, double, bool, InstructionReference>;
+  using AnyOperand = std::variant<signed, double, bool, Reference>;
 
   Instruction(unsigned TheLabelNo, frontEnd::TokenType TheOperation,
               const AnyOperand &TheLeft, const AnyOperand &TheRight);

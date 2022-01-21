@@ -28,7 +28,7 @@ ResolveInstructionSize(const Instruction::AnyOperand &Operand) {
     [&Size](signed) { Size = sizeof(signed); },
     [&Size](double) { Size = sizeof(double); },
     [&Size](bool  ) { Size = sizeof(  bool); },
-    [&Size](InstructionReference
+    [&Size](Reference
                  I) { Size = I.GetCapacity(); }
   }, Operand);
   // clang-format on
@@ -42,7 +42,7 @@ static void DumpTo(std::ostringstream &Stream,
     [&Stream](signed I) { Stream << I; },
     [&Stream](double I) { Stream << I; },
     [&Stream](bool   I) { Stream << std::boolalpha << I; },
-    [&Stream](InstructionReference
+    [&Stream](Reference
                      I) { Stream << std::string{"t" + std::to_string(I.GetLabelNo())}; }
   }, Operand);
   // clang-format on
@@ -51,25 +51,25 @@ static void DumpTo(std::ostringstream &Stream,
 namespace weak {
 namespace middleEnd {
 
-InstructionReference::InstructionReference(const Instruction &I)
+Reference::Reference(const Instruction &I)
     : LabelNo(I.GetLabelNo()) {
   ReservedCapacity = I.GetCapacity();
 }
 
-InstructionReference::InstructionReference(const UnaryInstruction &I)
+Reference::Reference(const UnaryInstruction &I)
     : LabelNo(I.GetLabelNo()) {
   ReservedCapacity = I.GetCapacity();
 }
 
-unsigned InstructionReference::GetLabelNo() const { return LabelNo; }
+unsigned Reference::GetLabelNo() const { return LabelNo; }
 
-unsigned InstructionReference::GetCapacity() const { return ReservedCapacity; }
+unsigned Reference::GetCapacity() const { return ReservedCapacity; }
 
-bool InstructionReference::operator==(const InstructionReference &RHS) const {
+bool Reference::operator==(const Reference &RHS) const {
   return LabelNo == RHS.LabelNo && ReservedCapacity == RHS.ReservedCapacity;
 }
 
-bool InstructionReference::operator!=(const InstructionReference &RHS) const {
+bool Reference::operator!=(const Reference &RHS) const {
   return !(RHS == *this);
 }
 

@@ -40,7 +40,7 @@ private:
     frontEnd::TokenType DataType;
 
     /// The reference to the stored value.
-    InstructionReference Reference;
+    Reference VarReference;
   };
 
   using RecordMap = std::map</*Attribute*/ unsigned, Record>;

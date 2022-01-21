@@ -65,21 +65,21 @@ IfInstruction *CodeEmitter::EmitIf(const Instruction &Instr,
                                    unsigned GotoLabel) {
   // clang-format off
   std::visit(Overload {
-    [this, &Instr, &GotoLabel](const InstructionReference &L, const InstructionReference &R) {
+    [this, &Instr, &GotoLabel](const Reference &L, const Reference &R) {
       Instructions.emplace_back(
         IfInstruction(
           Instr.GetOp(), L, R, GotoLabel
         )
       );
     },
-    [this, &Instr, &GotoLabel](const auto &L, const InstructionReference &R) {
+    [this, &Instr, &GotoLabel](const auto &L, const Reference &R) {
       Instructions.emplace_back(
         IfInstruction(
           Instr.GetOp(), L, R, GotoLabel
         )
       );
     },
-    [this, &Instr, &GotoLabel](const InstructionReference &L, const auto &R) {
+    [this, &Instr, &GotoLabel](const Reference &L, const auto &R) {
       Instructions.emplace_back(
         IfInstruction(
           Instr.GetOp(), L, R, GotoLabel

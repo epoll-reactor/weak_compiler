@@ -45,7 +45,7 @@ int main() {
   using Unary = UnaryInstruction;
   using Instr = Instruction;
   using If = IfInstruction;
-  using Ref = InstructionReference;
+  using Ref = Reference;
   using Label = GotoLabel;
   using Jump = Jump;
   SECTION(Binary) {

@@ -117,7 +117,7 @@ void CodeGen::Visit(const ASTFunctionDecl *FunctionDecl) const {
 
 void CodeGen::EmitAssignment(const ASTBinaryOperator *Binary) const {
   Binary->GetLHS()->Accept(this);
-  InstructionReference Ref = std::get<InstructionReference>(LastInstruction);
+  Reference Ref = std::get<Reference>(LastInstruction);
   Binary->GetRHS()->Accept(this);
 
   // clang-format off
@@ -153,17 +153,16 @@ void CodeGen::Visit(const ASTBinaryOperator *Binary) const {
   auto RHS = LastInstruction;
 
   TokenType Op = Binary->GetOperation();
-  using Ref = InstructionReference;
   // clang-format off
   std::visit(Overload {
     [this, Op](const Instruction& L, const Instruction& R) {
-      Emitter.Emit(Op, Ref(L), Ref(R));
+      Emitter.Emit(Op, Reference(L), Reference(R));
     },
     [this, Op](const Instruction& L, const auto &R) {
-      Emitter.Emit(Op, Ref(L), R);
+      Emitter.Emit(Op, Reference(L), R);
     },
     [this, Op](const auto &L, const Instruction& R) {
-      Emitter.Emit(Op, L, Ref(R));
+      Emitter.Emit(Op, L, Reference(R));
     },
     [this, Op](const auto &L, const auto &R) {
       Emitter.Emit(Op, L, R);
@@ -183,15 +182,14 @@ void CodeGen::Visit(const ASTVarDecl *VarDecl) const {
 
   unsigned Label = 0U;
 
-  using Ref = InstructionReference;
   // clang-format off
   std::visit(Overload {
-    [this        ](signed                  I) { LastInstruction = Ref(*Emitter.Emit(I)); },
-    [this        ](double                  I) { LastInstruction = Ref(*Emitter.Emit(I)); },
-    [this        ](bool                    I) { LastInstruction = Ref(*Emitter.Emit(I)); },
-    [this, &Label](const UnaryInstruction &I) { LastInstruction = Ref(I); Label = I.GetLabelNo(); },
-    [this, &Label](const Instruction      &I) { LastInstruction = Ref(I); Label = I.GetLabelNo(); },
-    [            ](const Ref              & ) { /* Do nothing. */ },
+    [this        ](signed                  I) { LastInstruction = Reference(*Emitter.Emit(I)); },
+    [this        ](double                  I) { LastInstruction = Reference(*Emitter.Emit(I)); },
+    [this        ](bool                    I) { LastInstruction = Reference(*Emitter.Emit(I)); },
+    [this, &Label](const UnaryInstruction &I) { LastInstruction = Reference(I); Label = I.GetLabelNo(); },
+    [this, &Label](const Instruction      &I) { LastInstruction = Reference(I); Label = I.GetLabelNo(); },
+    [            ](const Reference              & ) { /* Do nothing. */ },
   }, LastInstruction);
   // clang-format on
 
@@ -199,7 +197,7 @@ void CodeGen::Visit(const ASTVarDecl *VarDecl) const {
   Record->DataType = VarDecl->GetDataType();
   Record->TemporaryLabel = Label;
 
-  Record->Reference = std::get<Ref>(LastInstruction);
+  Record->VarReference = std::get<Reference>(LastInstruction);
 }
 
 void CodeGen::Visit(const ASTBooleanLiteral *Boolean) const {
@@ -332,7 +330,7 @@ void CodeGen::Visit(const ASTSymbol *Symbol) const {
     UnreachablePoint();
   }
 
-  LastInstruction = Record->Reference;
+  LastInstruction = Record->VarReference;
 }
 
 void CodeGen::Visit(const ASTUnaryOperator *Unary) const {
@@ -344,7 +342,7 @@ void CodeGen::Visit(const ASTUnaryOperator *Unary) const {
   std::visit(Overload {
     [](const Instruction      &) {},
     [](const UnaryInstruction &) {},
-    [this, &VisitUnary](const InstructionReference &I) {
+    [this, &VisitUnary](const Reference &I) {
       VisitUnary = [this, &I](TokenType Operation) {
         auto *New = Emitter.Emit(Operation, I, 1);
         New->SetLabelNo(I.GetLabelNo());
