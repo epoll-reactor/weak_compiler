@@ -9,14 +9,16 @@
 
 #include "FrontEnd/AST/ASTVisitor.hpp"
 #include "MiddleEnd/CodeGen/CodeEmitter.hpp"
-#include "MiddleEnd/IR/Instruction.hpp"
 #include "MiddleEnd/Symbols/Storage.hpp"
-#include <list>
-#include <map>
 
 namespace weak {
 namespace middleEnd {
 
+/*!
+ * Code generator.
+ *
+ * Transforms an AST to intermediate three-address code.
+ */
 class CodeGen : private frontEnd::ASTVisitor {
 public:
   using AnyInstruction = std::variant<
@@ -29,6 +31,7 @@ public:
 
   CodeGen(Storage *TheVariablePool, frontEnd::ASTNode *TheRootNode);
 
+  /// Generates a sequence of instructions beginning from the root AST.
   const std::list<weak::middleEnd::AnyInstruction> &CreateCode();
 
 private:
@@ -51,12 +54,37 @@ private:
   void Visit(const frontEnd::ASTVarDecl *) const override;
   void Visit(const frontEnd::ASTWhileStmt *) const override;
 
+  /*!
+   * Emit if instruction with empty jump label to be installed later.
+   *
+   * \tparam DataType - There is a specialisations for AST literals
+   * (ASTIntegerLiteral, ASTBooleanLiteral and ASTFloatingPointLiteral) only,
+   * for all other types calling this function will cause linking error.
+   */
   template <typename DataType>
-  IfInstruction *CreateConditionalInstruction(const frontEnd::ASTNode *) const;
+  IfInstruction *CreateUnaryCondition(const frontEnd::ASTNode *) const;
 
+  /*!
+   * Called if binary statement represents variable assignment, called from
+   * Visit function for the ASTBinaryOperator.
+   */
   void EmitAssignment(const frontEnd::ASTBinaryOperator *) const;
 
+  /*!
+   * Create conditional instruction with empty jump label to be installed later.
+   *
+   * Represents a CreateUnaryCondition for AST literals, but for a
+   * ASTBinaryOperator this erases last instruction from internal Emitter list,
+   * and next returns conditional instruction.
+   */
   IfInstruction *EmitCondition(const frontEnd::ASTNode *) const;
+
+  /*!
+   * Emits a sequence of instructions with checking for `break` and `continue`
+   * statements.
+   */
+  void EmitLoopBody(Jump *&BreakJump, Jump *&ContinueJump,
+                    const frontEnd::ASTCompoundStmt *Body) const;
 
   frontEnd::ASTNode *RootNode;
 
@@ -67,6 +95,9 @@ private:
   mutable unsigned CurrentGotoLabel;
 
   mutable Storage *VariablePool;
+
+  mutable bool LoopHasBreak;
+  mutable bool LoopHasContinue;
 };
 
 } // namespace middleEnd
