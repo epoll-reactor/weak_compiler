@@ -26,8 +26,7 @@ public:
 
   IfInstruction *EmitIf(frontEnd::TokenType Operation,
                         const Instruction::AnyOperand &LHS,
-                        const Instruction::AnyOperand &RHS,
-                        unsigned GotoLabel);
+                        const Instruction::AnyOperand &RHS, unsigned GotoLabel);
   IfInstruction *EmitIf(const Instruction &Copy, unsigned GotoLabel);
 
   const GotoLabel *EmitGotoLabel(unsigned Label);
