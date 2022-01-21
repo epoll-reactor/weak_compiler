@@ -12,14 +12,6 @@
 using namespace weak::frontEnd;
 using namespace weak::middleEnd;
 
-template <typename T>
-static void CheckForOperand(const Instruction::AnyOperand &Instruction,
-                            const char *ErrorMsg) {
-  if (!std::holds_alternative<T>(Instruction)) {
-    weak::DiagnosticError() << ErrorMsg;
-  }
-}
-
 static constexpr unsigned
 ResolveInstructionSize(const Instruction::AnyOperand &Operand) {
   unsigned Size = 0U;
