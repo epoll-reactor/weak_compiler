@@ -164,6 +164,9 @@ Lexer::Lexer(weak::middleEnd::Storage *TheStorage, const char *TheBufferStart,
 std::vector<Token> Lexer::Analyze() {
   std::vector<Token> ProcessedTokens;
 
+  long InputSize = std::distance(BufferStart, BufferEnd);
+  ProcessedTokens.reserve(InputSize / 2);
+
   while (CurrentBufferPtr != BufferEnd) {
     if (char Atom = PeekCurrent(); std::isdigit(Atom)) {
       ProcessedTokens.push_back(AnalyzeDigit());
