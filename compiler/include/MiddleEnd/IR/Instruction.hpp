@@ -153,16 +153,15 @@ private:
 /// This is jump instruction represented in format goto <LABEL_NO>.
 class Jump {
 public:
-  Jump(unsigned TheLabelNo) : LabelNo(TheLabelNo) {}
+  Jump(unsigned TheLabelNo);
 
-  void SetLabelNo(unsigned L) { LabelNo = L; }
-  unsigned GetLabel() const { return LabelNo; }
+  void SetLabelNo(unsigned L);
+  unsigned GetLabel() const;
 
-  std::string Dump() const { return "goto L" + std::to_string(LabelNo); }
+  std::string Dump() const;
 
-  bool operator==(const Jump &RHS) const { return LabelNo == RHS.LabelNo; }
-
-  bool operator!=(const Jump &RHS) const { return !(RHS == *this); }
+  bool operator==(const Jump &RHS) const;
+  bool operator!=(const Jump &RHS) const;
 
 private:
   unsigned LabelNo;

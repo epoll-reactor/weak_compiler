@@ -218,6 +218,32 @@ bool IfInstruction::operator!=(const IfInstruction &RHS) const {
   return !(RHS == *this);
 }
 
+} // namespace middleEnd
+} // namespace weak
+
+namespace weak {
+namespace middleEnd {
+
+Jump::Jump(unsigned TheLabelNo) : LabelNo(TheLabelNo) {}
+
+void Jump::SetLabelNo(unsigned L) { LabelNo = L; }
+
+unsigned Jump::GetLabel() const { return LabelNo; }
+
+std::string Jump::Dump() const {
+  return std::string(4, ' ') + "goto L" + std::to_string(LabelNo);
+}
+
+bool Jump::operator==(const Jump &RHS) const { return LabelNo == RHS.LabelNo; }
+
+bool Jump::operator!=(const Jump &RHS) const { return !(RHS == *this); }
+
+} // namespace middleEnd
+} // namespace weak
+
+namespace weak {
+namespace middleEnd {
+
 std::ostream &operator<<(std::ostream &Stream, const Instruction &I) {
   return Stream << I.Dump();
 }
