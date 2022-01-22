@@ -224,6 +224,28 @@ bool IfInstruction::operator!=(const IfInstruction &RHS) const {
 namespace weak {
 namespace middleEnd {
 
+GotoLabel::GotoLabel(unsigned TheLabelNo) : LabelNo(TheLabelNo) {}
+
+unsigned GotoLabel::GetLabel() const { return LabelNo; }
+
+std::string GotoLabel::Dump() const {
+  return "L" + std::to_string(LabelNo) + ":";
+}
+
+bool GotoLabel::operator==(const GotoLabel &RHS) const {
+  return LabelNo == RHS.LabelNo;
+}
+
+bool GotoLabel::operator!=(const GotoLabel &RHS) const {
+  return !(RHS == *this);
+}
+
+} // namespace middleEnd
+} // namespace weak
+
+namespace weak {
+namespace middleEnd {
+
 Jump::Jump(unsigned TheLabelNo) : LabelNo(TheLabelNo) {}
 
 void Jump::SetLabelNo(unsigned L) { LabelNo = L; }

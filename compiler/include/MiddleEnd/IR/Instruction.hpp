@@ -8,7 +8,6 @@
 #define WEAK_COMPILER_MIDDLE_END_IR_INSTRUCTION_HPP
 
 #include "FrontEnd/Lex/Token.hpp"
-#include <functional>
 #include <variant>
 
 namespace weak {
@@ -137,14 +136,14 @@ private:
 /// Goto label in format L<NUMBER>:.
 class GotoLabel {
 public:
-  GotoLabel(unsigned TheLabelNo) : LabelNo(TheLabelNo) {}
+  GotoLabel(unsigned TheLabelNo);
 
-  unsigned GetLabel() const { return LabelNo; }
+  unsigned GetLabel() const;
 
-  std::string Dump() const { return "L" + std::to_string(LabelNo) + ":"; }
+  std::string Dump() const;
 
-  bool operator==(const GotoLabel &RHS) const { return LabelNo == RHS.LabelNo; }
-  bool operator!=(const GotoLabel &RHS) const { return !(RHS == *this); }
+  bool operator==(const GotoLabel &RHS) const;
+  bool operator!=(const GotoLabel &RHS) const;
 
 private:
   unsigned LabelNo;
