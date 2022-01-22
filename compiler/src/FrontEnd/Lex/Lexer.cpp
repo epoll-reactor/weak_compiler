@@ -9,6 +9,7 @@
 #include "Utility/Diagnostic.hpp"
 #include <cassert>
 #include <unordered_map>
+#include <algorithm>
 
 using TokenType = weak::frontEnd::TokenType;
 

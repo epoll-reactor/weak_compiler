@@ -26,6 +26,7 @@
 #include "FrontEnd/AST/ASTWhileStmt.hpp"
 #include "Utility/Diagnostic.hpp"
 #include "Utility/VariantOverload.hpp"
+#include <functional>
 
 using namespace weak::frontEnd;
 
