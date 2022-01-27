@@ -32,7 +32,7 @@ public:
   CodeGen(Storage *TheVariablePool, frontEnd::ASTNode *TheRootNode);
 
   /// Generates a sequence of instructions beginning from the root AST.
-  const std::list<weak::middleEnd::AnyInstruction> &CreateCode();
+  const std::list<FunctionBlock> &CreateCode();
 
 private:
   void Visit(const frontEnd::ASTBinaryOperator *) const override;
@@ -78,6 +78,8 @@ private:
    * and next returns conditional instruction.
    */
   IfInstruction *EmitCondition(const frontEnd::ASTNode *) const;
+
+  void EmitCondition(const frontEnd::ASTNode *, unsigned Label) const;
 
   /*!
    * Emits a sequence of instructions with checking for `break` and `continue`

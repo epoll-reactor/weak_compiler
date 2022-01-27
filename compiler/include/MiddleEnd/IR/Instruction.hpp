@@ -8,6 +8,7 @@
 #define WEAK_COMPILER_MIDDLE_END_IR_INSTRUCTION_HPP
 
 #include "FrontEnd/Lex/Token.hpp"
+#include <list>
 #include <variant>
 
 namespace weak {
@@ -26,6 +27,8 @@ public:
 
   /// Get the size of referred unary/binary instruction in bytes.
   unsigned GetCapacity() const;
+
+  std::string Dump() const;
 
   bool operator==(const Reference &RHS) const;
   bool operator!=(const Reference &RHS) const;
@@ -166,8 +169,57 @@ private:
   unsigned LabelNo;
 };
 
+class Call {
+public:
+  Call(std::string TheName, std::list<Reference> &&TheArguments);
+
+  const std::string &GetName() const;
+  const std::list<Reference> &GetArguments() const;
+
+  std::string Dump() const;
+
+  bool operator==(const Call& RHS) const;
+  bool operator!=(const Call& RHS) const;
+
+private:
+  std::string Name;
+  std::list<Reference> Arguments;
+};
+
 using AnyInstruction =
-    std::variant<Instruction, UnaryInstruction, IfInstruction, GotoLabel, Jump>;
+  std::variant<Instruction, UnaryInstruction, IfInstruction, GotoLabel, Jump, Call>;
+
+class FunctionBlock {
+public:
+  void SetName(std::string TheName);
+
+  template <typename IIterator>
+  void SetArguments(IIterator Begin, IIterator End) {
+    static_assert(
+      std::is_same_v<std::decay_t<decltype(*Begin)>, frontEnd::TokenType>);
+    Arguments = std::list(Begin, End);
+  }
+
+  template <typename IIterator> void SetBody(IIterator Begin, IIterator End) {
+    static_assert(
+      std::is_same_v<std::decay_t<decltype(*Begin)>, AnyInstruction>);
+    Body = std::list(Begin, End);
+  }
+
+  const std::string &GetName() const;
+  const std::list<frontEnd::TokenType> &GetArguments() const;
+  const std::list<AnyInstruction> &GetBody() const;
+
+  std::string Dump() const;
+
+  bool operator==(const FunctionBlock &RHS) const;
+  bool operator!=(const FunctionBlock &RHS) const;
+
+private:
+  std::list<frontEnd::TokenType> Arguments;
+  std::list<AnyInstruction> Body;
+  std::string Name;
+};
 
 std::ostream &operator<<(std::ostream &, const weak::middleEnd::Instruction &);
 std::ostream &operator<<(std::ostream &,
@@ -178,6 +230,10 @@ std::ostream &operator<<(std::ostream &, const weak::middleEnd::GotoLabel &);
 std::ostream &operator<<(std::ostream &, const weak::middleEnd::Jump &);
 std::ostream &operator<<(std::ostream &,
                          const weak::middleEnd::AnyInstruction &);
+std::ostream &operator<<(std::ostream &,
+                         const weak::middleEnd::FunctionBlock &);
+std::ostream &operator<<(std::ostream &,
+                         const weak::middleEnd::Call &);
 
 } // namespace middleEnd
 } // namespace weak

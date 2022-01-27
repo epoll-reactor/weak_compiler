@@ -9,21 +9,23 @@
 namespace fe = weak::frontEnd;
 namespace me = weak::middleEnd;
 
-void RunCodeGenTest(std::string_view Program, std::list<weak::middleEnd::AnyInstruction> &&Assert) {
+void RunCodeGenTest(std::string_view Program, std::vector<me::AnyInstruction> &&Body) {
   me::Storage Storage;
   auto Tokens =
       fe::Lexer(&Storage, &*Program.begin(), &*Program.end()).Analyze();
-  auto AST = fe::Parser(Tokens.begin().base(), Tokens.end().base()).Parse();
+  auto AST = fe::Parser(&*Tokens.begin(), &*Tokens.end()).Parse();
   auto Code = me::CodeGen(&Storage, AST.get()).CreateCode();
 
+  me::CodeEmitter::Dump(Code);
+
   TEST_CASE(!Code.empty());
-  TEST_CASE(!Assert.empty());
-  TEST_CASE(Code.size() == Assert.size());
+  TEST_CASE(!Body.empty());
+  TEST_CASE(Code.begin()->GetBody().size() == Body.size());
 
-  auto CodeIt = Code.begin();
-  auto AssertIt = Assert.begin();
+  auto CodeIt = Code.begin()->GetBody().begin();
+  auto AssertIt = Body.begin();
 
-  while (CodeIt != Code.end()) {
+  while (CodeIt != Code.begin()->GetBody().end()) {
     if (*CodeIt != *AssertIt) {
       weak::DiagnosticError() << "Assertion failed:\n" << *CodeIt
                               << " got,\n" << *AssertIt << " expected, "
@@ -72,14 +74,18 @@ int main() {
       T0, T1, T2
     });
   }
-//  SECTION(OperandSize) {
-//    \todo Fix boolean assignment.
-//    RunCodeGenTest("void f() {"
-//                   "  int a = 3;"
-//                   "  bool b = true;"
-//                   "  int c = a + b;"
-//                   "}", {});
-//  }
+  SECTION(OperandSize) {
+    Unary T0(0, 3);
+    Unary T1(1, true);
+    Instr T2(2, TokenType::PLUS, T0, T1);
+    RunCodeGenTest("void f() {"
+                   "  int a = 3;"
+                   "  bool b = true;"
+                   "  int c = a + b;"
+                   "}", {
+      T0, T1, T2
+    });
+  }
   SECTION(If) {
     If If1(TokenType::NEQ, 1, 0, 0);
     Jump J1(1);
@@ -273,21 +279,13 @@ int main() {
     Label L3(3);
     Instr T0(0, TokenType::PLUS, 1, 2);
     Instr T1(1, TokenType::PLUS, 3, 4);
-    If If4(TokenType::NEQ, 5, 0, 4);
-    Jump J3(3);
-    Label L4(4);
+    If If4(TokenType::NEQ, 5, 0, 3);
     Instr T2(2, TokenType::PLUS, 6, 7);
-    If If5(TokenType::NEQ, 8, 0, 5);
-    Jump J2(2);
-    Label L5(5);
+    If If5(TokenType::NEQ, 8, 0, 2);
     Instr T3(3, TokenType::PLUS, 9, 10);
-    If If6(TokenType::NEQ, 11, 0, 6);
-    Jump J1(1);
-    Label L6(6);
+    If If6(TokenType::NEQ, 11, 0, 1);
     Instr T4(4, TokenType::PLUS, 12, 13);
-    If If7(TokenType::NEQ, 14, 0, 7);
-    Jump J0(0);
-    Label L7(7);
+    If If7(TokenType::NEQ, 14, 0, 0);
     Instr T5(5, TokenType::PLUS, 15, 16);
     RunCodeGenTest("void f() {"
                    "  do {"
@@ -305,8 +303,7 @@ int main() {
                    "  } while (14);"
                    "  int var = 15 + 16;"
                    "}", {
-      L0, L1, L2, L3, T0, T1, If4, J3, L4, T2, If5, J2, L5, T3, If6,
-      J1, L6, T4, If7, J0, L7, T5
+      L0, L1, L2, L3, T0, T1, If4, T2, If5, T3, If6, T4, If7, T5
     });
   }
   SECTION(For) {
@@ -453,9 +450,7 @@ int main() {
     Instr T4(4, TokenType::PLUS, T2, T3);
     Instr T5(5, TokenType::PLUS, T1, T4);
     Instr T6(6, TokenType::PLUS, T0, T5);
-    If If5(TokenType::LT, T0, T1, 5);
-    Jump J4(4);
-    Label L5(5);
+    If If4(TokenType::LT, T0, T1, 4);
     Instr T3Change(3, TokenType::PLUS, T3, 1);
     Jump J2(2);
     Label L6(6);
@@ -473,8 +468,8 @@ int main() {
                    "    }"
                    "  }"
                    "}", {
-      T0, T1, L0, If1, J7, L1, T2, T3, L2, If3, J6, L3, L4, T4, T5, T6, If5,
-      J4, L5, T3Change, J2, L6, J0, L7
+      T0, T1, L0, If1, J7, L1, T2, T3, L2, If3, J6, L3, L4, T4, T5, T6,
+      If4, T3Change, J2, L6, J0, L7
     });
   }
   SECTION(DoWhileBreak) {
@@ -482,8 +477,7 @@ int main() {
     Instr T0(0, TokenType::PLUS, 1, 2);
     Jump J1(1);
     Instr T1(1, TokenType::PLUS, 3, 4);
-    If If1(TokenType::NEQ, 1, 0, 1);
-    Jump J0(0);
+    If If1(TokenType::NEQ, 1, 0, 0);
     Label L1(1);
     Instr T2(2, TokenType::PLUS, 5, 6);
     RunCodeGenTest("void f() {"
@@ -494,7 +488,7 @@ int main() {
                    "  } while (1);"
                    "  int a = 5 + 6;"
                    "}", {
-      L0, T0, J1, T1, If1, J0, L1, T2
+      L0, T0, J1, T1, If1, L1, T2
     });
   }
   SECTION(DoWhileContinue) {
@@ -502,8 +496,7 @@ int main() {
     Instr T0(0, TokenType::PLUS, 1, 2);
     Jump J0(0);
     Instr T1(1, TokenType::PLUS, 3, 4);
-    If If1(TokenType::NEQ, 1, 0, 1);
-    Label L1(1);
+    If If1(TokenType::NEQ, 1, 0, 0);
     Instr T2(2, TokenType::PLUS, 5, 6);
     RunCodeGenTest("void f() {"
                    "  do {"
@@ -513,7 +506,7 @@ int main() {
                    "  } while (1);"
                    "  int a = 5 + 6;"
                    "}", {
-      L0, T0, J0, T1, If1, J0, L1, T2
+      L0, T0, J0, T1, If1, T2
     });
   }
   SECTION(WhileBreak) {
@@ -607,4 +600,12 @@ int main() {
       T0, L0, If1, J2, L1, T1, J0, T2, T0Change, J0, L2, T4
     });
   }
+//  SECTION(FunctionCall) {
+//    RunCodeGenTest("void caller(int a, int b) {}"
+//                   ""
+//                   "void f() {"
+//                   "  int argument = 0;"
+//                   "  caller(1, argument);"
+//                   "}", {});
+//  }
 }

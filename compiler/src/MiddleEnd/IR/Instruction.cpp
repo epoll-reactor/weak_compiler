@@ -54,6 +54,10 @@ unsigned Reference::GetLabelNo() const { return LabelNo; }
 
 unsigned Reference::GetCapacity() const { return ReservedCapacity; }
 
+std::string Reference::Dump() const {
+  return "t" + std::to_string(LabelNo);
+}
+
 bool Reference::operator==(const Reference &RHS) const {
   return LabelNo == RHS.LabelNo && ReservedCapacity == RHS.ReservedCapacity;
 }
@@ -194,9 +198,9 @@ const IfInstruction::AnyOperand &IfInstruction::GetRightOperand() const {
 
 std::string IfInstruction::Dump() const {
   std::ostringstream Stream;
-  Stream << "if";
+  Stream << std::right << std::setw(6) << "if";
 
-  Stream << std::right << std::setw(27);
+  Stream << std::right << std::setw(23);
 
   DumpTo(Stream, LeftOperand);
 
@@ -266,6 +270,88 @@ bool Jump::operator!=(const Jump &RHS) const { return !(RHS == *this); }
 namespace weak {
 namespace middleEnd {
 
+void FunctionBlock::SetName(std::string TheName) { Name = std::move(TheName); }
+
+const std::string &FunctionBlock::GetName() const { return Name; }
+
+const std::list<frontEnd::TokenType> &FunctionBlock::GetArguments() const {
+  return Arguments;
+}
+
+const std::list<AnyInstruction> &FunctionBlock::GetBody() const { return Body; }
+
+std::string FunctionBlock::Dump() const {
+  std::string Result = "defun " + Name + '\n';
+  for (const auto &Arg : Arguments) {
+    Result += "    ";
+    Result += TokenToString(Arg);
+    Result += "\n";
+  }
+  for (const auto &Instruction : Body)
+    // clang-format off
+    std::visit([&](const auto &I) {
+      Result += "    ";
+      Result += I.Dump();
+      Result += '\n';
+    }, Instruction);
+  // clang-format on
+
+  return Result;
+}
+
+bool FunctionBlock::operator==(const FunctionBlock &RHS) const {
+  return (Arguments == RHS.Arguments) && (Body == RHS.Body) &&
+         (Name == RHS.Name);
+}
+
+bool FunctionBlock::operator!=(const FunctionBlock &RHS) const {
+  return !(*this == RHS);
+}
+
+} // namespace middleEnd
+} // namespace weak
+
+namespace weak {
+namespace middleEnd {
+
+Call::Call(std::string TheName, std::list<Reference> &&TheArguments)
+  : Name(std::move(TheName))
+  , Arguments(std::move(TheArguments)) {}
+
+const std::string &Call::GetName() const { return Name; }
+
+const std::list<Reference> &Call::GetArguments() const { return Arguments; }
+
+std::string Call::Dump() const {
+  std::string Result = "    call " + Name;
+  Result += "(";
+  for (const Reference &Argument : Arguments) {
+    Result += Argument.Dump();
+    Result += ", ";
+  }
+  if (Result.back() != '(') {
+    Result.pop_back();
+    Result.pop_back();
+  }
+  Result += ")";
+  return Result;
+}
+
+bool Call::operator==(const Call& RHS) const {
+  return (Name == RHS.Name) &&
+         (Arguments == RHS.Arguments);
+}
+
+bool Call::operator!=(const Call& RHS) const {
+  return !(*this == RHS);
+}
+
+} // namespace middleEnd
+} // namespace weak
+
+namespace weak {
+namespace middleEnd {
+
 std::ostream &operator<<(std::ostream &Stream, const Instruction &I) {
   return Stream << I.Dump();
 }
@@ -288,6 +374,12 @@ std::ostream &operator<<(std::ostream &Stream, const AnyInstruction &I) {
   }, I);
   // clang-format on
   return Stream;
+}
+std::ostream &operator<<(std::ostream &Stream, const FunctionBlock &Block) {
+  return Stream << Block.Dump();
+}
+std::ostream &operator<<(std::ostream &Stream, const Call &FunctionCall) {
+  return Stream << FunctionCall.Dump();
 }
 
 } // namespace middleEnd

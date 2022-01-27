@@ -76,6 +76,12 @@ IfInstruction *CodeGen::EmitCondition(const ASTNode *Condition) const {
   }
 }
 
+void CodeGen::EmitCondition(const frontEnd::ASTNode *Node,
+                            unsigned Label) const {
+  IfInstruction *If = EmitCondition(Node);
+  If->SetGotoLabel(Label);
+}
+
 void CodeGen::EmitLoopBody(Jump *&BreakJump, Jump *&ContinueJump,
                            const ASTCompoundStmt *Body) const {
   VariablePool->ScopeBegin();
@@ -95,9 +101,9 @@ void CodeGen::EmitLoopBody(Jump *&BreakJump, Jump *&ContinueJump,
   VariablePool->ScopeEnd();
 }
 
-const std::list<AnyInstruction> &CodeGen::CreateCode() {
+const std::list<FunctionBlock> &CodeGen::CreateCode() {
   RootNode->Accept(this);
-  return Emitter.GetInstructions();
+  return Emitter.GetFunctions();
 }
 
 void CodeGen::Visit(const ASTCompoundStmt *Compound) const {
@@ -113,30 +119,27 @@ void CodeGen::Visit(const ASTCompoundStmt *Compound) const {
 }
 
 void CodeGen::Visit(const ASTFunctionDecl *FunctionDecl) const {
+  std::list<TokenType> Arguments;
+  for (const auto &Argument : FunctionDecl->GetArguments())
+    Arguments.push_back(
+        static_cast<ASTVarDecl *>(Argument.get())->GetDataType());
+
+  Emitter.BeginFunction(FunctionDecl->GetName(), std::move(Arguments));
   FunctionDecl->GetBody()->Accept(this);
+  Emitter.EndFunction();
 }
 
 void CodeGen::EmitAssignment(const ASTBinaryOperator *Binary) const {
   Binary->GetLHS()->Accept(this);
-  Reference Ref = std::get<Reference>(LastInstruction);
+  Reference Symbol = std::get<Reference>(LastInstruction);
   Binary->GetRHS()->Accept(this);
 
+  if (std::get_if<Instruction>(&LastInstruction))
+    Emitter.RemoveLast();
+
   // clang-format off
-  std::visit(Overload {
-    /// Instruction is already emitted, so we should to remove it
-    /// and emit again to be able to change it's label.
-    [this, &Ref](const Instruction &I) {
-      Emitter.RemoveLast();
-      auto *Instr = Emitter.Emit(I);
-      Instr->SetLabelNo(Ref.GetLabelNo());
-      LastInstruction = *Instr;
-    },
-    /// In all other cases unary instruction should be produced.
-    [this, &Ref](const auto &I) {
-      UnaryInstruction *Unary = Emitter.Emit(I);
-      Unary->SetLabelNo(Ref.GetLabelNo());
-      LastInstruction = *Unary;
-    }
+  std::visit([&](const auto &Value) {
+    Emitter.Emit(Value)->SetLabelNo(Symbol.GetLabelNo());
   }, LastInstruction);
   // clang-format on
 }
@@ -197,7 +200,6 @@ void CodeGen::Visit(const ASTVarDecl *VarDecl) const {
   auto *Record = VariablePool->GetByName(VarDecl->GetSymbolName());
   Record->DataType = VarDecl->GetDataType();
   Record->TemporaryLabel = Label;
-
   Record->VarReference = std::get<Reference>(LastInstruction);
 }
 
@@ -218,27 +220,24 @@ void CodeGen::Visit(const ASTContinueStmt *) const { LoopHasContinue = true; }
  *  EXIT:         after instr
  */
 void CodeGen::Visit(const ASTDoWhileStmt *DoWhile) const {
-  unsigned SavedGotoLabel = CurrentGotoLabel++;
-  Emitter.EmitGotoLabel(SavedGotoLabel);
-
+  unsigned BeginLabel = CurrentGotoLabel++;
+  Emitter.EmitGotoLabel(BeginLabel);
   Jump *BreakJump = nullptr;
   Jump *ContinueJump = nullptr;
-
   EmitLoopBody(BreakJump, ContinueJump, DoWhile->GetBody().get());
-
+  /// If break exists, we want to jump outside the loop.
   if (BreakJump)
     BreakJump->SetLabelNo(CurrentGotoLabel);
-
+  /// If continue exists, we want to immediate jump again to the condition.
   if (ContinueJump)
-    ContinueJump->SetLabelNo(SavedGotoLabel);
-
-  IfInstruction *Condition = EmitCondition(DoWhile->GetCondition().get());
-
-  Emitter.EmitJump(SavedGotoLabel);
-  Emitter.EmitGotoLabel(CurrentGotoLabel);
-  Condition->SetGotoLabel(CurrentGotoLabel);
-
-  CurrentGotoLabel++;
+    ContinueJump->SetLabelNo(BeginLabel);
+  /// If condition evaluates to true, we want to jump again to the condition.
+  EmitCondition(DoWhile->GetCondition().get(), BeginLabel);
+  /// Otherwise control flow should simply fall through to the next statement.
+  ++CurrentGotoLabel;
+  /// Emit additional label if we have break, to be able jump outside.
+  if (BreakJump)
+    Emitter.EmitGotoLabel(BreakJump->GetLabel());
 }
 
 void CodeGen::Visit(const ASTFloatingPointLiteral *Float) const {
@@ -255,39 +254,52 @@ void CodeGen::Visit(const ASTFloatingPointLiteral *Float) const {
  *                goto COND
  *  EXIT:         after instr
  */
-void CodeGen::Visit(const ASTForStmt *For) const {
+void CodeGen::Visit(const frontEnd::ASTForStmt *For) const {
   For->GetInit()->Accept(this);
-
-  unsigned ForStartLabel = CurrentGotoLabel++;
-  Emitter.EmitGotoLabel(ForStartLabel);
-
-  IfInstruction *Condition = EmitCondition(For->GetCondition().get());
-
-  Jump *FailureFallback = Emitter.EmitJump(CurrentGotoLabel);
-
+  /// Label that represents a loop body start.
+  unsigned BeginLabel = CurrentGotoLabel;
   Emitter.EmitGotoLabel(CurrentGotoLabel);
-  unsigned Saved = CurrentGotoLabel++;
-
+  EmitCondition(For->GetCondition().get(), ++CurrentGotoLabel);
+  /// This is used to jump to condition check again at the end of iteration.
+  Jump *Fallback = Emitter.EmitJump(/*GotoLabel=*/0U);
+  /// We will fall here if the condition was evaluated as true.
+  Emitter.EmitGotoLabel(CurrentGotoLabel++);
   Jump *BreakJump = nullptr;
   Jump *ContinueJump = nullptr;
-
   EmitLoopBody(BreakJump, ContinueJump, For->GetBody().get());
-
+  /// If break exists, we want to jump outside the loop.
   if (BreakJump)
     BreakJump->SetLabelNo(CurrentGotoLabel);
-
+  /// If continue exists, we want to immediate jump again to the condition.
   if (ContinueJump)
-    ContinueJump->SetLabelNo(Saved - 1);
-
+    ContinueJump->SetLabelNo(BeginLabel);
   For->GetIncrement()->Accept(this);
-  FailureFallback->SetLabelNo(CurrentGotoLabel);
-  Condition->SetGotoLabel(ForStartLabel + 1);
-  Emitter.EmitJump(Saved - 1);
-  Emitter.EmitGotoLabel(CurrentGotoLabel);
-  ++CurrentGotoLabel;
+  /// We want to jump at the exit of our loop if condition
+  /// was failed.
+  Fallback->SetLabelNo(CurrentGotoLabel);
+  /// Jump again to condition.
+  Emitter.EmitJump(BeginLabel);
+  /// This a loop exit label.
+  /// Example:
+  ///     if 1 < 1 goto L1
+  ///     goto L2
+  /// L1: instr1
+  ///     instr2
+  /// L2: /* The end of loop. */
+  Emitter.EmitGotoLabel(CurrentGotoLabel++);
 }
 
-void CodeGen::Visit(const ASTFunctionCall *) const {}
+void CodeGen::Visit(const ASTFunctionCall */*Call*/) const {
+  /// 1. Storage must store also functions (name, return type, types of arguments,
+  ///    reference to function (???)).
+  /// 2. We need to get function record in storage by name or attribute.
+  /// 3. We need to compare types of function declaration and call
+  ///    arguments.
+  /// 4. Next we should to create temporary variables for arguments
+  ///    (if any).
+  /// 5. Finally, we should to emit function call instruction with
+  ///    computed references as arguments.
+}
 
 /*!               if !cond then goto EXIT
  *                instr1
@@ -303,16 +315,17 @@ void CodeGen::Visit(const ASTFunctionCall *) const {}
  *  EXIT:         after instr
  */
 void CodeGen::Visit(const ASTIfStmt *If) const {
-  unsigned SavedGotoLabel = CurrentGotoLabel++;
-
-  IfInstruction *Condition = EmitCondition(If->GetCondition().get());
-
-  Jump *FailureFallback = Emitter.EmitJump(0);
-  Emitter.EmitGotoLabel(SavedGotoLabel);
-  Condition->SetGotoLabel(SavedGotoLabel);
+  /// If condition evaluates to true, we jump to the body.
+  EmitCondition(If->GetCondition().get(), CurrentGotoLabel);
+  unsigned FallbackLabel = CurrentGotoLabel++;
+  /// This is a label used to jump outside the if block on failure.
+  Jump *Fallback = Emitter.EmitJump(/*GotoLabel=*/0U);
+  /// We will fall here on successful condition.
+  Emitter.EmitGotoLabel(FallbackLabel);
   If->GetThenBody()->Accept(this);
+  /// Create exit label and setup the failure jump statement.
   Emitter.EmitGotoLabel(CurrentGotoLabel);
-  FailureFallback->SetLabelNo(CurrentGotoLabel);
+  Fallback->SetLabelNo(CurrentGotoLabel);
   ++CurrentGotoLabel;
   if (If->GetElseBody())
     If->GetElseBody()->Accept(this);
@@ -380,32 +393,39 @@ void CodeGen::Visit(const ASTUnaryOperator *Unary) const {
  *  EXIT:           after instr
  */
 void CodeGen::Visit(const ASTWhileStmt *While) const {
+  /// We want to avoid multiple labels with nested loops like a:
+  /// L1: // First loop.
+  /// L2: // Second loop.
+  /// L3: // Third loop.
   if (!std::holds_alternative<GotoLabel>(Emitter.GetLast())) {
     Emitter.EmitGotoLabel(CurrentGotoLabel);
     ++CurrentGotoLabel;
   }
-
-  IfInstruction *Condition = EmitCondition(While->GetCondition().get());
-  Condition->SetGotoLabel(CurrentGotoLabel);
-  auto *Fallback = Emitter.EmitJump(/*GotoLabel=*/0U);
+  EmitCondition(While->GetCondition().get(), CurrentGotoLabel);
+  Jump *Fallback = Emitter.EmitJump(/*GotoLabel=*/0U);
+  /// We will fall here if the condition was evaluated as true.
   Emitter.EmitGotoLabel(CurrentGotoLabel);
-  unsigned Saved = CurrentGotoLabel++;
-
+  unsigned BeginLabel = CurrentGotoLabel++ - 1;
   Jump *BreakJump = nullptr;
   Jump *ContinueJump = nullptr;
-
   EmitLoopBody(BreakJump, ContinueJump, While->GetBody().get());
-
+  /// If break exists, we want to jump outside the loop.
   if (BreakJump)
     BreakJump->SetLabelNo(CurrentGotoLabel);
-
+  /// If continue exists, we want to immediate jump again to the condition.
   if (ContinueJump)
-    ContinueJump->SetLabelNo(Saved - 1);
-
-  Emitter.EmitJump(Saved - 1);
+    ContinueJump->SetLabelNo(BeginLabel);
+  /// Jump again to condition.
+  Emitter.EmitJump(BeginLabel);
+  /// This a loop exit label.
+  /// Example:
+  ///     if 1 < 1 goto L1
+  ///     goto L2
+  /// L1: instr1
+  ///     instr2
+  /// L2: /* The end of loop. */
   Emitter.EmitGotoLabel(CurrentGotoLabel);
-  Fallback->SetLabelNo(CurrentGotoLabel);
-  ++CurrentGotoLabel;
+  Fallback->SetLabelNo(CurrentGotoLabel++);
 }
 
 } // namespace middleEnd
