@@ -18,6 +18,9 @@ class CodeEmitter {
 public:
   CodeEmitter();
 
+  void BeginFunction(std::string_view Name, std::list<frontEnd::TokenType> &&);
+  void EndFunction();
+
   Instruction *Emit(frontEnd::TokenType, const Instruction::AnyOperand &,
                     const Instruction::AnyOperand &);
   Instruction *Emit(const Instruction &);
@@ -32,16 +35,23 @@ public:
   const GotoLabel *EmitGotoLabel(unsigned Label);
   Jump *EmitJump(unsigned Label);
 
+  Call *EmitCall(std::string Name, std::list<Reference> &&Arguments);
+
   void RemoveLast();
 
   void Dump();
-  static void Dump(const std::list<AnyInstruction> &);
+  static void Dump(const std::list<FunctionBlock> &);
 
   const AnyInstruction &GetLast() const;
-  const std::list<AnyInstruction> &GetInstructions() const;
+
+  const std::list<AnyInstruction> &GetFunctionInstructions() const;
+  const std::list<FunctionBlock> &GetFunctions() const;
 
 private:
-  std::list<AnyInstruction> Instructions;
+  std::list<frontEnd::TokenType> FunctionArguments;
+  std::list<AnyInstruction> FunctionInstructions;
+  std::list<FunctionBlock> Functions;
+  std::string CurrentFunctionName;
   unsigned CurrentLabel;
 };
 

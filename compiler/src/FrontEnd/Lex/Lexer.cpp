@@ -7,9 +7,9 @@
 #include "FrontEnd/Lex/Lexer.hpp"
 #include "MiddleEnd/Symbols/Storage.hpp"
 #include "Utility/Diagnostic.hpp"
+#include <algorithm>
 #include <cassert>
 #include <unordered_map>
-#include <algorithm>
 
 using TokenType = weak::frontEnd::TokenType;
 

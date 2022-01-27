@@ -22,6 +22,7 @@ namespace middleEnd {
  */
 class Storage {
 private:
+  /// Actually a variable description.
   struct Record {
     /// Scope depth, starts with 0.
     unsigned Depth;
