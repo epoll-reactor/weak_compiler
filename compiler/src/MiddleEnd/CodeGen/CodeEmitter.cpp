@@ -113,12 +113,12 @@ void CodeEmitter::Dump(const std::list<FunctionBlock> &Instructions) {
 void CodeEmitter::RemoveLast() {
   // clang-format off
   std::visit(Overload{
-    [this](const Instruction      &) { --CurrentLabel;   },
-    [this](const UnaryInstruction &) { --CurrentLabel;   },
-    [    ](const IfInstruction    &) { /* Do nothing. */ },
-    [    ](const GotoLabel        &) { /* Do nothing. */ },
-    [    ](const Jump             &) { /* Do nothing. */ },
-    [    ](const Call             &) { /* Do nothing. */ }
+    [&](const Instruction      &) { --CurrentLabel;   },
+    [&](const UnaryInstruction &) { --CurrentLabel;   },
+    [ ](const IfInstruction    &) { /* Do nothing. */ },
+    [ ](const GotoLabel        &) { /* Do nothing. */ },
+    [ ](const Jump             &) { /* Do nothing. */ },
+    [ ](const Call             &) { /* Do nothing. */ }
   }, FunctionInstructions.back());
   // clang-format on
   FunctionInstructions.pop_back();

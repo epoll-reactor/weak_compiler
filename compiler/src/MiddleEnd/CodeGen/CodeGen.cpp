@@ -159,16 +159,16 @@ void CodeGen::Visit(const ASTBinaryOperator *Binary) const {
   TokenType Op = Binary->GetOperation();
   // clang-format off
   std::visit(Overload {
-    [this, Op](const Instruction& L, const Instruction& R) {
+    [&](const Instruction& L, const Instruction& R) {
       Emitter.Emit(Op, Reference(L), Reference(R));
     },
-    [this, Op](const Instruction& L, const auto &R) {
+    [&](const Instruction& L, const auto &R) {
       Emitter.Emit(Op, Reference(L), R);
     },
-    [this, Op](const auto &L, const Instruction& R) {
+    [&](const auto &L, const Instruction& R) {
       Emitter.Emit(Op, L, Reference(R));
     },
-    [this, Op](const auto &L, const auto &R) {
+    [&](const auto &L, const auto &R) {
       Emitter.Emit(Op, L, R);
     }
   }, LHS, RHS);
@@ -188,12 +188,12 @@ void CodeGen::Visit(const ASTVarDecl *VarDecl) const {
 
   // clang-format off
   std::visit(Overload {
-    [this        ](signed                  I) { LastInstruction = Reference(*Emitter.Emit(I)); },
-    [this        ](double                  I) { LastInstruction = Reference(*Emitter.Emit(I)); },
-    [this        ](bool                    I) { LastInstruction = Reference(*Emitter.Emit(I)); },
-    [this, &Label](const UnaryInstruction &I) { LastInstruction = Reference(I); Label = I.GetLabelNo(); },
-    [this, &Label](const Instruction      &I) { LastInstruction = Reference(I); Label = I.GetLabelNo(); },
-    [            ](const Reference        & ) { /* Do nothing. */ },
+    [&](signed                  I) { LastInstruction = Reference(*Emitter.Emit(I)); },
+    [&](double                  I) { LastInstruction = Reference(*Emitter.Emit(I)); },
+    [&](bool                    I) { LastInstruction = Reference(*Emitter.Emit(I)); },
+    [&](const UnaryInstruction &I) { LastInstruction = Reference(I); Label = I.GetLabelNo(); },
+    [&](const Instruction      &I) { LastInstruction = Reference(I); Label = I.GetLabelNo(); },
+    [ ](const Reference        & ) { /* Do nothing. */ },
   }, LastInstruction);
   // clang-format on
 
@@ -355,17 +355,17 @@ void CodeGen::Visit(const ASTUnaryOperator *Unary) const {
 
   // clang-format off
   std::visit(Overload {
-    [](const Instruction      &) {},
-    [](const UnaryInstruction &) {},
-    [this, &VisitUnary](const Reference &I) {
-      VisitUnary = [this, &I](TokenType Operation) {
+    [ ](const Instruction      &) {},
+    [ ](const UnaryInstruction &) {},
+    [&](const Reference &I) {
+      VisitUnary = [&](TokenType Operation) {
         auto *New = Emitter.Emit(Operation, I, 1);
         New->SetLabelNo(I.GetLabelNo());
         LastInstruction = *New;
       };
     },
-    [this, &VisitUnary](auto I) {
-      VisitUnary = [this, &I](TokenType Operation) {
+    [&](auto I) {
+      VisitUnary = [&](TokenType Operation) {
         LastInstruction = *Emitter.Emit(Operation, I, 1);
       };
     }
