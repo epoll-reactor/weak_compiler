@@ -73,7 +73,7 @@ public:
 
   void ClosingQuoteCheck(unsigned LineNo, unsigned ColumnNo) const {
     if (Peek == '\n' || Peek == '\0')
-      weak::DiagnosticError(LineNo, ColumnNo) << "Closing \" expected";
+      weak::CompileError(LineNo, ColumnNo) << "Closing \" expected";
   }
 
 private:
@@ -87,13 +87,13 @@ public:
 
   void LastDigitRequire(unsigned LineNo, unsigned ColumnNo) const {
     if (std::isalpha(Peek) || !std::isdigit(Digit.back()))
-      weak::DiagnosticError(LineNo, ColumnNo)
+      weak::CompileError(LineNo, ColumnNo)
           << "Digit as last character expected";
   }
 
   void ExactOneDotRequire(unsigned LineNo, unsigned ColumnNo) const {
     if (DotsReached > 1)
-      weak::DiagnosticError(LineNo, ColumnNo) << "Extra \".\" in digit";
+      weak::CompileError(LineNo, ColumnNo) << "Extra \".\" in digit";
   }
 
 private:
@@ -297,7 +297,7 @@ Token Lexer::AnalyzeOperator() {
   }
 
   --CurrentColumnNo;
-  DiagnosticError(CurrentLineNo, CurrentColumnNo)
+  CompileError(CurrentLineNo, CurrentColumnNo)
       << "Unknown character sequence: " << WrongOperator;
   UnreachablePoint();
 }

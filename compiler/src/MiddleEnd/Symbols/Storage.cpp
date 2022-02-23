@@ -18,7 +18,7 @@ void Storage::ScopeBegin() { ++CurrentScopeDepth; }
 
 void Storage::ScopeEnd() {
   if (CurrentScopeDepth == 0) {
-    DiagnosticError() << "No scopes left.";
+    CompileError() << "No scopes left.";
     UnreachablePoint();
   }
 
@@ -60,7 +60,7 @@ Storage::Record *Storage::GetSymbol(unsigned Attribute) {
   auto Found = Records.find(Attribute);
 
   if (Found == Records.end() || Found->second.Depth > CurrentScopeDepth) {
-    DiagnosticError() << "Variable not found.";
+    CompileError() << "Variable not found.";
     UnreachablePoint();
   }
 
@@ -73,7 +73,7 @@ Storage::Record *Storage::GetByName(std::string_view Name) {
                               return R.second.Name == Name;
                             });
   if (Found == Records.end()) {
-    DiagnosticError() << "Variable not found: " << Name;
+    CompileError() << "Variable not found: " << Name;
   }
 
   auto &[_, Variable] = *Found;
@@ -83,7 +83,7 @@ Storage::Record *Storage::GetByName(std::string_view Name) {
 void Storage::SetSymbolType(unsigned Attribute, TokenType Type) {
   auto Found = Records.find(Attribute);
   if (Found == Records.end()) {
-    DiagnosticError() << "Attempt to set type for variable that not exists.";
+    CompileError() << "Attempt to set type for variable that not exists.";
     UnreachablePoint();
   }
   Found->second.DataType = Type;

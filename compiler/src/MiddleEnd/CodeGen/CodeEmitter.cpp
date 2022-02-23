@@ -98,8 +98,10 @@ Jump *CodeEmitter::EmitJump(unsigned Label) {
   return &std::get<Jump>(FunctionInstructions.emplace_back(Jump(Label)));
 }
 
-Call* CodeEmitter::EmitCall(std::string Name, std::list<Reference> &&Arguments) {
-  return &std::get<Call>(FunctionInstructions.emplace_back(Call(std::move(Name), std::move(Arguments))));
+Call *CodeEmitter::EmitCall(std::string Name,
+                            std::list<Reference> &&Arguments) {
+  return &std::get<Call>(FunctionInstructions.emplace_back(
+      Call(std::move(Name), std::move(Arguments))));
 }
 
 void CodeEmitter::Dump() { DumpImpl(Functions); }

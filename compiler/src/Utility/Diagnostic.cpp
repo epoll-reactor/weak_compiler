@@ -37,28 +37,33 @@ private:
 
 void weak::UnreachablePoint() { exit(-1); }
 
-weak::OstreamRAII::~OstreamRAII() { std::cerr << std::endl; }
+weak::OstreamRAII::~OstreamRAII() {
+  if (Error) {
+    exit(-1);
+  }
+  std::cerr << std::endl;
+}
 
 std::ostream &weak::OstreamRAII::operator<<(const char *String) {
   return std::cerr << String;
 }
 
-weak::OstreamRAII weak::DiagnosticWarning() {
+weak::OstreamRAII weak::CompileWarning() {
   [[maybe_unused]] Diagnostic _(Diagnostic::DiagLevel::WARN);
-  return OstreamRAII{};
+  return OstreamRAII{OstreamRAII::Ok};
 }
 
-weak::OstreamRAII weak::DiagnosticWarning(unsigned LineNo, unsigned ColumnNo) {
+weak::OstreamRAII weak::CompileWarning(unsigned LineNo, unsigned ColumnNo) {
   [[maybe_unused]] Diagnostic _(Diagnostic::DiagLevel::WARN, LineNo, ColumnNo);
-  return OstreamRAII{};
+  return OstreamRAII{OstreamRAII::Ok};
 }
 
-weak::OstreamRAII weak::DiagnosticError() {
+weak::OstreamRAII weak::CompileError() {
   [[maybe_unused]] Diagnostic _(Diagnostic::DiagLevel::ERROR);
-  return OstreamRAII{};
+  return OstreamRAII{OstreamRAII::Error};
 }
 
-weak::OstreamRAII weak::DiagnosticError(unsigned LineNo, unsigned ColumnNo) {
+weak::OstreamRAII weak::CompileError(unsigned LineNo, unsigned ColumnNo) {
   [[maybe_unused]] Diagnostic _(Diagnostic::DiagLevel::ERROR, LineNo, ColumnNo);
-  return OstreamRAII{};
+  return OstreamRAII{OstreamRAII::Error};
 }
