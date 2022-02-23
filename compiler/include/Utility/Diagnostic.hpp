@@ -14,8 +14,8 @@ namespace weak {
 /// This requires the string as first argument in diagnostic messages.
 struct OstreamRAII {
   bool IsError;
-  static constexpr bool Error = true;
-  static constexpr bool Ok = false;
+  static constexpr bool ShouldTerminate = true;
+  static constexpr bool ShouldContinue = false;
   ~OstreamRAII();
   std::ostream &operator<<(const char *);
 };
