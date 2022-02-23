@@ -129,9 +129,9 @@ static void NormalizeColumnPosition(std::string_view Data,
       std::make_pair(TokenType::VOID, "void"sv.length()),
       std::make_pair(TokenType::WHILE, "while"sv.length())};
 
-  if (const auto *It = std::find_if(
-          TokenLengths.begin(), TokenLengths.end(),
-          [&Type](const auto &Pair) { return Type == Pair.first; });
+  if (const auto *It =
+          std::find_if(TokenLengths.begin(), TokenLengths.end(),
+                       [&](const auto &Pair) { return Type == Pair.first; });
       It != TokenLengths.end()) {
     ColumnNo -= It->second;
   } else {

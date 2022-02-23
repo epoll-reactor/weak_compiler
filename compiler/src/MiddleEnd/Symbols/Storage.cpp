@@ -34,7 +34,7 @@ void Storage::ScopeEnd() {
 
 unsigned Storage::AddSymbol(std::string_view Name) {
   auto Found = std::find_if(Records.begin(), Records.end(),
-                            [&Name](const std::pair<unsigned, Record> &R) {
+                            [&](const std::pair<unsigned, Record> &R) {
                               return R.second.Name == Name;
                             });
   if (Found == Records.end()) {
@@ -69,7 +69,7 @@ Storage::Record *Storage::GetSymbol(unsigned Attribute) {
 
 Storage::Record *Storage::GetByName(std::string_view Name) {
   auto Found = std::find_if(Records.begin(), Records.end(),
-                            [&Name](const std::pair<unsigned, Record> &R) {
+                            [&](const std::pair<unsigned, Record> &R) {
                               return R.second.Name == Name;
                             });
   if (Found == Records.end()) {

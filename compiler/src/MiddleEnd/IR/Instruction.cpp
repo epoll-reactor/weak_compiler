@@ -17,11 +17,10 @@ ResolveInstructionSize(const Instruction::AnyOperand &Operand) {
   unsigned Size = 0U;
   // clang-format off
   std::visit(weak::Overload {
-    [&Size](signed) { Size = sizeof(signed); },
-    [&Size](double) { Size = sizeof(double); },
-    [&Size](bool  ) { Size = sizeof(  bool); },
-    [&Size](Reference
-                 I) { Size = I.GetCapacity(); }
+    [&](signed     ) { Size = sizeof(signed); },
+    [&](double     ) { Size = sizeof(double); },
+    [&](bool       ) { Size = sizeof(  bool); },
+    [&](Reference I) { Size = I.GetCapacity(); }
   }, Operand);
   // clang-format on
   return Size;
@@ -31,10 +30,10 @@ static void DumpTo(std::ostringstream &Stream,
                    const Instruction::AnyOperand &Operand) {
   // clang-format off
   std::visit(weak::Overload {
-    [&Stream](signed    I) { Stream << I; },
-    [&Stream](double    I) { Stream << I; },
-    [&Stream](bool      I) { Stream << std::boolalpha << I; },
-    [&Stream](Reference I) { Stream << std::string{"t" + std::to_string(I.GetLabelNo())}; }
+    [&](signed    I) { Stream << I; },
+    [&](double    I) { Stream << I; },
+    [&](bool      I) { Stream << std::boolalpha << I; },
+    [&](Reference I) { Stream << std::string{"t" + std::to_string(I.GetLabelNo())}; }
   }, Operand);
   // clang-format on
 }
@@ -363,7 +362,7 @@ std::ostream &operator<<(std::ostream &Stream, const Jump &I) {
 }
 std::ostream &operator<<(std::ostream &Stream, const AnyInstruction &I) {
   // clang-format off
-  std::visit([&Stream](const auto &Instruction) {
+  std::visit([&](const auto &Instruction) {
     Stream << Instruction.Dump();
   }, I);
   // clang-format on
