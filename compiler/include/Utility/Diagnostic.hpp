@@ -13,6 +13,9 @@ namespace weak {
 
 /// This requires the string as first argument in diagnostic messages.
 struct OstreamRAII {
+  bool IsError;
+  static constexpr bool Error = true;
+  static constexpr bool Ok = false;
   ~OstreamRAII();
   std::ostream &operator<<(const char *);
 };
@@ -21,16 +24,16 @@ struct OstreamRAII {
 [[noreturn]] void UnreachablePoint();
 
 /// Print diagnostic message with WARN flag.
-OstreamRAII DiagnosticWarning();
+OstreamRAII CompileWarning();
 
 /// Print diagnostic message with WARN flag.
-OstreamRAII DiagnosticWarning(unsigned LineNo, unsigned ColumnNo);
+OstreamRAII CompileWarning(unsigned LineNo, unsigned ColumnNo);
 
 /// Print diagnostic message with ERROR flag and terminate program.
-OstreamRAII DiagnosticError();
+OstreamRAII CompileError();
 
 /// Print diagnostic message with ERROR flag and terminate program.
-OstreamRAII DiagnosticError(unsigned LineNo, unsigned ColumnNo);
+OstreamRAII CompileError(unsigned LineNo, unsigned ColumnNo);
 
 } // namespace weak
 

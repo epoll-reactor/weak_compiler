@@ -178,16 +178,16 @@ public:
 
   std::string Dump() const;
 
-  bool operator==(const Call& RHS) const;
-  bool operator!=(const Call& RHS) const;
+  bool operator==(const Call &RHS) const;
+  bool operator!=(const Call &RHS) const;
 
 private:
   std::string Name;
   std::list<Reference> Arguments;
 };
 
-using AnyInstruction =
-  std::variant<Instruction, UnaryInstruction, IfInstruction, GotoLabel, Jump, Call>;
+using AnyInstruction = std::variant<Instruction, UnaryInstruction,
+                                    IfInstruction, GotoLabel, Jump, Call>;
 
 class FunctionBlock {
 public:
@@ -196,13 +196,13 @@ public:
   template <typename IIterator>
   void SetArguments(IIterator Begin, IIterator End) {
     static_assert(
-      std::is_same_v<std::decay_t<decltype(*Begin)>, frontEnd::TokenType>);
+        std::is_same_v<std::decay_t<decltype(*Begin)>, frontEnd::TokenType>);
     Arguments = std::list(Begin, End);
   }
 
   template <typename IIterator> void SetBody(IIterator Begin, IIterator End) {
     static_assert(
-      std::is_same_v<std::decay_t<decltype(*Begin)>, AnyInstruction>);
+        std::is_same_v<std::decay_t<decltype(*Begin)>, AnyInstruction>);
     Body = std::list(Begin, End);
   }
 
@@ -232,8 +232,7 @@ std::ostream &operator<<(std::ostream &,
                          const weak::middleEnd::AnyInstruction &);
 std::ostream &operator<<(std::ostream &,
                          const weak::middleEnd::FunctionBlock &);
-std::ostream &operator<<(std::ostream &,
-                         const weak::middleEnd::Call &);
+std::ostream &operator<<(std::ostream &, const weak::middleEnd::Call &);
 
 } // namespace middleEnd
 } // namespace weak

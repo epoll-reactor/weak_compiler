@@ -71,7 +71,7 @@ IfInstruction *CodeGen::EmitCondition(const ASTNode *Condition) const {
     return Emitter.EmitIf(*Instr, /*GotoLabel=*/0U);
   }
   default:
-    DiagnosticError() << "Should not reach here.";
+    CompileError() << "Should not reach here.";
     UnreachablePoint();
   }
 }
@@ -289,8 +289,9 @@ void CodeGen::Visit(const frontEnd::ASTForStmt *For) const {
   Emitter.EmitGotoLabel(CurrentGotoLabel++);
 }
 
-void CodeGen::Visit(const ASTFunctionCall */*Call*/) const {
-  /// 1. Storage must store also functions (name, return type, types of arguments,
+void CodeGen::Visit(const ASTFunctionCall * /*Call*/) const {
+  /// 1. Storage must store also functions (name, return type, types of
+  /// arguments,
   ///    reference to function (???)).
   /// 2. We need to get function record in storage by name or attribute.
   /// 3. We need to compare types of function declaration and call
@@ -339,7 +340,7 @@ void CodeGen::Visit(const ASTSymbol *Symbol) const {
 
   /// If variable type was not set, we have not the complete definition.
   if (Record->DataType == TokenType::NONE) {
-    DiagnosticError(Symbol->GetLineNo(), Symbol->GetColumnNo())
+    CompileError(Symbol->GetLineNo(), Symbol->GetColumnNo())
         << "Variable not found: " << Symbol->GetValue();
     UnreachablePoint();
   }

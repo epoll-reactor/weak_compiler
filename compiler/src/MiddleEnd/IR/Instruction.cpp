@@ -54,9 +54,7 @@ unsigned Reference::GetLabelNo() const { return LabelNo; }
 
 unsigned Reference::GetCapacity() const { return ReservedCapacity; }
 
-std::string Reference::Dump() const {
-  return "t" + std::to_string(LabelNo);
-}
+std::string Reference::Dump() const { return "t" + std::to_string(LabelNo); }
 
 bool Reference::operator==(const Reference &RHS) const {
   return LabelNo == RHS.LabelNo && ReservedCapacity == RHS.ReservedCapacity;
@@ -315,8 +313,7 @@ namespace weak {
 namespace middleEnd {
 
 Call::Call(std::string TheName, std::list<Reference> &&TheArguments)
-  : Name(std::move(TheName))
-  , Arguments(std::move(TheArguments)) {}
+    : Name(std::move(TheName)), Arguments(std::move(TheArguments)) {}
 
 const std::string &Call::GetName() const { return Name; }
 
@@ -337,14 +334,11 @@ std::string Call::Dump() const {
   return Result;
 }
 
-bool Call::operator==(const Call& RHS) const {
-  return (Name == RHS.Name) &&
-         (Arguments == RHS.Arguments);
+bool Call::operator==(const Call &RHS) const {
+  return (Name == RHS.Name) && (Arguments == RHS.Arguments);
 }
 
-bool Call::operator!=(const Call& RHS) const {
-  return !(*this == RHS);
-}
+bool Call::operator!=(const Call &RHS) const { return !(*this == RHS); }
 
 } // namespace middleEnd
 } // namespace weak
