@@ -32,7 +32,7 @@ int main() {
            "  float value = 3.1415;\n"
            "  bool good_boolean = true;\n"
            "  bool malevolent_boolean = false;\n"
-           "  for (int i = 0; i < 10; ++i) { a << b + c = x <= e == f >= g; }\n"
+           "  for (int i = 0; i < 10; i = i * 2) { a << b + c = x <= e == f >= g; }\n"
            "  while (a << b + c + x) {\n"
            "    while (0) {\n"
            "      a << b + c = a << b + c = x <= e == f >= g <= e == f >= g;\n"

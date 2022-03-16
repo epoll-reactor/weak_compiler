@@ -333,14 +333,14 @@ std::unique_ptr<ASTNode> Parser::ParseForStatement() {
   std::unique_ptr<ASTNode> Condition;
   if (PeekNext().Type != TokenType::SEMICOLON) {
     --CurrentBufferPtr;
-    Condition = ParseLogicalOr();
+    Condition = ParseExpression();
     PeekNext();
   }
 
   std::unique_ptr<ASTNode> Increment;
   if (PeekNext().Type != TokenType::CLOSE_PAREN) {
     --CurrentBufferPtr;
-    Increment = ParseLogicalOr();
+    Increment = ParseExpression();
     PeekNext();
   }
   --CurrentBufferPtr;

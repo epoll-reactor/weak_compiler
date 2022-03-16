@@ -27,9 +27,9 @@ void RunCodeGenTest(std::string_view Program, std::vector<me::AnyInstruction> &&
 
   while (CodeIt != Code.begin()->GetBody().end()) {
     if (*CodeIt != *AssertIt) {
-      weak::DiagnosticError() << "Assertion failed:\n" << *CodeIt
-                              << " got,\n" << *AssertIt << " expected, "
-                              << "showing code...\n";
+      weak::CompileError() << "Assertion failed:\n" << *CodeIt
+                           << " got,\n" << *AssertIt << " expected, "
+                           << "showing code...\n";
       me::CodeEmitter::Dump(Code);
       weak::UnreachablePoint();
       TEST_CASE(false);
