@@ -8,9 +8,7 @@
 #define WEAK_COMPILER_MIDDLE_END_CODE_EMITTER_HPP
 
 #include "MiddleEnd/IR/Instruction.hpp"
-#include "MiddleEnd/IR/Operations.hpp"
-#include "MiddleEnd/IR/Registers.hpp"
-#include <vector>
+#include <list>
 
 namespace weak {
 namespace middleEnd {
@@ -20,23 +18,40 @@ class CodeEmitter {
 public:
   CodeEmitter();
 
-  const Instruction *Emit(frontEnd::TokenType, const Instruction::AnyOperand &,
-                          const Instruction::AnyOperand &);
+  void BeginFunction(std::string_view Name, std::list<frontEnd::TokenType> &&);
+  void EndFunction();
 
-  const IfInstruction *EmitIf(frontEnd::TokenType Operation,
-                              const Instruction::AnyOperand &Left,
-                              const Instruction::AnyOperand &Right,
-                              unsigned GotoLabel);
+  Instruction *Emit(frontEnd::TokenType, const Instruction::AnyOperand &,
+                    const Instruction::AnyOperand &);
+  Instruction *Emit(const Instruction &);
+
+  UnaryInstruction *Emit(const UnaryInstruction::AnyOperand &);
+
+  IfInstruction *EmitIf(frontEnd::TokenType Operation,
+                        const Instruction::AnyOperand &LHS,
+                        const Instruction::AnyOperand &RHS, unsigned GotoLabel);
+  IfInstruction *EmitIf(const Instruction &Copy, unsigned GotoLabel);
 
   const GotoLabel *EmitGotoLabel(unsigned Label);
-  const Jump *EmitJump(unsigned ToLabel);
+  Jump *EmitJump(unsigned Label);
+
+  Call *EmitCall(std::string Name, std::list<Reference> &&Arguments);
+
+  void RemoveLast();
 
   void Dump();
+  static void Dump(const std::list<FunctionBlock> &);
 
-  const std::vector<AnyInstruction> &GetInstructions() const;
+  const AnyInstruction &GetLast() const;
+
+  const std::list<AnyInstruction> &GetFunctionInstructions() const;
+  const std::list<FunctionBlock> &GetFunctions() const;
 
 private:
-  std::vector<AnyInstruction> Instructions;
+  std::list<frontEnd::TokenType> FunctionArguments;
+  std::list<AnyInstruction> FunctionInstructions;
+  std::list<FunctionBlock> Functions;
+  std::string CurrentFunctionName;
   unsigned CurrentLabel;
 };
 
