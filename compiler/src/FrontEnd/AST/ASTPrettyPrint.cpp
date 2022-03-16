@@ -294,7 +294,7 @@ private:
     PrintWithTextPosition((IsDoWhile ? "Do"s : ""s) + "WhileStmt", WhileStmt,
                           /*NewLineNeeded=*/true);
 
-    auto PrintWhileCondition = [&, this] {
+    auto PrintWhileCondition = [&] {
       if (const auto &Condition = WhileStmt->GetCondition().get()) {
         PrintIndent();
         PrintWithTextPosition((IsDoWhile ? "Do"s : ""s) + "WhileStmtCond",
@@ -307,7 +307,7 @@ private:
       }
     };
 
-    auto PrintWhileBody = [&, this] {
+    auto PrintWhileBody = [&] {
       if (const auto &Body = WhileStmt->GetBody().get()) {
         PrintIndent();
         PrintWithTextPosition((IsDoWhile ? "Do"s : ""s) + "WhileStmtBody", Body,

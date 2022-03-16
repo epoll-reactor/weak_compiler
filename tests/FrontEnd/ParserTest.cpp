@@ -1,9 +1,10 @@
 #include "FrontEnd/Parse/Parser.hpp"
-#include "FrontEnd/Symbols/Storage.hpp"
 #include "FrontEnd/AST/ASTPrettyPrint.hpp"
 #include "FrontEnd/Lex/Lexer.hpp"
+#include "MiddleEnd/Symbols/Storage.hpp"
 
 using namespace weak::frontEnd;
+using namespace weak::middleEnd;
 
 static Lexer CreateLexer(Storage *S, std::string_view Input) {
   Lexer Lex(S, Input.begin(), Input.end());
@@ -27,7 +28,10 @@ int main() {
            "  ++var1;\n"
            "  --var2;\n"
            "  var1++;\n"
-           "  var2++;\n"
+           "  var2++;"
+           "  float value = 3.1415;\n"
+           "  bool good_boolean = true;\n"
+           "  bool malevolent_boolean = false;\n"
            "  for (int i = 0; i < 10; ++i) { a << b + c = x <= e == f >= g; }\n"
            "  while (a << b + c + x) {\n"
            "    while (0) {\n"

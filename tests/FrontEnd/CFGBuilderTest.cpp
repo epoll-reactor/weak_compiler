@@ -1,11 +1,12 @@
 #include "FrontEnd/Analysis/CFGBuilder.hpp"
 #include "FrontEnd/AST/ASTPrettyPrint.hpp"
-#include "FrontEnd/Symbols/Storage.hpp"
 #include "FrontEnd/Lex/Lexer.hpp"
 #include "FrontEnd/Parse/Parser.hpp"
+#include "MiddleEnd/Symbols/Storage.hpp"
 #include "TestHelpers.hpp"
 
 using namespace weak::frontEnd;
+using namespace weak::middleEnd;
 
 static Lexer CreateLexer(Storage *S, std::string_view Input) {
   Lexer Lex(S, Input.begin(), Input.end());

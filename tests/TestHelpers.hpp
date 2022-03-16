@@ -5,11 +5,11 @@
 
 #define TEST_CASE(stmt)                                                        \
   if (!(stmt)) {                                                               \
-    std::cout << "ERROR: test case " << #stmt << " failed\n";                  \
-    return EXIT_FAILURE;                                                       \
+    std::cerr << "ERROR: test case " << #stmt << " failed\n";                  \
+    exit(1);                                                                   \
   }
 
 #define SECTION(string)                                                        \
-  (std::cout << "testing section " << #string << std::endl);
+  (std::cerr << "testing section " << #string << std::endl);
 
 #endif // COMPILER_TEST_HELPERS_HPP

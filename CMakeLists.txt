@@ -14,5 +14,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_THREAD_PREFER_PTHREAD ON)
 set(THREADS_PREFER_PTHREAD_FLAG ON)
 
+enable_testing()
+
 add_subdirectory(compiler)
 add_subdirectory(tests)

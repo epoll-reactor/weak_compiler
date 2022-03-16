@@ -5,8 +5,9 @@
  */
 
 #include "FrontEnd/Lex/Lexer.hpp"
-#include "FrontEnd/Symbols/Storage.hpp"
+#include "MiddleEnd/Symbols/Storage.hpp"
 #include "Utility/Diagnostic.hpp"
+#include <algorithm>
 #include <cassert>
 #include <unordered_map>
 
@@ -16,11 +17,11 @@ static const std::unordered_map<std::string_view, TokenType> LexKeywords = {
     {"bool", TokenType::BOOLEAN},  {"break", TokenType::BREAK},
     {"char", TokenType::CHAR},     {"continue", TokenType::CONTINUE},
     {"do", TokenType::DO},         {"else", TokenType::ELSE},
-    {"false", TokenType::FALSE},   {"for", TokenType::FOR},
-    {"if", TokenType::IF},         {"int", TokenType::INT},
-    {"return", TokenType::RETURN}, {"string", TokenType::STRING},
-    {"true", TokenType::TRUE},     {"void", TokenType::VOID},
-    {"while", TokenType::WHILE}};
+    {"false", TokenType::FALSE},   {"float", TokenType::FLOAT},
+    {"for", TokenType::FOR},       {"if", TokenType::IF},
+    {"int", TokenType::INT},       {"return", TokenType::RETURN},
+    {"string", TokenType::STRING}, {"true", TokenType::TRUE},
+    {"void", TokenType::VOID},     {"while", TokenType::WHILE}};
 
 static const std::unordered_map<std::string_view, TokenType> LexOperators = {
     {"=", TokenType::ASSIGN},
@@ -72,7 +73,7 @@ public:
 
   void ClosingQuoteCheck(unsigned LineNo, unsigned ColumnNo) const {
     if (Peek == '\n' || Peek == '\0')
-      weak::DiagnosticError(LineNo, ColumnNo) << "Closing \" expected";
+      weak::CompileError(LineNo, ColumnNo) << "Closing \" expected";
   }
 
 private:
@@ -86,13 +87,13 @@ public:
 
   void LastDigitRequire(unsigned LineNo, unsigned ColumnNo) const {
     if (std::isalpha(Peek) || !std::isdigit(Digit.back()))
-      weak::DiagnosticError(LineNo, ColumnNo)
+      weak::CompileError(LineNo, ColumnNo)
           << "Digit as last character expected";
   }
 
   void ExactOneDotRequire(unsigned LineNo, unsigned ColumnNo) const {
     if (DotsReached > 1)
-      weak::DiagnosticError(LineNo, ColumnNo) << "Extra \".\" in digit";
+      weak::CompileError(LineNo, ColumnNo) << "Extra \".\" in digit";
   }
 
 private:
@@ -110,35 +111,49 @@ static void NormalizeColumnPosition(std::string_view Data,
                                     unsigned &ColumnNo) {
   using weak::frontEnd::TokenType;
   using namespace std::string_view_literals;
-  std::unordered_map<weak::frontEnd::TokenType, int> TokenLengths = {
-      {TokenType::BOOLEAN, "bool"sv.length()},
-      {TokenType::BREAK, "break"sv.length()},
-      {TokenType::CHAR, "char"sv.length()},
-      {TokenType::CONTINUE, "continue"sv.length()},
-      {TokenType::DO, "do"sv.length()},
-      {TokenType::ELSE, "else"sv.length()},
-      {TokenType::FALSE, "false"sv.length()},
-      {TokenType::FOR, "for"sv.length()},
-      {TokenType::IF, "if"sv.length()},
-      {TokenType::INT, "int"sv.length()},
-      {TokenType::RETURN, "return"sv.length()},
-      {TokenType::STRING, "string"sv.length()},
-      {TokenType::TRUE, "true"sv.length()},
-      {TokenType::VOID, "void"sv.length()},
-      {TokenType::WHILE, "while"sv.length()},
+  static constexpr std::array TokenLengths{
+      std::make_pair(TokenType::BOOLEAN, "bool"sv.length()),
+      std::make_pair(TokenType::BREAK, "break"sv.length()),
+      std::make_pair(TokenType::CHAR, "char"sv.length()),
+      std::make_pair(TokenType::CONTINUE, "continue"sv.length()),
+      std::make_pair(TokenType::DO, "do"sv.length()),
+      std::make_pair(TokenType::ELSE, "else"sv.length()),
+      std::make_pair(TokenType::FALSE, "false"sv.length()),
+      std::make_pair(TokenType::FLOAT, "float"sv.length()),
+      std::make_pair(TokenType::FOR, "for"sv.length()),
+      std::make_pair(TokenType::IF, "if"sv.length()),
+      std::make_pair(TokenType::INT, "int"sv.length()),
+      std::make_pair(TokenType::RETURN, "return"sv.length()),
+      std::make_pair(TokenType::STRING, "string"sv.length()),
+      std::make_pair(TokenType::TRUE, "true"sv.length()),
+      std::make_pair(TokenType::VOID, "void"sv.length()),
+      std::make_pair(TokenType::WHILE, "while"sv.length())};
 
-      {TokenType::INTEGRAL_LITERAL, Data.length()},
-      {TokenType::FLOATING_POINT_LITERAL, Data.length()},
-      {TokenType::STRING_LITERAL, Data.length() + 2 /* quotes */},
-      {TokenType::SYMBOL, Data.length()}};
-
-  ColumnNo -= TokenLengths.at(Type);
+  if (const auto *It =
+          std::find_if(TokenLengths.begin(), TokenLengths.end(),
+                       [&](const auto &Pair) { return Type == Pair.first; });
+      It != TokenLengths.end()) {
+    ColumnNo -= It->second;
+  } else {
+    switch (Type) {
+    case TokenType::INTEGRAL_LITERAL:
+    case TokenType::FLOATING_POINT_LITERAL:
+    case TokenType::SYMBOL:
+      ColumnNo -= Data.length();
+      break;
+    case TokenType::STRING_LITERAL:
+      ColumnNo -= (Data.length() + 2 /* Quotes. */);
+      break;
+    default:
+      break;
+    }
+  }
 }
 
 namespace weak {
 namespace frontEnd {
 
-Lexer::Lexer(weak::frontEnd::Storage *TheStorage, const char *TheBufferStart,
+Lexer::Lexer(weak::middleEnd::Storage *TheStorage, const char *TheBufferStart,
              const char *TheBufferEnd)
     : Storage(TheStorage), BufferStart(TheBufferStart), BufferEnd(TheBufferEnd),
       CurrentBufferPtr(TheBufferStart), CurrentLineNo(0U), CurrentColumnNo(0U) {
@@ -149,6 +164,9 @@ Lexer::Lexer(weak::frontEnd::Storage *TheStorage, const char *TheBufferStart,
 
 std::vector<Token> Lexer::Analyze() {
   std::vector<Token> ProcessedTokens;
+
+  long InputSize = std::distance(BufferStart, BufferEnd);
+  ProcessedTokens.reserve(InputSize / 2);
 
   while (CurrentBufferPtr != BufferEnd) {
     if (char Atom = PeekCurrent(); std::isdigit(Atom)) {
@@ -244,18 +262,12 @@ Token Lexer::AnalyzeSymbol() {
 Token Lexer::AnalyzeOperator() {
   std::string Operator(1, PeekNext());
   unsigned SavedColumnNo = 0U;
+  bool SearchFailed = false;
+  char WrongOperator = '\0';
 
-  while (LexOperators.find(Operator) != LexOperators.end()) {
-    char Next = *CurrentBufferPtr++;
-    SavedColumnNo = CurrentColumnNo;
-    if (Next == '\n') {
-      CurrentColumnNo = 0U;
-      CurrentLineNo++;
-    }
-    ++CurrentColumnNo;
-    Operator += Next;
-
+  while (true) {
     if (LexOperators.find(Operator) == LexOperators.end()) {
+      WrongOperator = Operator.front();
       Operator.pop_back();
       --CurrentBufferPtr;
 
@@ -265,18 +277,28 @@ Token Lexer::AnalyzeOperator() {
       if (PeekCurrent() == '\n')
         --CurrentLineNo;
 
+      SearchFailed = true;
       break;
     }
+
+    char Next = *CurrentBufferPtr++;
+    SavedColumnNo = CurrentColumnNo;
+    if (Next == '\n') {
+      CurrentColumnNo = 0U;
+      CurrentLineNo++;
+    }
+    ++CurrentColumnNo;
+    Operator += Next;
   }
 
-  if (LexOperators.find(Operator) != LexOperators.end()) {
+  if (SearchFailed && !Operator.empty()) {
     return Token("", LexOperators.at(Operator), CurrentLineNo + 1,
                  SavedColumnNo - Operator.length() + 1);
   }
 
   --CurrentColumnNo;
-  DiagnosticError(CurrentLineNo, CurrentColumnNo)
-      << "Unknown character sequence " << Operator;
+  CompileError(CurrentLineNo, CurrentColumnNo)
+      << "Unknown character sequence: " << WrongOperator;
   UnreachablePoint();
 }
 

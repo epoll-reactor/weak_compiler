@@ -1,8 +1,9 @@
 #include "FrontEnd/Lex/Lexer.hpp"
-#include "FrontEnd/Symbols/Storage.hpp"
+#include "MiddleEnd/Symbols/Storage.hpp"
 #include "TestHelpers.hpp"
 
 using namespace weak::frontEnd;
+using namespace weak::middleEnd;
 
 static Lexer CreateLexer(Storage *S, std::string_view Input) {
   Lexer Lex(S, Input.begin(), Input.end());
@@ -136,5 +137,16 @@ int main() {
       }
     )__",
                  Assertion);
+  }
+  SECTION(LexerSpeedTest) {
+    Storage S;
+    std::string Body = "1.1 1.1 1.1 1.1 1.1 1.1 1.1 1.1 1.1 1.1 1.1 1.1 1.1 1.1"
+                       "+++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+                       "\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\""
+                       "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa ";
+    for (size_t It = 0; It < 16; ++It)
+      Body += std::string(Body);
+    printf("Body size: %zu\n", Body.size());
+    CreateLexer(&S, Body).Analyze();
   }
 }
