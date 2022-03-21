@@ -22,9 +22,15 @@ int main() {
     unsigned Attribute3 = Pool.AddSymbol("var3");
     Pool.SetSymbolType(Attribute3, TokenType::FLOATING_POINT_LITERAL);
 
-    Pool.ScopeEnd();
+    assert(Pool.TotalVariables() == 3);
 
     Pool.ScopeEnd();
+
+    assert(Pool.TotalVariables() == 1);
+
+    Pool.ScopeEnd();
+
+    assert(Pool.TotalVariables() == 0);
   }
   SECTION(Scopes) {
     Storage Pool;

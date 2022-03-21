@@ -8,7 +8,6 @@
 #define WEAK_COMPILER_MIDDLE_END_SYMBOLS_STORAGE_HPP
 
 #include "FrontEnd/Lex/Token.hpp"
-#include "MiddleEnd/IR/Instruction.hpp"
 #include <map>
 
 namespace weak {
@@ -39,12 +38,9 @@ private:
 
     /// Data type of stored variable, used for type checking.
     frontEnd::TokenType DataType;
-
-    /// The reference to the stored value.
-    Reference VarReference;
   };
 
-  using RecordMap = std::map</*Attribute*/ unsigned, Record>;
+  using RecordMap = std::map</*Attribute=*/unsigned, Record>;
 
 public:
   /// Open new scope.
