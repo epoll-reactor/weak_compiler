@@ -21,10 +21,14 @@ public:
   ASTType GetASTType() const override;
   void Accept(const ASTVisitor *) const override;
 
-  const std::string &GetValue() const;
+  void SetSSAIndex(int);
+
+  const std::string &GetName() const;
+  std::string GetSSAName() const;
 
 private:
   std::string Value;
+  int SSAIndex;
 };
 
 } // namespace frontEnd
