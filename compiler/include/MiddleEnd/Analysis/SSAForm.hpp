@@ -18,14 +18,14 @@ class SSAForm {
 public:
   SSAForm(CFG *);
 
-  void VariableToSSA(std::string_view VarName);
+  void VariableToSSA(std::string_view Variable);
 
 private:
-  int Counter;
-  std::stack<int> Stack;
-  VariableSearchVisitor VarSearcher;
+  int CurrentSSAIndex;
+  std::stack<int> IndicesStack;
+  VariableSearchVisitor VariableSearcher;
 
-  void TraverseWithRespectToVariable(CFGBlock *Block, std::string_view VarName);
+  void TraverseWithRespectToVariable(CFGBlock *Block, std::string_view Variable);
 
   CFG *CFGraph;
 };

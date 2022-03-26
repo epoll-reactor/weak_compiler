@@ -9,12 +9,16 @@
 namespace weak {
 namespace middleEnd {
 
-void CFG::AddBlock(CFGBlock *Block) { BasicBlocks.push_back(Block); }
+void CFG::AddBlock(CFGBlock *Block) { Blocks.push_back(Block); }
+
+std::vector<CFGBlock*>& CFG::GetBlocks() { return Blocks; }
+
+const std::vector<CFGBlock*>& CFG::GetBlocks() const { return Blocks; }
 
 void CFG::ComputePredOrder() {
   if (InPredOrder.empty()) {
     VisitedMap.clear();
-    PredOrderDFS(BasicBlocks.front());
+    PredOrderDFS(Blocks.front());
   }
 }
 
@@ -29,7 +33,7 @@ void CFG::PredOrderDFS(CFGBlock *Block) {
 void CFG::ComputePostOrder() {
   if (InPostOrder.empty()) {
     VisitedMap.clear();
-    PostOrderDFS(BasicBlocks.front());
+    PostOrderDFS(Blocks.front());
   }
 }
 
@@ -54,7 +58,7 @@ void CFG::ComputeDominatorTree() {
         Jt->Dominator = It;
   }
 
-  for (auto *V : BasicBlocks) {
+  for (auto *V : Blocks) {
     if (CFGBlock *Dominator = V->Dominator)
       Dominator->DominatingBlocks.push_back(V);
   }
@@ -73,7 +77,7 @@ void CFG::ComputeBaseDominanceFrontier() {
   if (!DominanceFrontier.empty())
     return;
 
-  for (auto *Block : BasicBlocks)
+  for (auto *Block : Blocks)
     DominanceFrontier[Block];
 
   for (auto *Block : InPostOrder) {
@@ -138,7 +142,7 @@ std::string weak::middleEnd::CFGToDot(CFG *Graph) {
   OutGraph += "digraph G {\n";
   OutGraph += "  node[shape=box];\n";
 
-  for (auto *Block : Graph->BasicBlocks) {
+  for (auto *Block : Graph->GetBlocks()) {
     for (auto *Successor : Block->Successors) {
       auto Dump = [](CFGBlock *B) {
         std::string Result;
