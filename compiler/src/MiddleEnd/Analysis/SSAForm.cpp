@@ -4,7 +4,7 @@
  * This file is distributed under the MIT license.
  */
 
-#include "MiddleEnd/Analysis/SSABuilder.hpp"
+#include "MiddleEnd/Analysis/SSAForm.hpp"
 #include "MiddleEnd/IR/IRAssignment.hpp"
 #include "MiddleEnd/IR/IRBranch.hpp"
 #include "MiddleEnd/IR/IRPhiNode.hpp"
@@ -12,16 +12,16 @@
 namespace weak {
 namespace middleEnd {
 
-SSABuilder::SSABuilder(CFG *Graph) : CFGraph(Graph) {}
+SSAForm::SSAForm(CFG *Graph) : CFGraph(Graph) {}
 
-void SSABuilder::VariableToSSA(std::string_view VarName) {
+void SSAForm::VariableToSSA(std::string_view VarName) {
   Counter = 0;
   std::stack<int>().swap(Stack);
   TraverseWithRespectToVariable(CFGraph->BasicBlocks.front(), VarName);
 }
 
-void SSABuilder::TraverseWithRespectToVariable(CFGBlock *Block,
-                                               std::string_view VarName) {
+void SSAForm::TraverseWithRespectToVariable(CFGBlock *Block,
+                                            std::string_view VarName) {
   for (const auto &Stmt : Block->Statements) {
     if (Stmt->Type == IRNode::PHI) {
       IRPhiNode *Phi = static_cast<IRPhiNode *>(Stmt.get());
