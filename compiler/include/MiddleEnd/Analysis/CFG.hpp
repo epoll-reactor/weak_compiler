@@ -40,6 +40,8 @@ private:
   std::map<CFGBlock *, std::set<CFGBlock *>> DominanceFrontier;
 };
 
+std::string CFGToDot(CFG *);
+
 } // namespace middleEnd
 } // namespace weak
 

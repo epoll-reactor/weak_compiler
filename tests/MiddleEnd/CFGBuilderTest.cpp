@@ -14,36 +14,6 @@ static Lexer CreateLexer(Storage *S, std::string_view Input) {
   return Lex;
 }
 
-std::string CFGToDot(CFG *CFGraph) {
-  std::string OutGraph;
-
-  OutGraph += "digraph G {\n";
-  OutGraph += "  node[shape=box];\n";
-
-  for (auto *Block : CFGraph->BasicBlocks) {
-    for (auto *Successor : Block->Successors) {
-      auto Dump = [](CFGBlock *Block) {
-        std::string Result;
-
-        Result += Block->ToString();
-        Result += "\n";
-        for (const auto &Stmt : Block->Statements)
-          Result += Stmt->Dump() + "\n";
-
-        return Result;
-      };
-
-      OutGraph += "\t\"";
-      OutGraph += Dump(Block);
-      OutGraph += "\" -> \"";
-      OutGraph += Dump(Successor);
-      OutGraph += "\"\n";
-    }
-  }
-
-  return OutGraph + "}\n";
-}
-
 static void CreateCFG(std::string_view String) {
   Storage Storage;
   auto Tokens = CreateLexer(&Storage, String).Analyze();
