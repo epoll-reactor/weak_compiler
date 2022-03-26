@@ -1,4 +1,4 @@
-/* CFGBlock.cpp - Control Flow Graph block implementation.
+/* CFGBlock.cpp - Control Flow Graph block.
  * Copyright (C) 2022 epoll-reactor <glibcxx.chrono@gmail.com>
  *
  * This file is distributed under the MIT license.
