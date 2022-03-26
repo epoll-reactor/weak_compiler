@@ -194,7 +194,7 @@ private:
   void Visit(const ASTSymbol *Symbol) const override {
     PrintWithTextPosition("Symbol", Symbol,
                           /*NewLineNeeded=*/false);
-    std::cout << Symbol->GetValue() << std::endl;
+    std::cout << Symbol->GetName() << std::endl;
   }
 
   void Visit(const ASTUnaryOperator *Unary) const override {
