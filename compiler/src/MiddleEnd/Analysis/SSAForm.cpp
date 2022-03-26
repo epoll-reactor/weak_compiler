@@ -14,33 +14,32 @@ namespace middleEnd {
 
 SSAForm::SSAForm(CFG *Graph) : CFGraph(Graph) {}
 
-void SSAForm::VariableToSSA(std::string_view VarName) {
-  Counter = 0;
-  std::stack<int>().swap(Stack);
-  TraverseWithRespectToVariable(CFGraph->BasicBlocks.front(), VarName);
+void SSAForm::VariableToSSA(std::string_view Variable) {
+  CurrentSSAIndex = 0;
+  std::stack<int>().swap(IndicesStack);
+  TraverseWithRespectToVariable(CFGraph->GetBlocks().front(), Variable);
 }
 
 void SSAForm::TraverseWithRespectToVariable(CFGBlock *Block,
-                                            std::string_view VarName) {
+                                            std::string_view Variable) {
   for (const auto &Stmt : Block->Statements) {
     if (Stmt->Type == IRNode::PHI) {
       IRPhiNode *Phi = static_cast<IRPhiNode *>(Stmt.get());
-      if (Phi->Variable->GetName() == VarName) {
-        Phi->Variable->SetSSAIndex(Counter);
-        Stack.push(Counter++);
+      if (Phi->Variable->GetName() == Variable) {
+        Phi->Variable->SetSSAIndex(CurrentSSAIndex);
+        IndicesStack.push(CurrentSSAIndex++);
       }
     } else {
-      auto Vars = VarSearcher.AllVarsUsedInStatement(Stmt.get());
-      for (auto *Var : Vars)
-        if (Var->GetName() == VarName)
-          Var->SetSSAIndex(Stack.top());
+      for (auto *Var : VariableSearcher.AllVarsUsedInStatement(Stmt.get()))
+        if (Var->GetName() == Variable)
+          Var->SetSSAIndex(IndicesStack.top());
     }
 
     if (Stmt->Type == IRNode::ASSIGN) {
       IRAssignment *Assignment = static_cast<IRAssignment *>(Stmt.get());
-      if (Assignment->GetVariable()->GetName() == VarName) {
-        Assignment->GetVariable()->SetSSAIndex(Counter);
-        Stack.push(Counter++);
+      if (Assignment->GetVariable()->GetName() == Variable) {
+        Assignment->GetVariable()->SetSSAIndex(CurrentSSAIndex);
+        IndicesStack.push(CurrentSSAIndex++);
       }
     }
   }
@@ -48,22 +47,22 @@ void SSAForm::TraverseWithRespectToVariable(CFGBlock *Block,
   for (auto *Succ : Block->Successors) {
     for (const auto &Stmt : Succ->Statements) {
       if (Stmt->Type == IRNode::PHI) {
-        IRPhiNode *Phi = static_cast<IRPhiNode *>(Stmt.get());
+        auto *Phi = static_cast<IRPhiNode *>(Stmt.get());
         if (Phi->BlockToVarMap.count(Block) &&
-            Phi->BlockToVarMap[Block]->GetName() == VarName && !Stack.empty())
-          Phi->BlockToVarMap[Block]->SetSSAIndex(Stack.top());
+            Phi->BlockToVarMap[Block]->GetName() == Variable && !IndicesStack.empty())
+          Phi->BlockToVarMap[Block]->SetSSAIndex(IndicesStack.top());
       }
     }
   }
 
   for (auto *Child : Block->DominatingBlocks)
-    TraverseWithRespectToVariable(Child, VarName);
+    TraverseWithRespectToVariable(Child, Variable);
 
   for (const auto &Stmt : Block->Statements) {
     if (Stmt->Type == IRNode::ASSIGN) {
       IRAssignment *Assignment = static_cast<IRAssignment *>(Stmt.get());
-      if (Assignment->GetVariable()->GetName() == VarName)
-        Stack.pop();
+      if (Assignment->GetVariable()->GetName() == Variable)
+        IndicesStack.pop();
     }
   }
 }

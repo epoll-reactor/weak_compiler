@@ -27,7 +27,7 @@ CFGBuilder::CFGBuilder()
     : CFGraph(new CFG), CurrentBlock(CreateBlock("Entry")) {}
 
 CFGBlock *CFGBuilder::CreateBlock(std::string Label) const {
-  int NextIndex = static_cast<int>(CFGraph->BasicBlocks.size());
+  int NextIndex = static_cast<int>(CFGraph->GetBlocks().size());
   auto *Block = new CFGBlock(NextIndex, Label);
   CFGraph->AddBlock(Block);
   return Block;

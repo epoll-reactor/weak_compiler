@@ -16,11 +16,13 @@ namespace middleEnd {
 
 class CFG {
 public:
-  std::vector<CFGBlock *> BasicBlocks;
   std::set<CFGBlock *>
   GetDominanceFrontierForSubset(const std::set<CFGBlock *> &);
   void CommitAllChanges();
   void AddBlock(CFGBlock *Block);
+
+  std::vector<CFGBlock *> &GetBlocks();
+  const std::vector<CFGBlock *> &GetBlocks() const;
 
 private:
   void PredOrderDFS(CFGBlock *);
@@ -34,6 +36,7 @@ private:
   std::set<CFGBlock *>
   GetMergedDominanceFrontierFromSubset(const std::set<CFGBlock *> &);
 
+  std::vector<CFGBlock *> Blocks;
   std::vector<CFGBlock *> InPredOrder;
   std::vector<CFGBlock *> InPostOrder;
   std::map<CFGBlock *, int> VisitedMap;
