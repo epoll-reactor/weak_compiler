@@ -4,8 +4,8 @@
  * This file is distributed under the MIT license.
  */
 
-#ifndef WEAK_COMPILER_MIDDLE_END_ANALYSIS_SSA_HPP
-#define WEAK_COMPILER_MIDDLE_END_ANALYSIS_SSA_HPP
+#ifndef WEAK_COMPILER_MIDDLE_END_ANALYSIS_SSA_FORM_HPP
+#define WEAK_COMPILER_MIDDLE_END_ANALYSIS_SSA_FORM_HPP
 
 #include "MiddleEnd/Analysis/CFG.hpp"
 #include "MiddleEnd/IR/VariableSearchVisitor.hpp"
@@ -14,9 +14,9 @@
 namespace weak {
 namespace middleEnd {
 
-class SSABuilder {
+class SSAForm {
 public:
-  SSABuilder(CFG *);
+  SSAForm(CFG *);
 
   void VariableToSSA(std::string_view VarName);
 
@@ -33,4 +33,4 @@ private:
 } // namespace middleEnd
 } // namespace weak
 
-#endif // WEAK_COMPILER_MIDDLE_END_ANALYSIS_SSA_HPP
+#endif // WEAK_COMPILER_MIDDLE_END_ANALYSIS_SSA_FORM_HPP

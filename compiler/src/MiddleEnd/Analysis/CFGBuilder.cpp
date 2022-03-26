@@ -13,7 +13,7 @@
 #include "FrontEnd/AST/ASTSymbol.hpp"
 #include "FrontEnd/AST/ASTVarDecl.hpp"
 #include "FrontEnd/AST/ASTWhileStmt.hpp"
-#include "MiddleEnd/Analysis/SSABuilder.hpp"
+#include "MiddleEnd/Analysis/SSAForm.hpp"
 #include "MiddleEnd/IR/IRAssignment.hpp"
 #include "MiddleEnd/IR/IRBranch.hpp"
 #include "MiddleEnd/IR/IRPhiNode.hpp"
@@ -151,7 +151,7 @@ void CFGBuilder::InsertPhiNodes() {
 }
 
 void CFGBuilder::BuildSSAForm() {
-  SSABuilder Builder(CFGraph.get());
+  SSAForm Builder(CFGraph.get());
   for (const auto &[Variable, _] : BlocksForVariable)
     Builder.VariableToSSA(Variable);
 }
