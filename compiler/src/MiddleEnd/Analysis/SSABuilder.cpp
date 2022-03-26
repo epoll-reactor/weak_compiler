@@ -1,3 +1,9 @@
+/* SSABuilder.cpp - Constructor of SSA form from CFG.
+ * Copyright (C) 2022 epoll-reactor <glibcxx.chrono@gmail.com>
+ *
+ * This file is distributed under the MIT license.
+ */
+
 #include "MiddleEnd/Analysis/SSABuilder.hpp"
 #include "MiddleEnd/IR/IRAssignment.hpp"
 #include "MiddleEnd/IR/IRBranch.hpp"

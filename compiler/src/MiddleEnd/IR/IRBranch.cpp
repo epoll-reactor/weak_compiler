@@ -1,3 +1,9 @@
+/* IRBranch.cpp - Definition of branch instruction.
+ * Copyright (C) 2022 epoll-reactor <glibcxx.chrono@gmail.com>
+ *
+ * This file is distributed under the MIT license.
+ */
+
 #include "MiddleEnd/IR/IRBranch.hpp"
 #include "MiddleEnd/IR/IRNodePrinter.hpp"
 #include <sstream>

@@ -1,3 +1,9 @@
+/* VariableSearchVisitor.hpp - Recursive variable searcher in AST and IR
+ * statements. Copyright (C) 2022 epoll-reactor <glibcxx.chrono@gmail.com>
+ *
+ * This file is distributed under the MIT license.
+ */
+
 #include "MiddleEnd/IR/VariableSearchVisitor.hpp"
 #include "FrontEnd/AST/ASTBinaryOperator.hpp"
 #include "MiddleEnd/IR/IRAssignment.hpp"

@@ -1,3 +1,9 @@
+/* CFGBuilder.cpp - Control Flow Graph from AST builder.
+ * Copyright (C) 2022 epoll-reactor <glibcxx.chrono@gmail.com>
+ *
+ * This file is distributed under the MIT license.
+ */
+
 #include "MiddleEnd/Analysis/CFGBuilder.hpp"
 #include "FrontEnd/AST/ASTBinaryOperator.hpp"
 #include "FrontEnd/AST/ASTCompoundStmt.hpp"
