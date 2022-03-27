@@ -23,36 +23,43 @@ void SSAForm::VariableToSSA(std::string_view Variable) {
 void SSAForm::TraverseWithRespectToVariable(CFGBlock *Block,
                                             std::string_view Variable) {
   for (const auto &Stmt : Block->Statements) {
-    if (Stmt->Type == IRNode::PHI) {
+    switch (Stmt->Type) {
+    case IRNode::PHI: {
       IRPhiNode *Phi = static_cast<IRPhiNode *>(Stmt.get());
       if (Phi->Variable->GetName() == Variable) {
         Phi->Variable->SetSSAIndex(CurrentSSAIndex);
         IndicesStack.push(CurrentSSAIndex++);
       }
-    } else {
+      break;
+    }
+    case IRNode::BRANCH: {
       for (auto *Var : VariableSearcher.AllVarsUsedInStatement(Stmt.get()))
         if (Var->GetName() == Variable)
           Var->SetSSAIndex(IndicesStack.top());
+      break;
     }
-
-    if (Stmt->Type == IRNode::ASSIGN) {
+    case IRNode::ASSIGN: {
       IRAssignment *Assignment = static_cast<IRAssignment *>(Stmt.get());
       if (Assignment->GetVariable()->GetName() == Variable) {
         Assignment->GetVariable()->SetSSAIndex(CurrentSSAIndex);
         IndicesStack.push(CurrentSSAIndex++);
       }
+      break;
+    }
+    default:
+      break;
     }
   }
 
   for (auto *Succ : Block->Successors) {
     for (const auto &Stmt : Succ->Statements) {
-      if (Stmt->Type == IRNode::PHI) {
-        auto *Phi = static_cast<IRPhiNode *>(Stmt.get());
-        if (Phi->BlockToVarMap.count(Block) &&
-            Phi->BlockToVarMap[Block]->GetName() == Variable &&
-            !IndicesStack.empty())
-          Phi->BlockToVarMap[Block]->SetSSAIndex(IndicesStack.top());
-      }
+      if (Stmt->Type != IRNode::PHI)
+        continue;
+      auto *Phi = static_cast<IRPhiNode *>(Stmt.get());
+      if (Phi->BlockToVarMap.count(Block) &&
+          Phi->BlockToVarMap[Block]->GetName() == Variable &&
+          !IndicesStack.empty())
+        Phi->BlockToVarMap[Block]->SetSSAIndex(IndicesStack.top());
     }
   }
 
@@ -60,11 +67,11 @@ void SSAForm::TraverseWithRespectToVariable(CFGBlock *Block,
     TraverseWithRespectToVariable(Child, Variable);
 
   for (const auto &Stmt : Block->Statements) {
-    if (Stmt->Type == IRNode::ASSIGN) {
-      IRAssignment *Assignment = static_cast<IRAssignment *>(Stmt.get());
-      if (Assignment->GetVariable()->GetName() == Variable)
-        IndicesStack.pop();
-    }
+    if (Stmt->Type != IRNode::ASSIGN)
+      continue;
+    IRAssignment *Assignment = static_cast<IRAssignment *>(Stmt.get());
+    if (Assignment->GetVariable()->GetName() == Variable)
+      IndicesStack.pop();
   }
 }
 
