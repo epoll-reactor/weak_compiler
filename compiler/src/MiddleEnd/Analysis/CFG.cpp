@@ -11,9 +11,9 @@ namespace middleEnd {
 
 void CFG::AddBlock(CFGBlock *Block) { Blocks.push_back(Block); }
 
-std::vector<CFGBlock*>& CFG::GetBlocks() { return Blocks; }
+std::vector<CFGBlock *> &CFG::GetBlocks() { return Blocks; }
 
-const std::vector<CFGBlock*>& CFG::GetBlocks() const { return Blocks; }
+const std::vector<CFGBlock *> &CFG::GetBlocks() const { return Blocks; }
 
 void CFG::ComputePredOrder() {
   if (InPredOrder.empty()) {

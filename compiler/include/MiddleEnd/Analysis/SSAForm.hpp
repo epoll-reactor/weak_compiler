@@ -25,7 +25,8 @@ private:
   std::stack<int> IndicesStack;
   VariableSearchVisitor VariableSearcher;
 
-  void TraverseWithRespectToVariable(CFGBlock *Block, std::string_view Variable);
+  void TraverseWithRespectToVariable(CFGBlock *Block,
+                                     std::string_view Variable);
 
   CFG *CFGraph;
 };

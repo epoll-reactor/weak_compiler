@@ -12,7 +12,8 @@ namespace frontEnd {
 
 ASTSymbol::ASTSymbol(std::string TheValue, unsigned TheLineNo,
                      unsigned TheColumnNo)
-    : ASTNode(TheLineNo, TheColumnNo), Value(std::move(TheValue)), SSAIndex(0) {}
+    : ASTNode(TheLineNo, TheColumnNo), Value(std::move(TheValue)), SSAIndex(0) {
+}
 
 ASTType ASTSymbol::GetASTType() const { return ASTType::SYMBOL; }
 
