@@ -49,7 +49,8 @@ void SSAForm::TraverseWithRespectToVariable(CFGBlock *Block,
       if (Stmt->Type == IRNode::PHI) {
         auto *Phi = static_cast<IRPhiNode *>(Stmt.get());
         if (Phi->BlockToVarMap.count(Block) &&
-            Phi->BlockToVarMap[Block]->GetName() == Variable && !IndicesStack.empty())
+            Phi->BlockToVarMap[Block]->GetName() == Variable &&
+            !IndicesStack.empty())
           Phi->BlockToVarMap[Block]->SetSSAIndex(IndicesStack.top());
       }
     }
