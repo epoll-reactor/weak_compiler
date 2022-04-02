@@ -14,8 +14,13 @@
 namespace weak {
 namespace middleEnd {
 
+/*!
+ * Control Flow Graph. Holds ownership of its blocks.
+ */
 class CFG {
 public:
+  ~CFG();
+
   std::set<CFGBlock *>
   GetDominanceFrontierForSubset(const std::set<CFGBlock *> &);
   void CommitAllChanges();

@@ -15,16 +15,21 @@
 namespace weak {
 namespace middleEnd {
 
+/*!
+ * Control Flow Graph node. Holds ownership of its statements.
+ */
 class CFGBlock {
 public:
   CFGBlock(int TheIndex, std::string TheLabel);
 
+  ~CFGBlock();
+
   std::string ToString() const;
 
-  void AddStatement(std::unique_ptr<IRNode> &&);
+  void AddStatement(IRNode *);
   static void AddLink(CFGBlock *Predecessor, CFGBlock *Successor);
 
-  std::vector<std::unique_ptr<IRNode>> Statements;
+  std::vector<IRNode *> Statements;
   std::vector<CFGBlock *> Successors;
   std::vector<CFGBlock *> Predecessors;
 

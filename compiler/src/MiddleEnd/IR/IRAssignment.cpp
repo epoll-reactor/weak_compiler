@@ -14,13 +14,16 @@ using namespace weak::frontEnd;
 namespace weak {
 namespace middleEnd {
 
-IRAssignment::IRAssignment(ASTNode *TheVariable, ASTNode *TheOperand)
-    : IRNode(IRNode::ASSIGN), Variable(static_cast<ASTSymbol *>(TheVariable)),
-      Operand(TheOperand) {}
+IRAssignment::IRAssignment(frontEnd::ASTNode *TheVariable,
+                           ASTNode *TheOperandView)
+    : IRNode(IRNode::ASSIGN), Variable(TheVariable),
+      OperandView(TheOperandView) {}
+
+IRAssignment::~IRAssignment() { delete Variable; }
 
 std::string IRAssignment::Dump() const {
   assert(Variable);
-  assert(Operand);
+  assert(OperandView);
   std::ostringstream OutStream;
   {
     IRNodePrinter Printer(Variable, OutStream);
@@ -28,7 +31,7 @@ std::string IRAssignment::Dump() const {
   }
   OutStream << " = ";
   {
-    IRNodePrinter Printer(Operand, OutStream);
+    IRNodePrinter Printer(OperandView, OutStream);
     Printer.Print();
   }
 
@@ -37,9 +40,11 @@ std::string IRAssignment::Dump() const {
 
 void IRAssignment::Accept(IRVisitor *Visitor) { Visitor->Visit(this); }
 
-frontEnd::ASTSymbol *IRAssignment::GetVariable() const { return Variable; }
+frontEnd::ASTSymbol *IRAssignment::GetVariable() const {
+  return static_cast<ASTSymbol *>(Variable);
+}
 
-frontEnd::ASTNode *IRAssignment::GetOperand() const { return Operand; }
+frontEnd::ASTNode *IRAssignment::GetOperand() const { return OperandView; }
 
 } // namespace middleEnd
 } // namespace weak

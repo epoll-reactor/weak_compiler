@@ -13,9 +13,15 @@
 namespace weak {
 namespace middleEnd {
 
+/*!
+ * Assignment instruction. Holds ownership of its variable (actually symbol).
+ */
 class IRAssignment : public IRNode {
 public:
-  IRAssignment(frontEnd::ASTNode *TheVariable, frontEnd::ASTNode *TheOperand);
+  IRAssignment(frontEnd::ASTNode *TheVariable,
+               frontEnd::ASTNode *TheOperandView);
+
+  ~IRAssignment();
 
   std::string Dump() const override;
 
@@ -25,8 +31,8 @@ public:
   frontEnd::ASTNode *GetOperand() const;
 
 private:
-  frontEnd::ASTSymbol *Variable;
-  frontEnd::ASTNode *Operand;
+  frontEnd::ASTNode *Variable;
+  frontEnd::ASTNode *OperandView;
 };
 
 } // namespace middleEnd

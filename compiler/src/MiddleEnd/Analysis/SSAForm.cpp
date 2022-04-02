@@ -25,7 +25,7 @@ void SSAForm::TraverseWithRespectToVariable(CFGBlock *Block,
   for (const auto &Stmt : Block->Statements) {
     switch (Stmt->Type) {
     case IRNode::PHI: {
-      IRPhiNode *Phi = static_cast<IRPhiNode *>(Stmt.get());
+      IRPhiNode *Phi = static_cast<IRPhiNode *>(Stmt);
       if (Phi->Variable->GetName() == Variable) {
         Phi->Variable->SetSSAIndex(CurrentSSAIndex);
         IndicesStack.push(CurrentSSAIndex++);
@@ -33,13 +33,13 @@ void SSAForm::TraverseWithRespectToVariable(CFGBlock *Block,
       break;
     }
     case IRNode::BRANCH: {
-      for (auto *Var : VariableSearcher.AllVarsUsedInStatement(Stmt.get()))
+      for (auto *Var : VariableSearcher.AllVarsUsedInStatement(Stmt))
         if (Var->GetName() == Variable)
           Var->SetSSAIndex(IndicesStack.top());
       break;
     }
     case IRNode::ASSIGN: {
-      IRAssignment *Assignment = static_cast<IRAssignment *>(Stmt.get());
+      IRAssignment *Assignment = static_cast<IRAssignment *>(Stmt);
       if (Assignment->GetVariable()->GetName() == Variable) {
         Assignment->GetVariable()->SetSSAIndex(CurrentSSAIndex);
         IndicesStack.push(CurrentSSAIndex++);
@@ -55,11 +55,11 @@ void SSAForm::TraverseWithRespectToVariable(CFGBlock *Block,
     for (const auto &Stmt : Succ->Statements) {
       if (Stmt->Type != IRNode::PHI)
         continue;
-      auto *Phi = static_cast<IRPhiNode *>(Stmt.get());
-      if (Phi->BlockToVarMap.count(Block) &&
-          Phi->BlockToVarMap[Block]->GetName() == Variable &&
+      auto *Phi = static_cast<IRPhiNode *>(Stmt);
+      if (Phi->VariableMap.count(Block) &&
+          Phi->VariableMap[Block]->GetName() == Variable &&
           !IndicesStack.empty())
-        Phi->BlockToVarMap[Block]->SetSSAIndex(IndicesStack.top());
+        Phi->VariableMap[Block]->SetSSAIndex(IndicesStack.top());
     }
   }
 
@@ -69,7 +69,7 @@ void SSAForm::TraverseWithRespectToVariable(CFGBlock *Block,
   for (const auto &Stmt : Block->Statements) {
     if (Stmt->Type != IRNode::ASSIGN)
       continue;
-    IRAssignment *Assignment = static_cast<IRAssignment *>(Stmt.get());
+    IRAssignment *Assignment = static_cast<IRAssignment *>(Stmt);
     if (Assignment->GetVariable()->GetName() == Variable)
       IndicesStack.pop();
   }

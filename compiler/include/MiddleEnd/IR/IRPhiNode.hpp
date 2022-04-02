@@ -15,17 +15,23 @@
 namespace weak {
 namespace middleEnd {
 
+/*!
+ * Phi node. Views its CFG blocks, holds ownership of its symbols.
+ */
 class IRPhiNode : public IRNode {
 public:
   IRPhiNode(std::unique_ptr<frontEnd::ASTSymbol> &&TheVariable,
             std::map<CFGBlock *, frontEnd::ASTSymbol *> VarMap);
 
+  ~IRPhiNode() override;
+
   std::string Dump() const override;
 
-  void Accept(IRVisitor *) override;
+  void Accept(IRVisitor *) override {}
 
   std::unique_ptr<frontEnd::ASTSymbol> Variable;
-  std::map<CFGBlock *, frontEnd::ASTSymbol *> BlockToVarMap;
+
+  std::map<CFGBlock *, frontEnd::ASTSymbol *> VariableMap;
 };
 
 } // namespace middleEnd

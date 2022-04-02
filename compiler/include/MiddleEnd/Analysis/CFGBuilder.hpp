@@ -22,7 +22,6 @@ public:
   void Visit(const frontEnd::ASTBooleanLiteral *) const override {}
   void Visit(const frontEnd::ASTBreakStmt *) const override {}
   void Visit(const frontEnd::ASTContinueStmt *) const override {}
-  void Visit(const frontEnd::ASTDoWhileStmt *) const override {}
   void Visit(const frontEnd::ASTFloatingPointLiteral *) const override {}
   void Visit(const frontEnd::ASTForStmt *) const override {}
   void Visit(const frontEnd::ASTFunctionCall *) const override {}
@@ -38,11 +37,11 @@ public:
   void Visit(const frontEnd::ASTIfStmt *) const override;
   void Visit(const frontEnd::ASTBinaryOperator *) const override;
   void Visit(const frontEnd::ASTWhileStmt *) const override;
+  void Visit(const frontEnd::ASTDoWhileStmt *) const override;
 
-  void Traverse(frontEnd::ASTNode *) const;
   void CommitSSAFormBuilding();
 
-  CFG *GetCFG() const;
+  CFG &GetCFG() const;
 
   mutable std::map<std::string, std::set<CFGBlock *>> BlocksForVariable;
 
@@ -55,7 +54,7 @@ private:
   void InsertPhiNodes();
   void BuildSSAForm();
 
-  mutable std::unique_ptr<CFG> CFGraph;
+  mutable CFG CFGraph;
 
   mutable CFGBlock *CurrentBlock;
 };

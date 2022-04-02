@@ -9,6 +9,11 @@
 namespace weak {
 namespace middleEnd {
 
+CFG::~CFG() {
+  for (CFGBlock *Block : Blocks)
+    delete Block;
+}
+
 void CFG::AddBlock(CFGBlock *Block) { Blocks.push_back(Block); }
 
 std::vector<CFGBlock *> &CFG::GetBlocks() { return Blocks; }
@@ -58,9 +63,9 @@ void CFG::ComputeDominatorTree() {
         Jt->Dominator = It;
   }
 
-  for (auto *V : Blocks) {
-    if (CFGBlock *Dominator = V->Dominator)
-      Dominator->DominatingBlocks.push_back(V);
+  for (const auto &Block : Blocks) {
+    if (CFGBlock *Dominator = Block->Dominator)
+      Dominator->DominatingBlocks.push_back(Block);
   }
 }
 
@@ -77,7 +82,7 @@ void CFG::ComputeBaseDominanceFrontier() {
   if (!DominanceFrontier.empty())
     return;
 
-  for (auto *Block : Blocks)
+  for (const auto &Block : Blocks)
     DominanceFrontier[Block];
 
   for (auto *Block : InPostOrder) {
@@ -142,7 +147,7 @@ std::string weak::middleEnd::CFGToDot(CFG *Graph) {
   OutGraph += "digraph G {\n";
   OutGraph += "  node[shape=box];\n";
 
-  for (auto *Block : Graph->GetBlocks()) {
+  for (const auto &Block : Graph->GetBlocks()) {
     for (auto *Successor : Block->Successors) {
       auto Dump = [](CFGBlock *B) {
         std::string Result;

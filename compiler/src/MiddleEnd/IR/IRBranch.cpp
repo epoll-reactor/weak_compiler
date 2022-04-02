@@ -11,33 +11,33 @@
 namespace weak {
 namespace middleEnd {
 
-IRBranch::IRBranch(frontEnd::ASTNode *Cond, CFGBlock *TrueBranch,
-                   CFGBlock *FalseBranch)
-    : IRBranch(Cond, TrueBranch, FalseBranch, true) {}
+IRBranch::IRBranch(frontEnd::ASTNode *TheConditionView, CFGBlock *TheTrueBranch,
+                   CFGBlock *TheFalseBranch)
+    : IRBranch(TheConditionView, TheTrueBranch, TheFalseBranch, true) {}
 
 IRBranch::IRBranch(CFGBlock *Block)
     : IRBranch(nullptr, Block, nullptr, false) {}
 
-IRBranch::IRBranch(frontEnd::ASTNode *Cond, CFGBlock *FirstBranch,
-                   CFGBlock *SecondBranch, bool IsCond)
+IRBranch::IRBranch(frontEnd::ASTNode *TheConditionView, CFGBlock *TheTrueBranch,
+                   CFGBlock *TheFalseBranch, bool IsCond)
     : IRNode(IRNode::BRANCH), IsConditional(IsCond),
-      FirstBranchBlock(FirstBranch), SecondBranchBlock(SecondBranch),
-      Condition(Cond) {}
+      ConditionView(TheConditionView), TrueBranch(TheTrueBranch),
+      FalseBranch(TheFalseBranch) {}
 
 std::string IRBranch::Dump() const {
   std::ostringstream OutStream;
   OutStream << "Branch";
 
-  if (IsConditional || Condition) {
+  if (IsConditional || ConditionView) {
     OutStream << "(";
-    IRNodePrinter Printer(Condition, OutStream);
+    IRNodePrinter Printer(ConditionView, OutStream);
     Printer.Print();
     OutStream << ")";
   }
-  OutStream << " on true to " << FirstBranchBlock->ToString();
+  OutStream << " on true to " << TrueBranch->ToString();
 
-  if (IsConditional && SecondBranchBlock) {
-    OutStream << ", on false to " << SecondBranchBlock->ToString();
+  if (IsConditional && FalseBranch) {
+    OutStream << ", on false to " << FalseBranch->ToString();
   }
 
   return OutStream.str();

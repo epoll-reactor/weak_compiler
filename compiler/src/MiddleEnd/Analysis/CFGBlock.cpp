@@ -13,13 +13,16 @@ namespace middleEnd {
 CFGBlock::CFGBlock(int TheIndex, std::string TheLabel)
     : Index(TheIndex), Label(std::move(TheLabel)) {}
 
+CFGBlock::~CFGBlock() {
+  for (IRNode *Statement : Statements)
+    delete Statement;
+}
+
 std::string CFGBlock::ToString() const {
   return "CFG#" + std::to_string(Index) + "(" + Label + ")";
 }
 
-void CFGBlock::AddStatement(std::unique_ptr<IRNode> &&Stmt) {
-  Statements.push_back(std::move(Stmt));
-}
+void CFGBlock::AddStatement(IRNode *Stmt) { Statements.push_back(Stmt); }
 
 void CFGBlock::AddLink(CFGBlock *Predecessor, CFGBlock *Successor) {
   if (auto &PredRef = Successor->Predecessors;

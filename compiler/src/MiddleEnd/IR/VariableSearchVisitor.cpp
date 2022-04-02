@@ -22,8 +22,8 @@ VariableSearchVisitor::AllVarsUsedInStatement(IRNode *Stmt) {
 }
 
 void VariableSearchVisitor::Visit(const IRBranch *Stmt) const {
-  if (Stmt->Condition)
-    Stmt->Condition->Accept(this);
+  if (Stmt->ConditionView)
+    Stmt->ConditionView->Accept(this);
 }
 
 void VariableSearchVisitor::Visit(const IRAssignment *Stmt) const {
