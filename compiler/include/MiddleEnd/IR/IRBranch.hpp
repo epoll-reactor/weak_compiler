@@ -19,10 +19,13 @@ class ASTNode;
 namespace weak {
 namespace middleEnd {
 
+/*!
+ * Holds ownership of true and false branches, views AST condition node.
+ */
 class IRBranch : public IRNode {
 public:
-  IRBranch(frontEnd::ASTNode *Cond, CFGBlock *TrueBranch,
-           CFGBlock *FalseBranch);
+  IRBranch(frontEnd::ASTNode *TheConditionView, CFGBlock *TheTrueBranch,
+           CFGBlock *TheFalseBranch);
   IRBranch(CFGBlock *Block);
 
   std::string Dump() const override;
@@ -30,13 +33,13 @@ public:
   void Accept(IRVisitor *) override;
 
   bool IsConditional;
-  CFGBlock *FirstBranchBlock;
-  CFGBlock *SecondBranchBlock;
-  frontEnd::ASTNode *Condition;
+  frontEnd::ASTNode *ConditionView;
+  CFGBlock *TrueBranch;
+  CFGBlock *FalseBranch;
 
 private:
-  IRBranch(frontEnd::ASTNode *Cond, CFGBlock *FirstBranch,
-           CFGBlock *SecondBranch, bool IsCond);
+  IRBranch(frontEnd::ASTNode *Cond, CFGBlock *TheTrueBranch,
+           CFGBlock *TheFalseBranch, bool IsCond);
 };
 
 } // namespace middleEnd

@@ -14,12 +14,17 @@ namespace middleEnd {
 IRPhiNode::IRPhiNode(std::unique_ptr<frontEnd::ASTSymbol> &&TheVariable,
                      std::map<CFGBlock *, frontEnd::ASTSymbol *> VarMap)
     : IRNode(IRNode::PHI), Variable(std::move(TheVariable)),
-      BlockToVarMap(std::move(VarMap)) {}
+      VariableMap(std::move(VarMap)) {}
+
+IRPhiNode::~IRPhiNode() {
+  for ([[maybe_unused]] auto [NodeView, Symbol] : VariableMap)
+    delete Symbol;
+}
 
 std::string IRPhiNode::Dump() const {
   std::string Result;
 
-  for (const auto &[Block, Symbol] : BlockToVarMap)
+  for (const auto &[Block, Symbol] : VariableMap)
     Result += Block->ToString() + ":" + Symbol->GetName() + ", ";
 
   if (!Result.empty()) {
@@ -29,8 +34,6 @@ std::string IRPhiNode::Dump() const {
 
   return Variable->GetName() + " = φ(" + Result + ")";
 }
-
-void IRPhiNode::Accept(IRVisitor *) {}
 
 } // namespace middleEnd
 } // namespace weak
