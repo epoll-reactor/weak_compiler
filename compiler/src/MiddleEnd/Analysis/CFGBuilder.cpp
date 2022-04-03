@@ -9,6 +9,7 @@
 #include "FrontEnd/AST/ASTCompoundStmt.hpp"
 #include "FrontEnd/AST/ASTDoWhileStmt.hpp"
 #include "FrontEnd/AST/ASTFunctionDecl.hpp"
+#include "FrontEnd/AST/ASTForStmt.hpp"
 #include "FrontEnd/AST/ASTIfStmt.hpp"
 #include "FrontEnd/AST/ASTPrettyPrint.hpp"
 #include "FrontEnd/AST/ASTSymbol.hpp"
@@ -139,6 +140,30 @@ void CFGBuilder::Visit(const frontEnd::ASTDoWhileStmt *Stmt) const {
 
   CurrentBlock = BodyBlock;
   Stmt->GetBody()->Accept(this);
+  CFGBlock::AddLink(CurrentBlock, ConditionBlock);
+  CurrentBlock = MergeBlock;
+}
+
+void CFGBuilder::Visit(const frontEnd::ASTForStmt *Stmt) const {
+  CFGBlock *InitBlock = MakeBlock("Init");
+  CFGBlock *ConditionBlock = MakeBlock("Branch");
+  CFGBlock *BodyBlock = MakeBlock("Body"); ///< Increment here.
+  CFGBlock *MergeBlock = MakeBlock("MergeBlock");
+
+  CFGBlock::AddLink(CurrentBlock, InitBlock);
+  CFGBlock::AddLink(InitBlock, ConditionBlock);
+  CFGBlock::AddLink(ConditionBlock, BodyBlock);
+  CFGBlock::AddLink(ConditionBlock, MergeBlock);
+
+  ConditionBlock->AddStatement(new IRBranch(Stmt->GetCondition().get(), BodyBlock, MergeBlock));
+
+  CurrentBlock = InitBlock;
+  Stmt->GetInit()->Accept(this);
+
+  CurrentBlock = BodyBlock;
+  Stmt->GetBody()->Accept(this);
+  Stmt->GetIncrement()->Accept(this);
+
   CFGBlock::AddLink(CurrentBlock, ConditionBlock);
   CurrentBlock = MergeBlock;
 }
