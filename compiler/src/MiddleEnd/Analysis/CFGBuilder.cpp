@@ -24,23 +24,26 @@ using namespace weak::frontEnd;
 namespace weak {
 namespace middleEnd {
 
-CFGBuilder::CFGBuilder() : CFGraph(), CurrentBlock(CreateBlock("Entry")) {}
+CFGBuilder::CFGBuilder(
+    const std::vector<std::unique_ptr<frontEnd::ASTNode>> &TheStatements)
+    : Statements(TheStatements), CFGraph(), CurrentBlock(MakeBlock("Entry")),
+      BlocksForVariable() {}
 
-CFGBlock *CFGBuilder::CreateBlock(std::string Label) const {
+void CFGBuilder::Build() {
+  for (const auto &Expression : Statements)
+    Expression->Accept(this);
+  BuildSSAForm();
+}
+
+CFGBlock *CFGBuilder::MakeBlock(std::string Label) const {
   int NextIndex = static_cast<int>(CFGraph.GetBlocks().size());
   auto *Block = new CFGBlock(NextIndex, Label);
   CFGraph.AddBlock(Block);
   return Block;
 }
 
-void CFGBuilder::CreateBranch(CFGBlock *Target) const {
-  CFGBlock::AddLink(CurrentBlock, Target);
-  CurrentBlock->AddStatement(new IRBranch(Target));
-}
-
-void CFGBuilder::CreateConditionalBranch(ASTNode *Condition,
-                                         CFGBlock *ThenBlock,
-                                         CFGBlock *ElseBlock) const {
+void CFGBuilder::MakeBranch(ASTNode *Condition, CFGBlock *ThenBlock,
+                            CFGBlock *ElseBlock) const {
   CFGBlock::AddLink(CurrentBlock, ThenBlock);
   CFGBlock::AddLink(CurrentBlock, ElseBlock);
   CurrentBlock->AddStatement(new IRBranch(Condition, ThenBlock, ElseBlock));
@@ -63,13 +66,11 @@ void CFGBuilder::Visit(const frontEnd::ASTVarDecl *Stmt) const {
 
 void CFGBuilder::Visit(const frontEnd::ASTBinaryOperator *Stmt) const {
   if (Stmt->GetOperation() == TokenType::ASSIGN) {
-    BlocksForVariable[static_cast<const ASTSymbol *>(Stmt->GetLHS().get())
-                          ->GetName()]
-        .insert(CurrentBlock);
-    CurrentBlock->AddStatement(new IRAssignment(
-        new ASTSymbol(
-            static_cast<const ASTSymbol *>(Stmt->GetLHS().get())->GetName()),
-        Stmt->GetRHS().get()));
+    const ASTSymbol *Symbol =
+        static_cast<const ASTSymbol *>(Stmt->GetLHS().get());
+    BlocksForVariable[Symbol->GetName()].insert(CurrentBlock);
+    CurrentBlock->AddStatement(
+        new IRAssignment(new ASTSymbol(*Symbol), Stmt->GetRHS().get()));
     return;
   }
   Stmt->GetLHS()->Accept(this);
@@ -77,20 +78,19 @@ void CFGBuilder::Visit(const frontEnd::ASTBinaryOperator *Stmt) const {
 }
 
 void CFGBuilder::Visit(const frontEnd::ASTIfStmt *Stmt) const {
-  CFGBlock *ConditionBlock = CreateBlock("Branch");
-  CFGBlock *ThenBlock = CreateBlock("Then");
-  CFGBlock *MergeBlock = CreateBlock("MergeBlock");
+  CFGBlock *ConditionBlock = MakeBlock("Branch");
+  CFGBlock *ThenBlock = MakeBlock("Then");
+  CFGBlock *MergeBlock = MakeBlock("MergeBlock");
   CFGBlock *ElseBlock = nullptr;
 
   CFGBlock::AddLink(CurrentBlock, ConditionBlock);
   CurrentBlock = ConditionBlock;
 
-  if (!Stmt->GetElseBody())
-    CreateConditionalBranch(Stmt->GetCondition().get(), ThenBlock, MergeBlock);
-  else {
-    ElseBlock = CreateBlock("Else");
-    CreateConditionalBranch(Stmt->GetCondition().get(), ThenBlock, ElseBlock);
-  }
+  if (Stmt->GetElseBody()) {
+    ElseBlock = MakeBlock("Else");
+    MakeBranch(Stmt->GetCondition().get(), ThenBlock, ElseBlock);
+  } else
+    MakeBranch(Stmt->GetCondition().get(), ThenBlock, MergeBlock);
 
   CurrentBlock = ThenBlock;
   Stmt->GetThenBody()->Accept(this);
@@ -101,17 +101,16 @@ void CFGBuilder::Visit(const frontEnd::ASTIfStmt *Stmt) const {
     CFGBlock::AddLink(ConditionBlock, ElseBlock);
     CurrentBlock = ElseBlock;
     Stmt->GetElseBody()->Accept(this);
-  } else {
+  } else
     CFGBlock::AddLink(CurrentBlock, MergeBlock);
-  }
 
   CurrentBlock = MergeBlock;
 }
 
 void CFGBuilder::Visit(const frontEnd::ASTWhileStmt *Stmt) const {
-  CFGBlock *ConditionBlock = CreateBlock("Branch");
-  CFGBlock *BodyBlock = CreateBlock("Body");
-  CFGBlock *MergeBlock = CreateBlock("MergeBlock");
+  CFGBlock *ConditionBlock = MakeBlock("Branch");
+  CFGBlock *BodyBlock = MakeBlock("Body");
+  CFGBlock *MergeBlock = MakeBlock("MergeBlock");
 
   CFGBlock::AddLink(CurrentBlock, ConditionBlock);
   CFGBlock::AddLink(ConditionBlock, BodyBlock);
@@ -127,9 +126,9 @@ void CFGBuilder::Visit(const frontEnd::ASTWhileStmt *Stmt) const {
 }
 
 void CFGBuilder::Visit(const frontEnd::ASTDoWhileStmt *Stmt) const {
-  CFGBlock *ConditionBlock = CreateBlock("Branch");
-  CFGBlock *BodyBlock = CreateBlock("Body");
-  CFGBlock *MergeBlock = CreateBlock("MergeBlock");
+  CFGBlock *ConditionBlock = MakeBlock("Branch");
+  CFGBlock *BodyBlock = MakeBlock("Body");
+  CFGBlock *MergeBlock = MakeBlock("MergeBlock");
 
   CFGBlock::AddLink(CurrentBlock, BodyBlock);
   CFGBlock::AddLink(ConditionBlock, BodyBlock);
@@ -142,12 +141,6 @@ void CFGBuilder::Visit(const frontEnd::ASTDoWhileStmt *Stmt) const {
   Stmt->GetBody()->Accept(this);
   CFGBlock::AddLink(CurrentBlock, ConditionBlock);
   CurrentBlock = MergeBlock;
-}
-
-void CFGBuilder::CommitSSAFormBuilding() {
-  CFGraph.CommitAllChanges();
-  InsertPhiNodes();
-  BuildSSAForm();
 }
 
 void CFGBuilder::InsertPhiNodes() {
@@ -166,9 +159,12 @@ void CFGBuilder::InsertPhiNodes() {
 }
 
 void CFGBuilder::BuildSSAForm() {
-  SSAForm Builder(&CFGraph);
+  CFGraph.CommitAllChanges();
+  InsertPhiNodes();
+
+  SSAForm SSABuilder(&CFGraph);
   for (const auto &[Variable, _] : BlocksForVariable)
-    Builder.VariableToSSA(Variable);
+    SSABuilder.Compute(Variable);
 }
 
 CFG &CFGBuilder::GetCFG() const { return CFGraph; }

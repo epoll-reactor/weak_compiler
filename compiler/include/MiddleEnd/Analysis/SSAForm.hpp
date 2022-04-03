@@ -18,17 +18,15 @@ class SSAForm {
 public:
   SSAForm(CFG *);
 
-  void VariableToSSA(std::string_view Variable);
+  void Compute(std::string_view Variable);
 
 private:
-  int CurrentSSAIndex;
-  std::stack<int> IndicesStack;
-  VariableSearchVisitor VariableSearcher;
-
-  void TraverseWithRespectToVariable(CFGBlock *Block,
-                                     std::string_view Variable);
+  void Compute(CFGBlock *Block, std::string_view Variable);
 
   CFG *CFGraph;
+  int SSAIndex;
+  std::stack<int> IndicesStack;
+  VariableSearchVisitor VariableSearcher;
 };
 
 } // namespace middleEnd
