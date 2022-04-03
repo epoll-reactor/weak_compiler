@@ -79,13 +79,13 @@ void CFGBuilder::Visit(const frontEnd::ASTBinaryOperator *Stmt) const {
 }
 
 void CFGBuilder::Visit(const frontEnd::ASTIfStmt *Stmt) const {
-  CFGBlock *ConditionBlock = MakeBlock("Branch");
+  CFGBlock *BranchBlock = MakeBlock("Branch");
   CFGBlock *ThenBlock = MakeBlock("Then");
   CFGBlock *MergeBlock = MakeBlock("MergeBlock");
   CFGBlock *ElseBlock = nullptr;
 
-  CFGBlock::AddLink(CurrentBlock, ConditionBlock);
-  CurrentBlock = ConditionBlock;
+  CFGBlock::AddLink(CurrentBlock, BranchBlock);
+  CurrentBlock = BranchBlock;
 
   if (Stmt->GetElseBody()) {
     ElseBlock = MakeBlock("Else");
@@ -99,7 +99,7 @@ void CFGBuilder::Visit(const frontEnd::ASTIfStmt *Stmt) const {
   if (Stmt->GetElseBody()) {
     CFGBlock::AddLink(ThenBlock, MergeBlock);
     CFGBlock::AddLink(ElseBlock, MergeBlock);
-    CFGBlock::AddLink(ConditionBlock, ElseBlock);
+    CFGBlock::AddLink(BranchBlock, ElseBlock);
     CurrentBlock = ElseBlock;
     Stmt->GetElseBody()->Accept(this);
   } else
@@ -109,53 +109,53 @@ void CFGBuilder::Visit(const frontEnd::ASTIfStmt *Stmt) const {
 }
 
 void CFGBuilder::Visit(const frontEnd::ASTWhileStmt *Stmt) const {
-  CFGBlock *ConditionBlock = MakeBlock("Branch");
+  CFGBlock *BranchBlock = MakeBlock("Branch");
   CFGBlock *BodyBlock = MakeBlock("Body");
   CFGBlock *MergeBlock = MakeBlock("MergeBlock");
 
-  CFGBlock::AddLink(CurrentBlock, ConditionBlock);
-  CFGBlock::AddLink(ConditionBlock, BodyBlock);
-  CFGBlock::AddLink(ConditionBlock, MergeBlock);
+  CFGBlock::AddLink(CurrentBlock, BranchBlock);
+  CFGBlock::AddLink(BranchBlock, BodyBlock);
+  CFGBlock::AddLink(BranchBlock, MergeBlock);
 
-  ConditionBlock->AddStatement(
+  BranchBlock->AddStatement(
       new IRBranch(Stmt->GetCondition().get(), BodyBlock, MergeBlock));
 
   CurrentBlock = BodyBlock;
   Stmt->GetBody()->Accept(this);
-  CFGBlock::AddLink(CurrentBlock, ConditionBlock);
+  CFGBlock::AddLink(CurrentBlock, BranchBlock);
   CurrentBlock = MergeBlock;
 }
 
 void CFGBuilder::Visit(const frontEnd::ASTDoWhileStmt *Stmt) const {
-  CFGBlock *ConditionBlock = MakeBlock("Branch");
+  CFGBlock *BranchBlock = MakeBlock("Branch");
   CFGBlock *BodyBlock = MakeBlock("Body");
   CFGBlock *MergeBlock = MakeBlock("MergeBlock");
 
   CFGBlock::AddLink(CurrentBlock, BodyBlock);
-  CFGBlock::AddLink(ConditionBlock, BodyBlock);
-  CFGBlock::AddLink(ConditionBlock, MergeBlock);
+  CFGBlock::AddLink(BranchBlock, BodyBlock);
+  CFGBlock::AddLink(BranchBlock, MergeBlock);
 
-  ConditionBlock->AddStatement(
+  BranchBlock->AddStatement(
       new IRBranch(Stmt->GetCondition().get(), BodyBlock, MergeBlock));
 
   CurrentBlock = BodyBlock;
   Stmt->GetBody()->Accept(this);
-  CFGBlock::AddLink(CurrentBlock, ConditionBlock);
+  CFGBlock::AddLink(CurrentBlock, BranchBlock);
   CurrentBlock = MergeBlock;
 }
 
 void CFGBuilder::Visit(const frontEnd::ASTForStmt *Stmt) const {
   CFGBlock *InitBlock = MakeBlock("Init");
-  CFGBlock *ConditionBlock = MakeBlock("Branch");
+  CFGBlock *BranchBlock = MakeBlock("Branch");
   CFGBlock *BodyBlock = MakeBlock("Body"); ///< Increment here.
   CFGBlock *MergeBlock = MakeBlock("MergeBlock");
 
   CFGBlock::AddLink(CurrentBlock, InitBlock);
-  CFGBlock::AddLink(InitBlock, ConditionBlock);
-  CFGBlock::AddLink(ConditionBlock, BodyBlock);
-  CFGBlock::AddLink(ConditionBlock, MergeBlock);
+  CFGBlock::AddLink(InitBlock, BranchBlock);
+  CFGBlock::AddLink(BranchBlock, BodyBlock);
+  CFGBlock::AddLink(BranchBlock, MergeBlock);
 
-  ConditionBlock->AddStatement(new IRBranch(Stmt->GetCondition().get(), BodyBlock, MergeBlock));
+  BranchBlock->AddStatement(new IRBranch(Stmt->GetCondition().get(), BodyBlock, MergeBlock));
 
   CurrentBlock = InitBlock;
   Stmt->GetInit()->Accept(this);
@@ -164,7 +164,7 @@ void CFGBuilder::Visit(const frontEnd::ASTForStmt *Stmt) const {
   Stmt->GetBody()->Accept(this);
   Stmt->GetIncrement()->Accept(this);
 
-  CFGBlock::AddLink(CurrentBlock, ConditionBlock);
+  CFGBlock::AddLink(CurrentBlock, BranchBlock);
   CurrentBlock = MergeBlock;
 }
 
