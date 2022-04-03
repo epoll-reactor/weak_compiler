@@ -32,7 +32,7 @@ std::string IRPhiNode::Dump() const {
     Result.pop_back();
   }
 
-  return Variable->GetName() + " = φ(" + Result + ")";
+  return Variable->GetSSAName() + " = φ(" + Result + ")";
 }
 
 } // namespace middleEnd
