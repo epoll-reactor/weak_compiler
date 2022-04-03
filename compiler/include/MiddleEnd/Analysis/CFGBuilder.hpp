@@ -28,7 +28,6 @@ private:
   void Visit(const frontEnd::ASTBreakStmt *) const override {}
   void Visit(const frontEnd::ASTContinueStmt *) const override {}
   void Visit(const frontEnd::ASTFloatingPointLiteral *) const override {}
-  void Visit(const frontEnd::ASTForStmt *) const override {}
   void Visit(const frontEnd::ASTFunctionCall *) const override {}
   void Visit(const frontEnd::ASTSymbol *) const override {}
   void Visit(const frontEnd::ASTIntegerLiteral *) const override {}
@@ -43,6 +42,7 @@ private:
   void Visit(const frontEnd::ASTBinaryOperator *) const override;
   void Visit(const frontEnd::ASTWhileStmt *) const override;
   void Visit(const frontEnd::ASTDoWhileStmt *) const override;
+  void Visit(const frontEnd::ASTForStmt *) const override;
 
   CFGBlock *MakeBlock(std::string Label) const;
   void MakeBranch(frontEnd::ASTNode *Condition, CFGBlock *ThenBlock,
