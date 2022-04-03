@@ -20,14 +20,8 @@ static void CreateCFG(std::string_view String) {
   Parser Parse(&*Tokens.begin(), &*Tokens.end());
   auto AST = Parse.Parse();
 
-//  for (const auto &Stmt : AST->GetStmts())
-//    ASTPrettyPrint(Stmt);
-
-  CFGBuilder Builder;
-  for (const auto &Expr : AST->GetStmts())
-    Expr->Accept(&Builder);
-
-  Builder.CommitSSAFormBuilding();
+  CFGBuilder Builder(AST->GetStmts());
+  Builder.Build();
 
   std::ofstream("CFG.gv") << CFGToDot(&Builder.GetCFG());
   system("dot -Tjpg CFG.gv -o CFG.jpg && sxiv CFG.jpg");

@@ -14,35 +14,34 @@ namespace middleEnd {
 
 SSAForm::SSAForm(CFG *Graph) : CFGraph(Graph) {}
 
-void SSAForm::VariableToSSA(std::string_view Variable) {
-  CurrentSSAIndex = 0;
+void SSAForm::Compute(std::string_view Variable) {
+  SSAIndex = 0;
   std::stack<int>().swap(IndicesStack);
-  TraverseWithRespectToVariable(CFGraph->GetBlocks().front(), Variable);
+  Compute(CFGraph->GetBlocks().front(), Variable);
 }
 
-void SSAForm::TraverseWithRespectToVariable(CFGBlock *Block,
-                                            std::string_view Variable) {
+void SSAForm::Compute(CFGBlock *Block, std::string_view Variable) {
   for (const auto &Stmt : Block->Statements) {
     switch (Stmt->Type) {
     case IRNode::PHI: {
-      IRPhiNode *Phi = static_cast<IRPhiNode *>(Stmt);
-      if (Phi->Variable->GetName() == Variable) {
-        Phi->Variable->SetSSAIndex(CurrentSSAIndex);
-        IndicesStack.push(CurrentSSAIndex++);
+      const auto &Symbol = (static_cast<IRPhiNode *>(Stmt))->Variable;
+      if (Symbol->GetName() == Variable) {
+        Symbol->SetSSAIndex(SSAIndex);
+        IndicesStack.push(SSAIndex++);
       }
       break;
     }
     case IRNode::BRANCH: {
-      for (auto *Var : VariableSearcher.AllVarsUsedInStatement(Stmt))
-        if (Var->GetName() == Variable)
-          Var->SetSSAIndex(IndicesStack.top());
+      for (auto *Symbol : VariableSearcher.AllVarsUsedInStatement(Stmt))
+        if (Symbol->GetName() == Variable)
+          Symbol->SetSSAIndex(IndicesStack.top());
       break;
     }
     case IRNode::ASSIGN: {
-      IRAssignment *Assignment = static_cast<IRAssignment *>(Stmt);
-      if (Assignment->GetVariable()->GetName() == Variable) {
-        Assignment->GetVariable()->SetSSAIndex(CurrentSSAIndex);
-        IndicesStack.push(CurrentSSAIndex++);
+      auto *Symbol = (static_cast<IRAssignment *>(Stmt))->GetVariable();
+      if (Symbol->GetName() == Variable) {
+        Symbol->SetSSAIndex(SSAIndex);
+        IndicesStack.push(SSAIndex++);
       }
       break;
     }
@@ -51,26 +50,26 @@ void SSAForm::TraverseWithRespectToVariable(CFGBlock *Block,
     }
   }
 
-  for (auto *Succ : Block->Successors) {
-    for (const auto &Stmt : Succ->Statements) {
+  for (auto *Successor : Block->Successors) {
+    for (const auto &Stmt : Successor->Statements) {
       if (Stmt->Type != IRNode::PHI)
         continue;
-      auto *Phi = static_cast<IRPhiNode *>(Stmt);
-      if (Phi->VariableMap.count(Block) &&
-          Phi->VariableMap[Block]->GetName() == Variable &&
+      auto *PhiNode = static_cast<IRPhiNode *>(Stmt);
+      if (PhiNode->VariableMap.count(Block) &&
+          PhiNode->VariableMap[Block]->GetName() == Variable &&
           !IndicesStack.empty())
-        Phi->VariableMap[Block]->SetSSAIndex(IndicesStack.top());
+        PhiNode->VariableMap[Block]->SetSSAIndex(IndicesStack.top());
     }
   }
 
   for (auto *Child : Block->DominatingBlocks)
-    TraverseWithRespectToVariable(Child, Variable);
+    Compute(Child, Variable);
 
   for (const auto &Stmt : Block->Statements) {
     if (Stmt->Type != IRNode::ASSIGN)
       continue;
-    IRAssignment *Assignment = static_cast<IRAssignment *>(Stmt);
-    if (Assignment->GetVariable()->GetName() == Variable)
+    auto *Symbol = (static_cast<IRAssignment *>(Stmt))->GetVariable();
+    if (Symbol->GetName() == Variable)
       IndicesStack.pop();
   }
 }

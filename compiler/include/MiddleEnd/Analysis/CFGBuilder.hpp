@@ -15,10 +15,15 @@
 namespace weak {
 namespace middleEnd {
 
-class CFGBuilder : public frontEnd::ASTVisitor {
+class CFGBuilder : private frontEnd::ASTVisitor {
 public:
-  CFGBuilder();
+  CFGBuilder(const std::vector<std::unique_ptr<frontEnd::ASTNode>> &);
 
+  void Build();
+
+  CFG &GetCFG() const;
+
+private:
   void Visit(const frontEnd::ASTBooleanLiteral *) const override {}
   void Visit(const frontEnd::ASTBreakStmt *) const override {}
   void Visit(const frontEnd::ASTContinueStmt *) const override {}
@@ -39,24 +44,20 @@ public:
   void Visit(const frontEnd::ASTWhileStmt *) const override;
   void Visit(const frontEnd::ASTDoWhileStmt *) const override;
 
-  void CommitSSAFormBuilding();
-
-  CFG &GetCFG() const;
-
-  mutable std::map<std::string, std::set<CFGBlock *>> BlocksForVariable;
-
-private:
-  CFGBlock *CreateBlock(std::string Label) const;
-  void CreateBranch(CFGBlock *Target) const;
-  void CreateConditionalBranch(frontEnd::ASTNode *Condition,
-                               CFGBlock *ThenBlock, CFGBlock *ElseBlock) const;
+  CFGBlock *MakeBlock(std::string Label) const;
+  void MakeBranch(frontEnd::ASTNode *Condition, CFGBlock *ThenBlock,
+                  CFGBlock *ElseBlock) const;
 
   void InsertPhiNodes();
   void BuildSSAForm();
 
+  const std::vector<std::unique_ptr<frontEnd::ASTNode>> &Statements;
+
   mutable CFG CFGraph;
 
   mutable CFGBlock *CurrentBlock;
+
+  mutable std::map<std::string, std::set<CFGBlock *>> BlocksForVariable;
 };
 
 } // namespace middleEnd

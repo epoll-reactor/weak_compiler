@@ -1,4 +1,4 @@
-/* VariableSearchVisitor.hpp - Recursive variable searcher in AST and IR
+/* VariableSearchVisitor.hpp - Recursive variable searcher in AST and IR.
  * statements. Copyright (C) 2022 epoll-reactor <glibcxx.chrono@gmail.com>
  *
  * This file is distributed under the MIT license.
@@ -15,9 +15,12 @@
 namespace weak {
 namespace middleEnd {
 
-/// This simply walks through AST and return founded variables.
+/// This simply walks through IR statements and return founded variables.
 class VariableSearchVisitor : private frontEnd::ASTVisitor, private IRVisitor {
 public:
+  std::set<frontEnd::ASTSymbol *> AllVarsUsedInStatement(IRNode *);
+
+private:
   void Visit(const frontEnd::ASTBooleanLiteral *) const override {}
   void Visit(const frontEnd::ASTBreakStmt *) const override {}
   void Visit(const frontEnd::ASTCompoundStmt *) const override {}
@@ -40,9 +43,6 @@ public:
   void Visit(const IRAssignment *) const override;
   void Visit(const IRBranch *) const override;
 
-  std::set<frontEnd::ASTSymbol *> AllVarsUsedInStatement(IRNode *);
-
-private:
   mutable std::set<frontEnd::ASTSymbol *> Variables;
 };
 
