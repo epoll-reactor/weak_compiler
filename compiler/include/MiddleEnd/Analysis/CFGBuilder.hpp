@@ -50,6 +50,9 @@ private:
 
   void InsertPhiNodes();
   void BuildSSAForm();
+  /// Carefully remove all empty nodes from CFG.
+  /// \todo Reindex CFG blocks numbers.
+  void ReduceGraph();
 
   const std::vector<std::unique_ptr<frontEnd::ASTNode>> &Statements;
 
