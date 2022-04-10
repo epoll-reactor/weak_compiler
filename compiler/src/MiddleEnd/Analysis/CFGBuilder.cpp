@@ -8,8 +8,8 @@
 #include "FrontEnd/AST/ASTBinaryOperator.hpp"
 #include "FrontEnd/AST/ASTCompoundStmt.hpp"
 #include "FrontEnd/AST/ASTDoWhileStmt.hpp"
-#include "FrontEnd/AST/ASTFunctionDecl.hpp"
 #include "FrontEnd/AST/ASTForStmt.hpp"
+#include "FrontEnd/AST/ASTFunctionDecl.hpp"
 #include "FrontEnd/AST/ASTIfStmt.hpp"
 #include "FrontEnd/AST/ASTPrettyPrint.hpp"
 #include "FrontEnd/AST/ASTSymbol.hpp"
@@ -19,6 +19,7 @@
 #include "MiddleEnd/IR/IRAssignment.hpp"
 #include "MiddleEnd/IR/IRBranch.hpp"
 #include "MiddleEnd/IR/IRPhiNode.hpp"
+#include <algorithm>
 
 using namespace weak::frontEnd;
 
@@ -33,6 +34,7 @@ CFGBuilder::CFGBuilder(
 void CFGBuilder::Build() {
   for (const auto &Expression : Statements)
     Expression->Accept(this);
+  ReduceGraph();
   BuildSSAForm();
 }
 
@@ -155,7 +157,8 @@ void CFGBuilder::Visit(const frontEnd::ASTForStmt *Stmt) const {
   CFGBlock::AddLink(BranchBlock, BodyBlock);
   CFGBlock::AddLink(BranchBlock, MergeBlock);
 
-  BranchBlock->AddStatement(new IRBranch(Stmt->GetCondition().get(), BodyBlock, MergeBlock));
+  BranchBlock->AddStatement(
+      new IRBranch(Stmt->GetCondition().get(), BodyBlock, MergeBlock));
 
   CurrentBlock = InitBlock;
   Stmt->GetInit()->Accept(this);
@@ -180,6 +183,36 @@ void CFGBuilder::InsertPhiNodes() {
                                 std::move(VariablesMap));
       Block->Statements.insert(Block->Statements.begin(), Phi);
     }
+  }
+}
+
+void CFGBuilder::ReduceGraph() {
+  for (auto BlockIt = CFGraph.GetBlocks().begin();
+       BlockIt != CFGraph.GetBlocks().end();) {
+    CFGBlock *Block = *BlockIt;
+
+    if (!Block->Statements.empty()) {
+      ++BlockIt;
+      continue;
+    }
+
+    auto TryRemove = [](auto &Container, CFGBlock *RemoveObject) {
+      auto Pos = std::find(Container.begin(), Container.end(), RemoveObject);
+      if (Pos != Container.end())
+        return Container.erase(Pos);
+      return Container.end();
+    };
+
+    TryRemove(Block->Predecessors.front()->Successors, Block);
+    TryRemove(Block->Successors.front()->Predecessors, Block);
+
+    if (auto RemovalPos = TryRemove(CFGraph.GetBlocks(), Block);
+        RemovalPos == CFGraph.GetBlocks().end())
+      BlockIt = RemovalPos;
+    else
+      ++BlockIt;
+
+    CFGBlock::AddLink(Block->Predecessors.front(), Block->Successors.front());
   }
 }
 
