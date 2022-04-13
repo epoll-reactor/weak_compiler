@@ -134,6 +134,9 @@ private:
 
   /// Current token to be processed.
   const Token *CurrentBufferPtr;
+
+  /// Depth of currently analyzed loop. Needed for 'break', 'continue' parsing.
+  std::size_t LoopsDepth;
 };
 
 } // namespace frontEnd
