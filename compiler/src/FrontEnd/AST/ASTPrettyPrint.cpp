@@ -33,14 +33,15 @@ namespace {
 
 class ASTPrintVisitor : public ASTVisitor {
 public:
-  ASTPrintVisitor(ASTNode *TheRootNode) : RootNode(TheRootNode), Indent(0U) {}
+  ASTPrintVisitor(ASTNode *TheRootNode, std::ostream &TheOutStream)
+      : RootNode(TheRootNode), Indent(0U), OutStream(TheOutStream) {}
 
   void Print() { RootNode->Accept(this); }
 
 private:
   void Visit(const ASTBinaryOperator *Binary) const override {
     PrintWithTextPosition("BinaryOperator", Binary, /*NewLineNeeded=*/false);
-    std::cout << TokenToString(Binary->GetOperation()) << std::endl;
+    OutStream << TokenToString(Binary->GetOperation()) << std::endl;
     Indent += 2;
 
     PrintIndent();
@@ -54,7 +55,7 @@ private:
 
   void Visit(const ASTBooleanLiteral *Boolean) const override {
     PrintWithTextPosition("BooleanLiteral", Boolean, /*NewLineNeeded=*/false);
-    std::cout << std::boolalpha << Boolean->GetValue() << std::endl;
+    OutStream << std::boolalpha << Boolean->GetValue() << std::endl;
   }
 
   void Visit(const ASTBreakStmt *BreakStmt) const override {
@@ -79,7 +80,7 @@ private:
   void Visit(const ASTFloatingPointLiteral *Float) const override {
     PrintWithTextPosition("FloatingPointLiteral", Float,
                           /*NewLineNeeded=*/false);
-    std::cout << Float->GetValue() << std::endl;
+    OutStream << Float->GetValue() << std::endl;
   }
 
   void Visit(const ASTForStmt *ForStmt) const override {
@@ -170,7 +171,7 @@ private:
   void Visit(const ASTIntegerLiteral *Integer) const override {
     PrintWithTextPosition("IntegerLiteral", Integer,
                           /*NewLineNeeded*/ false);
-    std::cout << Integer->GetValue() << std::endl;
+    OutStream << Integer->GetValue() << std::endl;
   }
 
   void Visit(const ASTReturnStmt *ReturnStmt) const override {
@@ -188,22 +189,22 @@ private:
   void Visit(const ASTStringLiteral *String) const override {
     PrintWithTextPosition("StringLiteral", String,
                           /*NewLineNeeded=*/false);
-    std::cout << String->GetValue() << std::endl;
+    OutStream << String->GetValue() << std::endl;
   }
 
   void Visit(const ASTSymbol *Symbol) const override {
     PrintWithTextPosition("Symbol", Symbol,
                           /*NewLineNeeded=*/false);
-    std::cout << Symbol->GetName() << std::endl;
+    OutStream << Symbol->GetName() << std::endl;
   }
 
   void Visit(const ASTUnaryOperator *Unary) const override {
-    std::cout << (Unary->PrefixOrPostfix == ASTUnaryOperator::UnaryType::PREFIX
+    OutStream << (Unary->PrefixOrPostfix == ASTUnaryOperator::UnaryType::PREFIX
                       ? "Prefix "
                       : "Postfix ");
     PrintWithTextPosition("UnaryOperator", Unary,
                           /*NewLineNeeded=*/false);
-    std::cout << TokenToString(Unary->GetOperation()) << std::endl;
+    OutStream << TokenToString(Unary->GetOperation()) << std::endl;
     Indent += 2;
 
     PrintIndent();
@@ -214,7 +215,7 @@ private:
 
   void Visit(const ASTVarDecl *VarDecl) const override {
     PrintWithTextPosition("VarDeclStmt", VarDecl, /*NewLineNeeded=*/false);
-    std::cout << TokenToString(VarDecl->GetDataType()) << " "
+    OutStream << TokenToString(VarDecl->GetDataType()) << " "
               << VarDecl->GetSymbolName() << std::endl;
 
     if (const auto &Body = VarDecl->GetDeclareBody()) {
@@ -232,12 +233,12 @@ private:
     PrintIndent();
     PrintWithTextPosition("FunctionRetType", FunctionDecl,
                           /*NewLineNeeded=*/false);
-    std::cout << TokenToString(FunctionDecl->GetReturnType()) << std::endl;
+    OutStream << TokenToString(FunctionDecl->GetReturnType()) << std::endl;
 
     PrintIndent();
     PrintWithTextPosition("FunctionName", FunctionDecl,
                           /*NewLineNeeded=*/false);
-    std::cout << FunctionDecl->GetName() << std::endl;
+    OutStream << FunctionDecl->GetName() << std::endl;
 
     PrintIndent();
     PrintWithTextPosition("FunctionArgs", FunctionDecl,
@@ -263,7 +264,7 @@ private:
   void Visit(const ASTFunctionCall *FunctionCall) const override {
     PrintWithTextPosition("FunctionCall", FunctionCall,
                           /*NewLineNeeded=*/false);
-    std::cout << FunctionCall->GetName() << std::endl;
+    OutStream << FunctionCall->GetName() << std::endl;
 
     Indent += 2;
     PrintIndent();
@@ -334,27 +335,29 @@ private:
 
   void PrintWithTextPosition(std::string_view Label, const ASTNode *Node,
                              bool NewLineNeeded) const {
-    std::cout << Label << " <line:" << Node->GetLineNo()
+    OutStream << Label << " <line:" << Node->GetLineNo()
               << ", col:" << Node->GetColumnNo() << ">";
 
     if (NewLineNeeded)
-      std::cout << std::endl;
+      OutStream << std::endl;
     else
-      std::cout << " ";
+      OutStream << " ";
   }
 
-  void PrintIndent() const { std::cout << std::string(Indent, ' '); }
+  void PrintIndent() const { OutStream << std::string(Indent, ' '); }
 
   ASTNode *RootNode;
   mutable unsigned Indent;
+  std::ostream &OutStream;
 };
 
 } // namespace
 
 namespace weak {
 
-void frontEnd::ASTPrettyPrint(const std::unique_ptr<ASTNode> &RootNode) {
-  ASTPrintVisitor Printer(RootNode.get());
+void frontEnd::ASTPrettyPrint(const std::unique_ptr<ASTNode> &RootNode,
+                              std::ostream &OutStream) {
+  ASTPrintVisitor Printer(RootNode.get(), OutStream);
   Printer.Print();
 }
 
