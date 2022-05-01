@@ -15,7 +15,8 @@ namespace frontEnd {
 
 /// Show visual representation of Syntax Tree beginning with
 /// RootNode.
-void ASTPrettyPrint(const std::unique_ptr<ASTNode> &RootNode);
+void ASTPrettyPrint(const std::unique_ptr<ASTNode> &RootNode,
+                    std::ostream &OutStream);
 
 } // namespace frontEnd
 } // namespace weak
