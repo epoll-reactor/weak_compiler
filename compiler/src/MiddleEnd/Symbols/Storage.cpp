@@ -38,15 +38,11 @@ unsigned Storage::AddSymbol(std::string_view Name) {
                               return R.second.Name == Name;
                             });
   if (Found == Records.end()) {
-    auto CreateBuzzReference = [] {
-      return Reference(UnaryInstruction(0U, 0));
-    };
     Record Variable{/*Depth=*/CurrentScopeDepth,
                     /*Attribute=*/CurrentAttribute,
                     /*TemporaryLabel=*/0U,
                     /*Name=*/Name.data(),
-                    /*DataType=*/TokenType::NONE,
-                    /*Reference=*/CreateBuzzReference()};
+                    /*DataType=*/TokenType::NONE};
     unsigned SavedAttribute = CurrentAttribute;
     Records.emplace(CurrentAttribute++, std::move(Variable));
     return SavedAttribute;
