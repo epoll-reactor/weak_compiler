@@ -36,10 +36,10 @@ private:
   /// All from ParseType() or void.
   const Token &ParseReturnType();
 
-  /// <Data type> <id>.
+  /// {Data type} {id}.
   std::unique_ptr<ASTNode> ParseParameter();
 
-  /// (<Data type> <id> ,?)*
+  /// ({Data type} {id} ,?)*
   std::vector<std::unique_ptr<ASTNode>> ParseParameterList();
 
   /// Block of code between '{' and '}'.
