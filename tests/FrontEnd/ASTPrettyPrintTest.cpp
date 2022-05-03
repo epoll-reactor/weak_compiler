@@ -1,12 +1,18 @@
 #include "FrontEnd/AST/ASTPrettyPrint.hpp"
 #include "ASTMakeFunctions.hpp"
 #include "TestHelpers.hpp"
+#include <sstream>
+#include <algorithm>
 
 using weak::frontEnd::TokenType;
 
+void ASTPrettyPrintToStdout(const std::unique_ptr<ASTNode> &AST) {
+  ASTPrettyPrint(AST, std::cout);
+}
+
 int main() {
   SECTION(Binary) {
-    ASTPrettyPrint(MakeBinary(
+    ASTPrettyPrintToStdout(MakeBinary(
         TokenType::PLUS, MakeInteger(1),
         MakeBinary(
             TokenType::PLUS, MakeInteger(2),
@@ -17,10 +23,10 @@ int main() {
                                      TokenType::DEC, MakeFloat(123.123)),
                            MakeString("123"))))));
 
-    ASTPrettyPrint(MakeUnary(ASTUnaryOperator::UnaryType::POSTFIX,
+    ASTPrettyPrintToStdout(MakeUnary(ASTUnaryOperator::UnaryType::POSTFIX,
                              TokenType::INC, MakeString("Some text")));
 
-    ASTPrettyPrint(MakeBinary(
+    ASTPrettyPrintToStdout(MakeBinary(
         TokenType::PLUS_ASSIGN,
         MakeBinary(TokenType::PLUS_ASSIGN, MakeContinue(), MakeBreak()),
         MakeInteger(1)));
@@ -49,7 +55,7 @@ int main() {
     ElseBlockStmts.push_back(std::move(If));
     ElseBlockStmts.push_back(MakeString("Хоп хей"));
 
-    ASTPrettyPrint(MakeIf(MakeInteger(0), MakeCompound(std::move(IfBlockStmts)),
+    ASTPrettyPrintToStdout(MakeIf(MakeInteger(0), MakeCompound(std::move(IfBlockStmts)),
                           MakeCompound(std::move(ElseBlockStmts))));
   }
 
@@ -59,7 +65,7 @@ int main() {
     for (signed It = 0; It < 5; ++It)
       ForBlockStmts.push_back(MakeInteger(It));
 
-    ASTPrettyPrint(
+    ASTPrettyPrintToStdout(
         MakeFor(MakeInteger(1),
                 MakeBinary(TokenType::NEQ, MakeInteger(1), MakeInteger(2)),
                 MakeUnary(ASTUnaryOperator::UnaryType::POSTFIX, TokenType::INC,
@@ -73,7 +79,7 @@ int main() {
     for (signed It = 0; It < 5; ++It)
       WhileBlockStmts.push_back(MakeInteger(It));
 
-    ASTPrettyPrint(
+    ASTPrettyPrintToStdout(
         MakeWhile(MakeInteger(1), MakeCompound(std::move(WhileBlockStmts))));
   }
 
@@ -83,17 +89,17 @@ int main() {
     for (signed It = 0; It < 5; ++It)
       WhileBlockStmts.push_back(MakeInteger(It));
 
-    ASTPrettyPrint(
+    ASTPrettyPrintToStdout(
         MakeDoWhile(MakeCompound(std::move(WhileBlockStmts)), MakeInteger(1)));
   }
 
   SECTION(ReturnStmt) {
-    ASTPrettyPrint(MakeReturn(
+    ASTPrettyPrintToStdout(MakeReturn(
         MakeBinary(TokenType::PLUS, MakeInteger(120), MakeInteger(120))));
   }
 
   SECTION(VarDeclStmt) {
-    ASTPrettyPrint(MakeVarDecl(
+    ASTPrettyPrintToStdout(MakeVarDecl(
         TokenType::STRING, "Variable_1",
         MakeBinary(TokenType::PLUS, MakeString("First"),
                    MakeVarDecl(TokenType::STRING, "Variable_2",
@@ -107,7 +113,7 @@ int main() {
     Body.push_back(
         MakeBinary(TokenType::PLUS_ASSIGN, MakeInteger(10), MakeInteger(20)));
 
-    ASTPrettyPrint(MakeFunction(TokenType::VOID, "FunctionName",
+    ASTPrettyPrintToStdout(MakeFunction(TokenType::VOID, "FunctionName",
                                 std::move(Arguments),
                                 MakeCompound(std::move(Body))));
   }
@@ -118,6 +124,7 @@ int main() {
     Arguments.push_back(MakeString("Arg"));
     Arguments.push_back(MakeString("Arg"));
     Arguments.push_back(MakeString("Arg"));
-    ASTPrettyPrint(MakeFunctionCall("Fun", std::move(Arguments)));
+    std::ostringstream Stream;
+    ASTPrettyPrint(MakeFunctionCall("Fun", std::move(Arguments)), Stream);
   }
 }

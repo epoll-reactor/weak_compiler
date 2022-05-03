@@ -51,7 +51,7 @@ namespace frontEnd {
 
 Parser::Parser(const Token *TheBufferStart, const Token *TheBufferEnd)
     : BufferStart(TheBufferStart), BufferEnd(TheBufferEnd),
-      CurrentBufferPtr(BufferStart) {
+      CurrentBufferPtr(BufferStart), LoopsDepth(0U) {
   assert(BufferStart);
   assert(BufferEnd);
   assert(BufferStart <= BufferEnd);
@@ -203,6 +203,9 @@ std::vector<std::unique_ptr<ASTNode>> Parser::ParseParameterList() {
 }
 
 std::unique_ptr<ASTCompoundStmt> Parser::ParseBlock() {
+  if (LoopsDepth > 0)
+    return ParseIterationStmtBlock();
+
   std::vector<std::unique_ptr<ASTNode>> Statements;
 
   const Token &BeginOfBlock = Require(TokenType::OPEN_CURLY_BRACKET);
@@ -345,8 +348,12 @@ std::unique_ptr<ASTNode> Parser::ParseForStatement() {
   }
   --CurrentBufferPtr;
 
+  ++LoopsDepth;
+
   Require(TokenType::CLOSE_PAREN);
   auto Body = ParseIterationStmtBlock();
+
+  --LoopsDepth;
 
   return std::make_unique<ASTForStmt>(
       std::move(Init), std::move(Condition), std::move(Increment),
@@ -355,7 +362,13 @@ std::unique_ptr<ASTNode> Parser::ParseForStatement() {
 
 std::unique_ptr<ASTNode> Parser::ParseDoWhileStatement() {
   const Token &DoWhileBegin = Require(TokenType::DO);
+
+  ++LoopsDepth;
+
   auto Body = ParseIterationStmtBlock();
+
+  --LoopsDepth;
+
   Require(TokenType::WHILE);
 
   Require(TokenType::OPEN_PAREN);
@@ -373,7 +386,11 @@ std::unique_ptr<ASTNode> Parser::ParseWhileStatement() {
   auto Condition = ParseLogicalOr();
   Require(TokenType::CLOSE_PAREN);
 
+  ++LoopsDepth;
+
   auto Body = ParseIterationStmtBlock();
+
+  --LoopsDepth;
 
   return std::make_unique<ASTWhileStmt>(std::move(Condition), std::move(Body),
                                         WhileBegin.LineNo, WhileBegin.ColumnNo);

@@ -1,38 +1,36 @@
-# This is a compiler created in educational purposes
+# Compiler
 
 ## What's already been done?
-* Lexical, syntactic analysis, building of CFG;
-* IR;
+* Lexical, syntactic analysis;
+* CFG;
+* SSA form.
 
-## What's left
-* Code analysis and optimisation;
-* SSA form;
+## What's left?
+* Code analysis and optimisations;
+* interprocedural CFG;
 * platform-dependent code generation.
 
 ## Simple example
 The program
 ```
 void f() {
-  for (int i = 0; i < 10; ++i) {
-    int a = 1 + 2;
-    continue;
-    int b = 3 + 4;
+  int a = 1;
+  int b = 2;
+  for (int i = 0; i < 10; i = i + 1) {
+    do {
+      a = 7;
+      b = 8;
+      while (9 + 10) {
+        a = 11;
+        b = 12;
+      }
+    } while (5 + 6);
+    a = a + i;
+    b = b - i;
   }
-  int c = 5 + 6;
+  a = b;
+  b = a;
 }
 ```
-can be transformed to
-```
-         t0 4 bytes  =   0
-L0:
-         if             t0 < 10 goto L1
-         goto L2
-L1:
-         t1 4 bytes  =   1 +  2
-         goto L0
-         t2 4 bytes  =   3 +  4
-         t0 4 bytes  =  t0 +  1
-         goto L0
-L2:
-         t4 4 bytes  =   5 +  6
-```
+reincarnated to this graph
+![alt_text](https://github.com/epoll-reactor/weak_compiler/blob/dev/images/CFG.jpg?raw=true)
