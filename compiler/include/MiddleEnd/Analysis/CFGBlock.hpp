@@ -16,7 +16,7 @@ namespace weak {
 namespace middleEnd {
 
 /*!
- * Control Flow Graph node. Holds ownership of its statements.
+ * Control Flow Graph node.
  */
 class CFGBlock {
 public:
@@ -29,11 +29,16 @@ public:
   void AddStatement(IRNode *);
   static void AddLink(CFGBlock *Predecessor, CFGBlock *Successor);
 
+  /// IR statements, contained in block (block hold ownership of it).
   std::vector<IRNode *> Statements;
+
   std::vector<CFGBlock *> Successors;
   std::vector<CFGBlock *> Predecessors;
 
+  // Used externally to build dominator tree inside CFG.
   CFGBlock *Dominator;
+
+  // Used externally in CFG and SSA builder.
   std::vector<CFGBlock *> DominatingBlocks;
 
 private:

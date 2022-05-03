@@ -15,6 +15,8 @@
 namespace weak {
 namespace middleEnd {
 
+/// The builder of Control Flow Graph. Implemented as
+/// visitor since operates on AST.
 class CFGBuilder : private frontEnd::ASTVisitor {
 public:
   CFGBuilder(const std::vector<std::unique_ptr<frontEnd::ASTNode>> &);
@@ -44,12 +46,16 @@ private:
   void Visit(const frontEnd::ASTDoWhileStmt *) const override;
   void Visit(const frontEnd::ASTForStmt *) const override;
 
+  /// Allocate the new block with unique label.
   CFGBlock *MakeBlock(std::string Label) const;
+
+  /// Helper to insert branches to \ref CurrentBlock.
   void MakeBranch(frontEnd::ASTNode *Condition, CFGBlock *ThenBlock,
                   CFGBlock *ElseBlock) const;
 
   void InsertPhiNodes();
   void BuildSSAForm();
+
   /// Carefully remove all empty nodes from CFG.
   /// \todo Reindex CFG blocks numbers.
   void ReduceGraph();
