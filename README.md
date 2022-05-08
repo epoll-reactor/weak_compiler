@@ -1,3 +1,5 @@
+[![Documentation](https://img.shields.io/badge/docs-doxygen-blue.svg)](https://epoll-reactor.github.io/weak_compiler/index.html)
+
 # Compiler
 
 ## What's already been done?
