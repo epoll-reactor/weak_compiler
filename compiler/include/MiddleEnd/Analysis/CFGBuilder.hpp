@@ -37,11 +37,15 @@ private:
   void Visit(const frontEnd::ASTStringLiteral *) const override {}
   void Visit(const frontEnd::ASTUnaryOperator *) const override {}
 
+  /// Insert analyzed variable declaration to \ref BlocksForVariable.
   void Visit(const frontEnd::ASTVarDecl *) const override;
+
+  /// Insert analyzed variable declaration to \ref BlocksForVariable
+  /// if we have an assignment.
+  void Visit(const frontEnd::ASTBinaryOperator *) const override;
   void Visit(const frontEnd::ASTCompoundStmt *) const override;
   void Visit(const frontEnd::ASTFunctionDecl *) const override;
   void Visit(const frontEnd::ASTIfStmt *) const override;
-  void Visit(const frontEnd::ASTBinaryOperator *) const override;
   void Visit(const frontEnd::ASTWhileStmt *) const override;
   void Visit(const frontEnd::ASTDoWhileStmt *) const override;
   void Visit(const frontEnd::ASTForStmt *) const override;
@@ -49,7 +53,7 @@ private:
   /// Allocate the new block with unique label.
   CFGBlock *MakeBlock(std::string Label) const;
 
-  /// Helper to insert branches to \ref CurrentBlock.
+  /// Helper function to insert branches to \ref CurrentBlock.
   void MakeBranch(frontEnd::ASTNode *Condition, CFGBlock *ThenBlock,
                   CFGBlock *ElseBlock) const;
 
@@ -60,12 +64,17 @@ private:
   /// \todo Reindex CFG blocks numbers.
   void ReduceGraph();
 
-  const std::vector<std::unique_ptr<frontEnd::ASTNode>> &Statements;
+  /// Simple reference to our AST stuff.
+  const std::vector<std::unique_ptr<frontEnd::ASTNode>> &StatementsRef;
 
+  /// Generated Control Flow Graph.
   mutable CFG CFGraph;
 
+  /// Helper pointer to simplify code design.
   mutable CFGBlock *CurrentBlock;
 
+  /// Mapping variables to blocks where they are assigned. Used
+  /// to decide where to put Phi-nodes.
   mutable std::map<std::string, std::set<CFGBlock *>> BlocksForVariable;
 };
 
