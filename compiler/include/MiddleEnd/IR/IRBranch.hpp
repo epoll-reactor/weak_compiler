@@ -19,9 +19,9 @@ class ASTNode;
 namespace weak {
 namespace middleEnd {
 
-/*!
- * Holds ownership of true and false branches, views AST condition node.
- */
+/// \brief Branch instruction.
+///
+/// Holds ownership of true and false branches, views AST condition node.
 class IRBranch : public IRNode {
 public:
   IRBranch(frontEnd::ASTNode *TheConditionView, CFGBlock *TheTrueBranch,

@@ -15,8 +15,9 @@
 namespace weak {
 namespace middleEnd {
 
-/// The builder of Control Flow Graph. Implemented as
-/// visitor since operates on AST.
+/// \brief The builder of Control Flow Graph.
+///
+/// Implemented as visitor since operates on AST.
 class CFGBuilder : private frontEnd::ASTVisitor {
 public:
   CFGBuilder(const std::vector<std::unique_ptr<frontEnd::ASTNode>> &);

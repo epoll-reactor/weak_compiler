@@ -19,10 +19,10 @@ class Storage;
 namespace weak {
 namespace frontEnd {
 
-/*!
- * Lexical analyzer - provides interface to transform plain text
- * into a stream of tokens.
- */
+/// \brief Lexical analyzer.
+///
+/// Provides interface to transform plain text
+/// into a stream of tokens.
 class Lexer {
 public:
   Lexer(middleEnd::Storage *TheStorage, const char *TheBufferStart,

@@ -14,7 +14,7 @@
 namespace weak {
 namespace frontEnd {
 
-/// LL(1) Syntax analyzer.
+/// \brief LL(1) Syntax analyzer.
 class Parser {
 public:
   Parser(const Token *TheBufferStart, const Token *TheBufferEnd);

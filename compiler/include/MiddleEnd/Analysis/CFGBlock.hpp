@@ -15,9 +15,7 @@
 namespace weak {
 namespace middleEnd {
 
-/*!
- * Control Flow Graph node.
- */
+/// \brief Control Flow Graph node.
 class CFGBlock {
 public:
   CFGBlock(int TheIndex, std::string TheLabel);

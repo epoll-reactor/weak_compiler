@@ -13,6 +13,7 @@
 namespace weak {
 namespace middleEnd {
 
+/// \brief Abstract instruction.
 class IRNode {
 public:
   enum NodeType { ASSIGN, BRANCH, PHI } Type;
