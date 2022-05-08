@@ -75,6 +75,9 @@ $(function() {
 </div><!--header-->
 <div class="contents">
 
+<p>The builder of Control Flow Graph.  
+ <a href="classweak_1_1middleEnd_1_1CFGBuilder.html#details">More...</a></p>
+
 <p><code>#include &lt;<a class="el" href="CFGBuilder_8hpp_source.html">CFGBuilder.hpp</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-methods" name="pub-methods"></a>
@@ -109,15 +112,16 @@ Private Member Functions</h2></td></tr>
 <tr class="memitem:af850b7a7663dd9f7e3996b1f4b9f09a2"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classweak_1_1middleEnd_1_1CFGBuilder.html#af850b7a7663dd9f7e3996b1f4b9f09a2">Visit</a> (const <a class="el" href="classweak_1_1frontEnd_1_1ASTUnaryOperator.html">frontEnd::ASTUnaryOperator</a> *) const override</td></tr>
 <tr class="separator:af850b7a7663dd9f7e3996b1f4b9f09a2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:afdfacf2cb1062d6253ea1556d0161ea2"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classweak_1_1middleEnd_1_1CFGBuilder.html#afdfacf2cb1062d6253ea1556d0161ea2">Visit</a> (const <a class="el" href="classweak_1_1frontEnd_1_1ASTVarDecl.html">frontEnd::ASTVarDecl</a> *) const override</td></tr>
+<tr class="memdesc:afdfacf2cb1062d6253ea1556d0161ea2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Insert analyzed variable declaration to <a class="el" href="classweak_1_1middleEnd_1_1CFGBuilder.html#ac669da7f600ff417d938934be907a3d2">BlocksForVariable</a>.  <a href="classweak_1_1middleEnd_1_1CFGBuilder.html#afdfacf2cb1062d6253ea1556d0161ea2">More...</a><br /></td></tr>
 <tr class="separator:afdfacf2cb1062d6253ea1556d0161ea2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab91a006f1b8b2e441e1b7db952bd6dce"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classweak_1_1middleEnd_1_1CFGBuilder.html#ab91a006f1b8b2e441e1b7db952bd6dce">Visit</a> (const <a class="el" href="classweak_1_1frontEnd_1_1ASTBinaryOperator.html">frontEnd::ASTBinaryOperator</a> *) const override</td></tr>
+<tr class="separator:ab91a006f1b8b2e441e1b7db952bd6dce"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab7cfc30894958c372cf50bb5178031b9"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classweak_1_1middleEnd_1_1CFGBuilder.html#ab7cfc30894958c372cf50bb5178031b9">Visit</a> (const <a class="el" href="classweak_1_1frontEnd_1_1ASTCompoundStmt.html">frontEnd::ASTCompoundStmt</a> *) const override</td></tr>
 <tr class="separator:ab7cfc30894958c372cf50bb5178031b9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a852e273e9688bef63bf7e311530aaaf1"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classweak_1_1middleEnd_1_1CFGBuilder.html#a852e273e9688bef63bf7e311530aaaf1">Visit</a> (const <a class="el" href="classweak_1_1frontEnd_1_1ASTFunctionDecl.html">frontEnd::ASTFunctionDecl</a> *) const override</td></tr>
 <tr class="separator:a852e273e9688bef63bf7e311530aaaf1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3f91bca47bd6dde64384803412b8cd7d"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classweak_1_1middleEnd_1_1CFGBuilder.html#a3f91bca47bd6dde64384803412b8cd7d">Visit</a> (const <a class="el" href="classweak_1_1frontEnd_1_1ASTIfStmt.html">frontEnd::ASTIfStmt</a> *) const override</td></tr>
 <tr class="separator:a3f91bca47bd6dde64384803412b8cd7d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab91a006f1b8b2e441e1b7db952bd6dce"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classweak_1_1middleEnd_1_1CFGBuilder.html#ab91a006f1b8b2e441e1b7db952bd6dce">Visit</a> (const <a class="el" href="classweak_1_1frontEnd_1_1ASTBinaryOperator.html">frontEnd::ASTBinaryOperator</a> *) const override</td></tr>
-<tr class="separator:ab91a006f1b8b2e441e1b7db952bd6dce"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af174ed2e0ad3681090a8a3f23b9f7347"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classweak_1_1middleEnd_1_1CFGBuilder.html#af174ed2e0ad3681090a8a3f23b9f7347">Visit</a> (const <a class="el" href="classweak_1_1frontEnd_1_1ASTWhileStmt.html">frontEnd::ASTWhileStmt</a> *) const override</td></tr>
 <tr class="separator:af174ed2e0ad3681090a8a3f23b9f7347"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a26f5d8ab34e6b43f809f6075217a35ef"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classweak_1_1middleEnd_1_1CFGBuilder.html#a26f5d8ab34e6b43f809f6075217a35ef">Visit</a> (const <a class="el" href="classweak_1_1frontEnd_1_1ASTDoWhileStmt.html">frontEnd::ASTDoWhileStmt</a> *) const override</td></tr>
@@ -128,7 +132,7 @@ Private Member Functions</h2></td></tr>
 <tr class="memdesc:a899b32423b796a82b2b1241aefb10c24"><td class="mdescLeft">&#160;</td><td class="mdescRight">Allocate the new block with unique label.  <a href="classweak_1_1middleEnd_1_1CFGBuilder.html#a899b32423b796a82b2b1241aefb10c24">More...</a><br /></td></tr>
 <tr class="separator:a899b32423b796a82b2b1241aefb10c24"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae76f7e6323f072ad39f8704ccfee99ae"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classweak_1_1middleEnd_1_1CFGBuilder.html#ae76f7e6323f072ad39f8704ccfee99ae">MakeBranch</a> (<a class="el" href="classweak_1_1frontEnd_1_1ASTNode.html">frontEnd::ASTNode</a> *Condition, <a class="el" href="classweak_1_1middleEnd_1_1CFGBlock.html">CFGBlock</a> *ThenBlock, <a class="el" href="classweak_1_1middleEnd_1_1CFGBlock.html">CFGBlock</a> *ElseBlock) const</td></tr>
-<tr class="memdesc:ae76f7e6323f072ad39f8704ccfee99ae"><td class="mdescLeft">&#160;</td><td class="mdescRight">Helper to insert branches to <a class="el" href="classweak_1_1middleEnd_1_1CFGBuilder.html#a5e1dd7f2a14d1ea59c1714a3888ff86b">CurrentBlock</a>.  <a href="classweak_1_1middleEnd_1_1CFGBuilder.html#ae76f7e6323f072ad39f8704ccfee99ae">More...</a><br /></td></tr>
+<tr class="memdesc:ae76f7e6323f072ad39f8704ccfee99ae"><td class="mdescLeft">&#160;</td><td class="mdescRight">Helper function to insert branches to <a class="el" href="classweak_1_1middleEnd_1_1CFGBuilder.html#a5e1dd7f2a14d1ea59c1714a3888ff86b">CurrentBlock</a>.  <a href="classweak_1_1middleEnd_1_1CFGBuilder.html#ae76f7e6323f072ad39f8704ccfee99ae">More...</a><br /></td></tr>
 <tr class="separator:ae76f7e6323f072ad39f8704ccfee99ae"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:afb76360a277523d7f352eeea24dfde17"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classweak_1_1middleEnd_1_1CFGBuilder.html#afb76360a277523d7f352eeea24dfde17">InsertPhiNodes</a> ()</td></tr>
 <tr class="separator:afb76360a277523d7f352eeea24dfde17"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -178,17 +182,21 @@ Private Member Functions</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pri-attribs" name="pri-attribs"></a>
 Private Attributes</h2></td></tr>
-<tr class="memitem:a3aa1bbf06d94042f6d9e7145b77153fc"><td class="memItemLeft" align="right" valign="top">const std::vector&lt; std::unique_ptr&lt; <a class="el" href="classweak_1_1frontEnd_1_1ASTNode.html">frontEnd::ASTNode</a> &gt; &gt; &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classweak_1_1middleEnd_1_1CFGBuilder.html#a3aa1bbf06d94042f6d9e7145b77153fc">Statements</a></td></tr>
-<tr class="separator:a3aa1bbf06d94042f6d9e7145b77153fc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae6b22a389906635b85d6421715e20da4"><td class="memItemLeft" align="right" valign="top">const std::vector&lt; std::unique_ptr&lt; <a class="el" href="classweak_1_1frontEnd_1_1ASTNode.html">frontEnd::ASTNode</a> &gt; &gt; &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classweak_1_1middleEnd_1_1CFGBuilder.html#ae6b22a389906635b85d6421715e20da4">StatementsRef</a></td></tr>
+<tr class="memdesc:ae6b22a389906635b85d6421715e20da4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Simple reference to our AST stuff.  <a href="classweak_1_1middleEnd_1_1CFGBuilder.html#ae6b22a389906635b85d6421715e20da4">More...</a><br /></td></tr>
+<tr class="separator:ae6b22a389906635b85d6421715e20da4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad23ffdcfcc4303ddbb6ec2e3c5c55820"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classweak_1_1middleEnd_1_1CFG.html">CFG</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classweak_1_1middleEnd_1_1CFGBuilder.html#ad23ffdcfcc4303ddbb6ec2e3c5c55820">CFGraph</a></td></tr>
+<tr class="memdesc:ad23ffdcfcc4303ddbb6ec2e3c5c55820"><td class="mdescLeft">&#160;</td><td class="mdescRight">Generated Control Flow Graph.  <a href="classweak_1_1middleEnd_1_1CFGBuilder.html#ad23ffdcfcc4303ddbb6ec2e3c5c55820">More...</a><br /></td></tr>
 <tr class="separator:ad23ffdcfcc4303ddbb6ec2e3c5c55820"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5e1dd7f2a14d1ea59c1714a3888ff86b"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classweak_1_1middleEnd_1_1CFGBlock.html">CFGBlock</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classweak_1_1middleEnd_1_1CFGBuilder.html#a5e1dd7f2a14d1ea59c1714a3888ff86b">CurrentBlock</a></td></tr>
+<tr class="memdesc:a5e1dd7f2a14d1ea59c1714a3888ff86b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Helper pointer to simplify code design.  <a href="classweak_1_1middleEnd_1_1CFGBuilder.html#a5e1dd7f2a14d1ea59c1714a3888ff86b">More...</a><br /></td></tr>
 <tr class="separator:a5e1dd7f2a14d1ea59c1714a3888ff86b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac669da7f600ff417d938934be907a3d2"><td class="memItemLeft" align="right" valign="top">std::map&lt; std::string, std::set&lt; <a class="el" href="classweak_1_1middleEnd_1_1CFGBlock.html">CFGBlock</a> * &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classweak_1_1middleEnd_1_1CFGBuilder.html#ac669da7f600ff417d938934be907a3d2">BlocksForVariable</a></td></tr>
 <tr class="separator:ac669da7f600ff417d938934be907a3d2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p >The builder of Control Flow Graph. Implemented as visitor since operates on AST. </p>
+<div class="textblock"><p >The builder of Control Flow Graph. </p>
+<p >Implemented as visitor since operates on AST. </p>
 </div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
 <a id="a80e1972c30ea67b6fc9f2f5eaefade48" name="a80e1972c30ea67b6fc9f2f5eaefade48"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a80e1972c30ea67b6fc9f2f5eaefade48">&#9670;&nbsp;</a></span>CFGBuilder()</h2>
@@ -361,7 +369,7 @@ Private Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p>Helper to insert branches to <a class="el" href="classweak_1_1middleEnd_1_1CFGBuilder.html#a5e1dd7f2a14d1ea59c1714a3888ff86b">CurrentBlock</a>. </p>
+<p>Helper function to insert branches to <a class="el" href="classweak_1_1middleEnd_1_1CFGBuilder.html#a5e1dd7f2a14d1ea59c1714a3888ff86b">CurrentBlock</a>. </p>
 
 </div>
 </div>
@@ -414,6 +422,7 @@ Private Attributes</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
+<p >Insert analyzed variable declaration to <a class="el" href="classweak_1_1middleEnd_1_1CFGBuilder.html#ac669da7f600ff417d938934be907a3d2">BlocksForVariable</a> if we have an assignment. </p>
 
 <p>Implements <a class="el" href="classweak_1_1frontEnd_1_1ASTVisitor.html#a7b2d189de72b4e2f44fbf8b7ee4deea3">weak::frontEnd::ASTVisitor</a>.</p>
 
@@ -864,6 +873,8 @@ Private Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
+<p>Insert analyzed variable declaration to <a class="el" href="classweak_1_1middleEnd_1_1CFGBuilder.html#ac669da7f600ff417d938934be907a3d2">BlocksForVariable</a>. </p>
+
 <p>Implements <a class="el" href="classweak_1_1frontEnd_1_1ASTVisitor.html#af3c8a73808f7cd7a758e729515183ab9">weak::frontEnd::ASTVisitor</a>.</p>
 
 </div>
@@ -916,6 +927,7 @@ Private Attributes</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
+<p >Mapping variables to blocks where they are assigned. Used to decide where to put Phi-nodes. </p>
 
 </div>
 </div>
@@ -939,6 +951,8 @@ Private Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
+<p>Generated Control Flow Graph. </p>
+
 </div>
 </div>
 <a id="a5e1dd7f2a14d1ea59c1714a3888ff86b" name="a5e1dd7f2a14d1ea59c1714a3888ff86b"></a>
@@ -961,10 +975,12 @@ Private Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
+<p>Helper pointer to simplify code design. </p>
+
 </div>
 </div>
-<a id="a3aa1bbf06d94042f6d9e7145b77153fc" name="a3aa1bbf06d94042f6d9e7145b77153fc"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a3aa1bbf06d94042f6d9e7145b77153fc">&#9670;&nbsp;</a></span>Statements</h2>
+<a id="ae6b22a389906635b85d6421715e20da4" name="ae6b22a389906635b85d6421715e20da4"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae6b22a389906635b85d6421715e20da4">&#9670;&nbsp;</a></span>StatementsRef</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -973,7 +989,7 @@ Private Attributes</h2></td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">const std::vector&lt;std::unique_ptr&lt;<a class="el" href="classweak_1_1frontEnd_1_1ASTNode.html">frontEnd::ASTNode</a>&gt; &gt;&amp; weak::middleEnd::CFGBuilder::Statements</td>
+          <td class="memname">const std::vector&lt;std::unique_ptr&lt;<a class="el" href="classweak_1_1frontEnd_1_1ASTNode.html">frontEnd::ASTNode</a>&gt; &gt;&amp; weak::middleEnd::CFGBuilder::StatementsRef</td>
         </tr>
       </table>
   </td>
@@ -982,6 +998,8 @@ Private Attributes</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
+
+<p>Simple reference to our AST stuff. </p>
 
 </div>
 </div>
