@@ -14,9 +14,7 @@
 namespace weak {
 namespace middleEnd {
 
-/*!
- * \brief Control Flow Graph. Holds ownership of its blocks.
- */
+/// \brief Control Flow Graph. Holds ownership of its blocks.
 class CFG {
 public:
   /// Release all CFG blocks.

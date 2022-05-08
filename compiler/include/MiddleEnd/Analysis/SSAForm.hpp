@@ -14,7 +14,9 @@
 namespace weak {
 namespace middleEnd {
 
-/// SSA implementation. Beautifully described here:
+/// \brief SSA implementation.
+///
+/// Beautifully described here:
 /// https://www.cs.utexas.edu/~pingali/CS380C/2010/papers/ssaCytron.pdf
 class SSAForm {
 public:
