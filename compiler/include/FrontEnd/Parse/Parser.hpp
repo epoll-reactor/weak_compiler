@@ -14,7 +14,7 @@
 namespace weak {
 namespace frontEnd {
 
-/// LL(1) Syntax analyzer.
+/// \brief LL(1) Syntax analyzer.
 class Parser {
 public:
   Parser(const Token *TheBufferStart, const Token *TheBufferEnd);
@@ -36,10 +36,10 @@ private:
   /// All from ParseType() or void.
   const Token &ParseReturnType();
 
-  /// <Data type> <id>.
+  /// {Data type} {id}.
   std::unique_ptr<ASTNode> ParseParameter();
 
-  /// (<Data type> <id> ,?)*
+  /// ({Data type} {id} ,?)*
   std::vector<std::unique_ptr<ASTNode>> ParseParameterList();
 
   /// Block of code between '{' and '}'.

@@ -15,6 +15,8 @@
 namespace weak {
 namespace middleEnd {
 
+/// \brief Helper to extract variables from AST.
+///
 /// This simply walks through IR statements and return founded variables.
 class VariableSearchVisitor : private frontEnd::ASTVisitor, private IRVisitor {
 public:

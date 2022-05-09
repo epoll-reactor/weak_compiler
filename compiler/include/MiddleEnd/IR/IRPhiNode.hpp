@@ -15,9 +15,9 @@
 namespace weak {
 namespace middleEnd {
 
-/*!
- * Phi node. Views its CFG blocks, holds ownership of its symbols.
- */
+/// \brief Phi node.
+///
+/// Views its CFG blocks, holds ownership of its symbols.
 class IRPhiNode : public IRNode {
 public:
   IRPhiNode(std::unique_ptr<frontEnd::ASTSymbol> &&TheVariable,

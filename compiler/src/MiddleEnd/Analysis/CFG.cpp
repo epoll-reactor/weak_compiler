@@ -20,25 +20,18 @@ std::vector<CFGBlock *> &CFG::GetBlocks() { return Blocks; }
 
 const std::vector<CFGBlock *> &CFG::GetBlocks() const { return Blocks; }
 
-void CFG::ComputePredOrder() {
-  if (InPredOrder.empty()) {
-    VisitedMap.clear();
-    PredOrderDFS(Blocks.front());
-  }
-}
-
 void CFG::PredOrderDFS(CFGBlock *Block) {
   VisitedMap[Block] = 1;
-  InPredOrder.push_back(Block);
+  PredOrderResult.push_back(Block);
   for (auto *Next : Block->Successors)
     if (!VisitedMap[Next])
       PredOrderDFS(Next);
 }
 
-void CFG::ComputePostOrder() {
-  if (InPostOrder.empty()) {
+void CFG::ComputePredOrder() {
+  if (PredOrderResult.empty()) {
     VisitedMap.clear();
-    PostOrderDFS(Blocks.front());
+    PredOrderDFS(Blocks.front());
   }
 }
 
@@ -47,60 +40,78 @@ void CFG::PostOrderDFS(CFGBlock *Block) {
   for (auto *Next : Block->Successors)
     if (!VisitedMap[Next])
       PostOrderDFS(Next);
-  InPostOrder.push_back(Block);
+  PostOrderResult.push_back(Block);
 }
 
-void CFG::ComputeDominatorTree() {
-  if (!InPredOrder.empty())
-    ComputePredOrder();
-
-  for (auto *It : InPredOrder) {
+void CFG::ComputePostOrder() {
+  if (PostOrderResult.empty()) {
     VisitedMap.clear();
-    VisitedMap[It] = 1;
-    DomDFS(InPredOrder.front());
-    for (auto *Jt : InPredOrder)
-      if (!VisitedMap[Jt])
-        Jt->Dominator = It;
-  }
-
-  for (const auto &Block : Blocks) {
-    if (CFGBlock *Dominator = Block->Dominator)
-      Dominator->DominatingBlocks.push_back(Block);
+    PostOrderDFS(Blocks.front());
   }
 }
 
 void CFG::DomDFS(CFGBlock *Block) {
-  if (!VisitedMap[Block]) {
-    VisitedMap[Block] = 1;
-    for (auto *Next : Block->Successors)
-      if (!VisitedMap[Next])
-        DomDFS(Next);
-  }
+  if (VisitedMap[Block])
+    return;
+
+  VisitedMap[Block] = true;
+  for (auto *Next : Block->Successors)
+    if (!VisitedMap[Next])
+      DomDFS(Next);
 }
 
-void CFG::ComputeBaseDominanceFrontier() {
+void CFG::ComputeDominatorTree() {
+  if (!PredOrderResult.empty())
+    ComputePredOrder();
+
+  for (auto *It : PredOrderResult) {
+    VisitedMap.clear();
+    VisitedMap[It] = true;
+    // Scan first of pred-order result successors.
+    DomDFS(PredOrderResult.front());
+    for (auto *Jt : PredOrderResult)
+      // If our block is not successor of pred-order result block,
+      // then It is dominator of Jt.
+      //    (It)
+      //     |
+      //     v
+      //    (Jt)
+      //     |
+      //     It is dominator of Jt
+      if (!VisitedMap[Jt])
+        Jt->Dominator = It;
+  }
+
+  for (const auto &Block : Blocks)
+    if (CFGBlock *Dominator = Block->Dominator)
+      Dominator->DominatingBlocks.push_back(Block);
+}
+
+void CFG::ComputeDominanceFrontier() {
   if (!DominanceFrontier.empty())
     return;
 
   for (const auto &Block : Blocks)
+    // Just insert a pair of block and empty set.
     DominanceFrontier[Block];
 
-  for (auto *Block : InPostOrder) {
+  for (auto *Block : PostOrderResult) {
     for (auto *Successor : Block->Successors)
       if (Successor->Dominator != Block)
+        // We need all block successors, expect those we dominate.
         DominanceFrontier.at(Block).insert(Successor);
 
-    for (auto *XDominator : Block->DominatingBlocks)
-      for (auto *Dominance : DominanceFrontier.at(XDominator))
-        if (Dominance->Dominator != Block)
-          DominanceFrontier.at(Block).insert(Dominance);
+    for (auto *Dominance : Block->DominatingBlocks)
+      for (auto *XDominance : DominanceFrontier.at(Dominance))
+        if (XDominance->Dominator != Block)
+          DominanceFrontier.at(Block).insert(XDominance);
   }
 }
 
 std::set<CFGBlock *>
 CFG::GetMergedDominanceFrontierFromSubset(const std::set<CFGBlock *> &Subset) {
   if (DominanceFrontier.empty())
-    ComputeBaseDominanceFrontier();
+    ComputeDominanceFrontier();
 
   std::set<CFGBlock *> Merged;
 
@@ -135,7 +146,7 @@ void CFG::CommitAllChanges() {
   ComputePredOrder();
   ComputePostOrder();
   ComputeDominatorTree();
-  ComputeBaseDominanceFrontier();
+  ComputeDominanceFrontier();
 }
 
 } // namespace middleEnd
