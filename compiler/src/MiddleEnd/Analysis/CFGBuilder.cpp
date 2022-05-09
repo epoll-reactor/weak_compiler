@@ -28,11 +28,11 @@ namespace middleEnd {
 
 CFGBuilder::CFGBuilder(
     const std::vector<std::unique_ptr<frontEnd::ASTNode>> &TheStatements)
-    : Statements(TheStatements), CFGraph(), CurrentBlock(MakeBlock("Entry")),
+    : StatementsRef(TheStatements), CFGraph(), CurrentBlock(MakeBlock("Entry")),
       BlocksForVariable() {}
 
 void CFGBuilder::Build() {
-  for (const auto &Expression : Statements)
+  for (const auto &Expression : StatementsRef)
     Expression->Accept(this);
   ReduceGraph();
   BuildSSAForm();
@@ -187,14 +187,19 @@ void CFGBuilder::InsertPhiNodes() {
 }
 
 void CFGBuilder::ReduceGraph() {
-  for (auto BlockIt = CFGraph.GetBlocks().begin();
-       BlockIt != CFGraph.GetBlocks().end();) {
+  auto &BlocksRef = CFGraph.GetBlocks();
+
+  for (auto BlockIt = BlocksRef.begin(); BlockIt != BlocksRef.end();) {
     CFGBlock *Block = *BlockIt;
 
+    // We want to cut only empty blocks.
     if (!Block->Statements.empty()) {
       ++BlockIt;
       continue;
     }
+
+    // Link the "parent" and the "child" of current block.
+    CFGBlock::AddLink(Block->Predecessors.front(), Block->Successors.front());
 
     auto TryRemove = [](auto &Container, CFGBlock *RemoveObject) {
       auto Pos = std::find(Container.begin(), Container.end(), RemoveObject);
@@ -203,16 +208,17 @@ void CFGBuilder::ReduceGraph() {
       return Container.end();
     };
 
+    // Cut current block from "parent" successors list.
     TryRemove(Block->Predecessors.front()->Successors, Block);
+    // Cut current block from "child" predecessors list.
     TryRemove(Block->Successors.front()->Predecessors, Block);
 
-    if (auto RemovalPos = TryRemove(CFGraph.GetBlocks(), Block);
-        RemovalPos == CFGraph.GetBlocks().end())
+    // Cut block itself from graph after all operations with links.
+    if (auto RemovalPos = TryRemove(BlocksRef, Block);
+        RemovalPos == BlocksRef.end())
       BlockIt = RemovalPos;
     else
       ++BlockIt;
-
-    CFGBlock::AddLink(Block->Predecessors.front(), Block->Successors.front());
   }
 }
 

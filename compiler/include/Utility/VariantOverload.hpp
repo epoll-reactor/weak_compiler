@@ -7,14 +7,12 @@
 #define WEAK_COMPILER_UTILITY_VARIANT_OVERLOAD_HPP
 
 namespace weak {
-
 namespace {
 
 template <typename... Ts> struct Overload : Ts... { using Ts::operator()...; };
 template <typename... Ts> Overload(Ts...) -> Overload<Ts...>;
 
 } // namespace
-
 } // namespace weak
 
 #endif // WEAK_COMPILER_UTILITY_VARIANT_OVERLOAD_HPP

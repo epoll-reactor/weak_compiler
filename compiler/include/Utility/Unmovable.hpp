@@ -8,10 +8,8 @@
 #define WEAK_COMPILER_UTILITY_UNMOVABLE_HPP
 
 namespace weak {
-/*!
- * Should be used by inheritance to disable object moving semantics and prevent
- * boilerplate code.
- */
+/// Should be used by inheritance to disable object moving semantics and prevent
+/// boilerplate code.
 class Unmovable {
 public:
   Unmovable() = default;

@@ -13,9 +13,9 @@
 namespace weak {
 namespace middleEnd {
 
-/*!
- * Assignment instruction. Holds ownership of its variable (actually symbol).
- */
+/// \brief Assignment instruction.
+///
+/// Holds ownership of its variable (actually symbol).
 class IRAssignment : public IRNode {
 public:
   IRAssignment(frontEnd::ASTNode *TheVariable,
