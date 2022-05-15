@@ -25,7 +25,7 @@ std::string IRPhiNode::Dump() const {
   std::string Result;
 
   for (const auto &[Block, Symbol] : VariableMap)
-    Result += Block->ToString() + ":" + Symbol->GetName() + ", ";
+    Result += Block->GetName() + ":" + Symbol->GetName() + ", ";
 
   if (!Result.empty()) {
     Result.pop_back();

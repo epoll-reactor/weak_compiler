@@ -18,7 +18,7 @@ CFGBlock::~CFGBlock() {
     delete Statement;
 }
 
-std::string CFGBlock::ToString() const {
+std::string CFGBlock::GetName() const {
   return "CFG#" + std::to_string(Index) + "(" + Label + ")";
 }
 

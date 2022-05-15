@@ -34,10 +34,10 @@ std::string IRBranch::Dump() const {
     Printer.Print();
     OutStream << ")";
   }
-  OutStream << " on true to " << TrueBranch->ToString();
+  OutStream << " on true to " << TrueBranch->GetName();
 
   if (IsConditional && FalseBranch) {
-    OutStream << ", on false to " << FalseBranch->ToString();
+    OutStream << ", on false to " << FalseBranch->GetName();
   }
 
   return OutStream.str();

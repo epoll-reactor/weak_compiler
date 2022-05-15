@@ -163,7 +163,7 @@ std::string weak::middleEnd::CFGToDot(CFG *Graph) {
       auto Dump = [](CFGBlock *B) {
         std::string Result;
 
-        Result += B->ToString();
+        Result += B->GetName();
         Result += "\n";
         for (const auto &Stmt : B->Statements)
           Result += Stmt->Dump() + "\n";
