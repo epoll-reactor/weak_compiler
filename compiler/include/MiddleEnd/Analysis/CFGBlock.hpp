@@ -22,7 +22,8 @@ public:
 
   ~CFGBlock();
 
-  std::string ToString() const;
+  /// Return block name in format "CFG#No(Label)"
+  std::string GetName() const;
 
   void AddStatement(IRNode *);
   static void AddLink(CFGBlock *Predecessor, CFGBlock *Successor);
