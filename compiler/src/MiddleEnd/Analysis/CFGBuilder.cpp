@@ -34,7 +34,6 @@ CFGBuilder::CFGBuilder(
 void CFGBuilder::Build() {
   for (const auto &Expression : StatementsRef)
     Expression->Accept(this);
-  ReduceGraph();
   BuildSSAForm();
 }
 
@@ -183,42 +182,6 @@ void CFGBuilder::InsertPhiNodes() {
                                 std::move(VariablesMap));
       Block->Statements.insert(Block->Statements.begin(), Phi);
     }
-  }
-}
-
-void CFGBuilder::ReduceGraph() {
-  auto &BlocksRef = CFGraph.GetBlocks();
-
-  for (auto BlockIt = BlocksRef.begin(); BlockIt != BlocksRef.end();) {
-    CFGBlock *Block = *BlockIt;
-
-    // We want to cut only empty blocks.
-    if (!Block->Statements.empty()) {
-      ++BlockIt;
-      continue;
-    }
-
-    // Link the "parent" and the "child" of current block.
-    CFGBlock::AddLink(Block->Predecessors.front(), Block->Successors.front());
-
-    auto TryRemove = [](auto &Container, CFGBlock *RemoveObject) {
-      auto Pos = std::find(Container.begin(), Container.end(), RemoveObject);
-      if (Pos != Container.end())
-        return Container.erase(Pos);
-      return Container.end();
-    };
-
-    // Cut current block from "parent" successors list.
-    TryRemove(Block->Predecessors.front()->Successors, Block);
-    // Cut current block from "child" predecessors list.
-    TryRemove(Block->Successors.front()->Predecessors, Block);
-
-    // Cut block itself from graph after all operations with links.
-    if (auto RemovalPos = TryRemove(BlocksRef, Block);
-        RemovalPos == BlocksRef.end())
-      BlockIt = RemovalPos;
-    else
-      ++BlockIt;
   }
 }
 
