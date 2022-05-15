@@ -9,8 +9,7 @@ var indexSectionsWithContent =
   6: "rt",
   7: "adntu",
   8: "abcdefgilmnoprstvwx",
-  9: "c",
-  10: "t"
+  9: "c"
 };
 
 var indexSectionNames =
@@ -24,8 +23,7 @@ var indexSectionNames =
   6: "typedefs",
   7: "enums",
   8: "enumvalues",
-  9: "related",
-  10: "pages"
+  9: "related"
 };
 
 var indexSectionLabels =
@@ -39,7 +37,6 @@ var indexSectionLabels =
   6: "Typedefs",
   7: "Enumerations",
   8: "Enumerator",
-  9: "Friends",
-  10: "Pages"
+  9: "Friends"
 };
 
