@@ -61,10 +61,6 @@ private:
   void InsertPhiNodes();
   void BuildSSAForm();
 
-  /// Carefully remove all empty nodes from CFG.
-  /// \todo Reindex CFG blocks numbers.
-  void ReduceGraph();
-
   /// Simple reference to our AST stuff.
   const std::vector<std::unique_ptr<frontEnd::ASTNode>> &StatementsRef;
 
