@@ -170,7 +170,7 @@ private:
 
   void Visit(const ASTIntegerLiteral *Integer) const override {
     PrintWithTextPosition("IntegerLiteral", Integer,
-                          /*NewLineNeeded*/ false);
+                          /*NewLineNeeded=*/false);
     OutStream << Integer->GetValue() << std::endl;
   }
 

@@ -35,7 +35,10 @@ private:
 
 } // namespace
 
-void weak::UnreachablePoint() { exit(-1); }
+void weak::UnreachablePoint(const char *Msg) {
+  std::cerr << "Unreachable point reached: " << Msg << std::endl;
+  exit(-1);
+}
 
 weak::OstreamRAII::~OstreamRAII() {
   if (ShouldTerminate) {

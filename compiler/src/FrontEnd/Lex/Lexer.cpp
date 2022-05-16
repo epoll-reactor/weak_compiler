@@ -11,8 +11,8 @@
 #include <cassert>
 #include <unordered_map>
 
-using TokenType = weak::frontEnd::TokenType;
-
+namespace weak::frontEnd {
+namespace {
 static const std::unordered_map<std::string_view, TokenType> LexKeywords = {
     {"bool", TokenType::BOOLEAN},  {"break", TokenType::BREAK},
     {"char", TokenType::CHAR},     {"continue", TokenType::CONTINUE},
@@ -65,8 +65,6 @@ static const std::unordered_map<std::string_view, TokenType> LexOperators = {
     {"(", TokenType::OPEN_PAREN},
     {")", TokenType::CLOSE_PAREN}};
 
-namespace {
-
 class LexStringLiteralCheck {
 public:
   explicit LexStringLiteralCheck(char ThePeek) : Peek(ThePeek) {}
@@ -103,6 +101,7 @@ private:
 };
 
 } // namespace
+} // namespace weak::frontEnd
 
 static bool IsAlphanumeric(char C) { return isalpha(C) || C == '_'; }
 
@@ -195,11 +194,13 @@ Token Lexer::AnalyzeDigit() {
   while (std::isdigit(PeekCurrent()) || PeekCurrent() == '.') {
     if (PeekCurrent() == '.')
       ++DotsReached;
+
     if (DotsReached > 1) {
       DotErrorOccurred = true;
       DotErrorColumn = CurrentColumnNo;
       break;
     }
+
     Digit += PeekNext();
   }
 
@@ -217,9 +218,9 @@ Token Lexer::AnalyzeDigit() {
 Token Lexer::AnalyzeStringLiteral() {
   PeekNext(); // Eat "
 
-  if (PeekNext() == '\"') {
+  if (PeekNext() == '\"')
     return MakeToken("", TokenType::STRING_LITERAL);
-  }
+
   --CurrentBufferPtr;
 
   std::string Literal;
@@ -255,8 +256,9 @@ Token Lexer::AnalyzeSymbol() {
   unsigned ColumnNo = CurrentColumnNo + 1;
 
   NormalizeColumnPosition(Symbol, TokenType::SYMBOL, ColumnNo);
-  Token T(std::move(Symbol), TokenType::SYMBOL, LineNo, ColumnNo, Attribute);
-  return T;
+
+  return Token(std::move(Symbol), TokenType::SYMBOL, LineNo, ColumnNo,
+               Attribute);
 }
 
 Token Lexer::AnalyzeOperator() {
@@ -320,9 +322,7 @@ Token Lexer::MakeToken(std::string_view Data, TokenType Type) const {
   unsigned ColumnNo = CurrentColumnNo + 1;
 
   NormalizeColumnPosition(Data, Type, ColumnNo);
-  Token T(Data, Type, LineNo, ColumnNo);
-
-  return T;
+  return Token(Data, Type, LineNo, ColumnNo);
 }
 
 } // namespace frontEnd

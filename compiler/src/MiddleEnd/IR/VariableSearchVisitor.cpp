@@ -35,9 +35,8 @@ void VariableSearchVisitor::Visit(const ASTSymbol *Stmt) const {
 }
 
 void VariableSearchVisitor::Visit(const ASTBinaryOperator *Stmt) const {
-  if (Stmt->GetOperation() == TokenType::ASSIGN) {
+  if (Stmt->GetOperation() == TokenType::ASSIGN)
     Variables.insert(static_cast<ASTSymbol *>(Stmt->GetLHS().get()));
-  }
   Stmt->GetLHS()->Accept(this);
   Stmt->GetRHS()->Accept(this);
 }
