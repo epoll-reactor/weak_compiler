@@ -26,7 +26,6 @@ class IRBranch : public IRNode {
 public:
   IRBranch(frontEnd::ASTNode *TheConditionView, CFGBlock *TheTrueBranch,
            CFGBlock *TheFalseBranch);
-  IRBranch(CFGBlock *Block);
 
   std::string Dump() const override;
 

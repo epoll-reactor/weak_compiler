@@ -21,7 +21,7 @@ struct OstreamRAII {
 };
 
 /// Simply terminate process.
-[[noreturn]] void UnreachablePoint();
+[[noreturn]] void UnreachablePoint(const char * = "");
 
 /// Print diagnostic message with WARN flag.
 OstreamRAII CompileWarning();

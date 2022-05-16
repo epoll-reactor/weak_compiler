@@ -15,9 +15,6 @@ IRBranch::IRBranch(frontEnd::ASTNode *TheConditionView, CFGBlock *TheTrueBranch,
                    CFGBlock *TheFalseBranch)
     : IRBranch(TheConditionView, TheTrueBranch, TheFalseBranch, true) {}
 
-IRBranch::IRBranch(CFGBlock *Block)
-    : IRBranch(nullptr, Block, nullptr, false) {}
-
 IRBranch::IRBranch(frontEnd::ASTNode *TheConditionView, CFGBlock *TheTrueBranch,
                    CFGBlock *TheFalseBranch, bool IsCond)
     : IRNode(IRNode::BRANCH), IsConditional(IsCond),
@@ -36,9 +33,8 @@ std::string IRBranch::Dump() const {
   }
   OutStream << " on true to " << TrueBranch->GetName();
 
-  if (IsConditional && FalseBranch) {
+  if (IsConditional && FalseBranch)
     OutStream << ", on false to " << FalseBranch->GetName();
-  }
 
   return OutStream.str();
 }
