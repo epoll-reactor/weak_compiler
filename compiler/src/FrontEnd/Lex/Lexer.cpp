@@ -8,6 +8,7 @@
 #include "MiddleEnd/Symbols/Storage.hpp"
 #include "Utility/Diagnostic.hpp"
 #include <algorithm>
+#include <array>
 #include <cassert>
 #include <unordered_map>
 
