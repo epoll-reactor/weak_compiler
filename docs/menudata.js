@@ -29,6 +29,7 @@ var menudata={children:[
 {text:"Namespace Members",url:"namespacemembers.html",children:[
 {text:"All",url:"namespacemembers.html"},
 {text:"Functions",url:"namespacemembers_func.html"},
+{text:"Variables",url:"namespacemembers_vars.html"},
 {text:"Enumerations",url:"namespacemembers_enum.html"}]}]},
 {text:"Classes",url:"annotated.html",children:[
 {text:"Class List",url:"annotated.html"},
@@ -41,7 +42,6 @@ var menudata={children:[
 {text:"c",url:"functions_c.html#index_c"},
 {text:"d",url:"functions_d.html#index_d"},
 {text:"e",url:"functions_e.html#index_e"},
-{text:"f",url:"functions_f.html#index_f"},
 {text:"g",url:"functions_g.html#index_g"},
 {text:"i",url:"functions_i.html#index_i"},
 {text:"l",url:"functions_l.html#index_l"},
@@ -57,12 +57,10 @@ var menudata={children:[
 {text:"~",url:"functions_~.html#index__7E"}]},
 {text:"Functions",url:"functions_func.html",children:[
 {text:"a",url:"functions_func.html#index_a"},
-{text:"b",url:"functions_func_b.html#index_b"},
 {text:"c",url:"functions_func_c.html#index_c"},
 {text:"d",url:"functions_func_d.html#index_d"},
 {text:"e",url:"functions_func_e.html#index_e"},
 {text:"g",url:"functions_func_g.html#index_g"},
-{text:"i",url:"functions_func_i.html#index_i"},
 {text:"l",url:"functions_func_l.html#index_l"},
 {text:"m",url:"functions_func_m.html#index_m"},
 {text:"o",url:"functions_func_o.html#index_o"},
@@ -79,7 +77,6 @@ var menudata={children:[
 {text:"c",url:"functions_vars.html#index_c"},
 {text:"d",url:"functions_vars.html#index_d"},
 {text:"e",url:"functions_vars.html#index_e"},
-{text:"f",url:"functions_vars.html#index_f"},
 {text:"i",url:"functions_vars.html#index_i"},
 {text:"l",url:"functions_vars.html#index_l"},
 {text:"n",url:"functions_vars.html#index_n"},
@@ -91,12 +88,10 @@ var menudata={children:[
 {text:"v",url:"functions_vars.html#index_v"}]},
 {text:"Typedefs",url:"functions_type.html"},
 {text:"Enumerations",url:"functions_enum.html"},
-{text:"Enumerator",url:"functions_eval.html"},
 {text:"Related Functions",url:"functions_rela.html"}]}]},
 {text:"Files",url:"files.html",children:[
 {text:"File List",url:"files.html"},
 {text:"File Members",url:"globals.html",children:[
 {text:"All",url:"globals.html"},
 {text:"Functions",url:"globals_func.html"},
-{text:"Variables",url:"globals_vars.html"},
-{text:"Typedefs",url:"globals_type.html"}]}]}]}
+{text:"Variables",url:"globals_vars.html"}]}]}]}

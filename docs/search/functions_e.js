@@ -1,7 +1,6 @@
 var searchData=
 [
-  ['token_0',['Token',['../structweak_1_1frontEnd_1_1Token.html#a08fdca0461445495a71d0879bc315763',1,'weak::frontEnd::Token']]],
-  ['tokenstostring_1',['TokensToString',['../Parser_8cpp.html#aec5d39c40e62b5d96b90b8ec18919952',1,'Parser.cpp']]],
-  ['tokentostring_2',['TokenToString',['../namespaceweak_1_1frontEnd.html#aeacd5dac29c0d96c7ba1e455339579b7',1,'weak::frontEnd']]],
-  ['totalvariables_3',['TotalVariables',['../classweak_1_1middleEnd_1_1Storage.html#a248ee47916b197fd09c173ce906cf1f5',1,'weak::middleEnd::Storage']]]
+  ['uncopyable_0',['Uncopyable',['../classweak_1_1Uncopyable.html#ab7550b1c90cb068966d8fc14f3ba00e4',1,'weak::Uncopyable::Uncopyable()=default'],['../classweak_1_1Uncopyable.html#a9f9222e2db065012021ee277c752f5ba',1,'weak::Uncopyable::Uncopyable(Uncopyable &amp;&amp;)=default'],['../classweak_1_1Uncopyable.html#aebeaa229fb3916d28cb3b83965ccec6b',1,'weak::Uncopyable::Uncopyable(const Uncopyable &amp;)=delete']]],
+  ['unmovable_1',['Unmovable',['../classweak_1_1Unmovable.html#a48929ecd36d37e8cd9fdc867cb2177c6',1,'weak::Unmovable::Unmovable()=default'],['../classweak_1_1Unmovable.html#ae7fb19887d2b59d738e014f357973b11',1,'weak::Unmovable::Unmovable(Unmovable &amp;&amp;)=delete'],['../classweak_1_1Unmovable.html#a197a731283ae5f6d0604fcdd122c437c',1,'weak::Unmovable::Unmovable(const Unmovable &amp;)=default']]],
+  ['unreachablepoint_2',['UnreachablePoint',['../namespaceweak.html#a101d70640437cebcc229779e2eb9f2c9',1,'weak']]]
 ];

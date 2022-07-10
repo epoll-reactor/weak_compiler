@@ -1,0 +1,197 @@
+#include "MiddleEnd/CodeGen/CodeGen.hpp"
+
+#include "FrontEnd/AST/ASTBinaryOperator.hpp"
+#include "FrontEnd/AST/ASTBooleanLiteral.hpp"
+#include "FrontEnd/AST/ASTBreakStmt.hpp"
+#include "FrontEnd/AST/ASTCompoundStmt.hpp"
+#include "FrontEnd/AST/ASTContinueStmt.hpp"
+#include "FrontEnd/AST/ASTDoWhileStmt.hpp"
+#include "FrontEnd/AST/ASTFloatingPointLiteral.hpp"
+#include "FrontEnd/AST/ASTForStmt.hpp"
+#include "FrontEnd/AST/ASTFunctionCall.hpp"
+#include "FrontEnd/AST/ASTFunctionDecl.hpp"
+#include "FrontEnd/AST/ASTIfStmt.hpp"
+#include "FrontEnd/AST/ASTIntegerLiteral.hpp"
+#include "FrontEnd/AST/ASTReturnStmt.hpp"
+#include "FrontEnd/AST/ASTStringLiteral.hpp"
+#include "FrontEnd/AST/ASTSymbol.hpp"
+#include "FrontEnd/AST/ASTUnaryOperator.hpp"
+#include "FrontEnd/AST/ASTVarDecl.hpp"
+#include "FrontEnd/AST/ASTWhileStmt.hpp"
+
+#include "llvm/ADT/APFloat.h"
+#include "llvm/IR/BasicBlock.h"
+#include "llvm/IR/Constants.h"
+#include "llvm/IR/DerivedTypes.h"
+#include "llvm/IR/Function.h"
+#include "llvm/IR/IRBuilder.h"
+#include "llvm/IR/LLVMContext.h"
+#include "llvm/IR/Module.h"
+#include "llvm/IR/Type.h"
+#include "llvm/IR/Verifier.h"
+
+#include <map>
+
+static llvm::LLVMContext LLVMCtx;
+static llvm::Module LLVMModule("LLVM Module", LLVMCtx);
+static llvm::IRBuilder<> CodeBuilder(LLVMCtx);
+static std::map<std::string, llvm::Value *> VariablesMapping;
+
+static void LogLLVMError(std::string &&Msg) {
+  fprintf(stderr, "Error: %s\n", Msg.c_str());
+}
+
+namespace weak {
+namespace middleEnd {
+
+CodeGen::CodeGen(frontEnd::ASTNode *TheRoot)
+    : Root(TheRoot), LastEmitted(nullptr), IsReturnValue(false) {}
+
+void CodeGen::CreateCode() {
+  Root->Accept(this);
+  LastEmitted->print(llvm::errs());
+}
+
+void CodeGen::Visit(const frontEnd::ASTCompoundStmt *Stmts) const {
+  for (const auto &Stmt : Stmts->GetStmts()) {
+    Stmt->Accept(this);
+  }
+}
+
+void CodeGen::Visit(const frontEnd::ASTIntegerLiteral *Stmt) const {
+  llvm::APInt Int(
+      /*numBits=*/32,
+      /*val=*/Stmt->GetValue(),
+      /*isSigned=*/false);
+  LastEmitted = llvm::ConstantInt::get(LLVMCtx, Int);
+}
+
+void CodeGen::Visit(const frontEnd::ASTSymbol *Stmt) const {
+  llvm::Value *V = VariablesMapping[Stmt->GetName()];
+  if (!V) {
+    LogLLVMError("Unknown variable name: " + Stmt->GetName());
+    return;
+  }
+  LastEmitted = V;
+}
+
+void CodeGen::Visit(const frontEnd::ASTBinaryOperator *Stmt) const {
+  /// \todo: Make type checking, e.g. decide how to handle
+  ///        expressions such as 1 + 2.0.
+  Stmt->GetLHS()->Accept(this);
+  llvm::Value *L = LastEmitted;
+  Stmt->GetRHS()->Accept(this);
+  llvm::Value *R = LastEmitted;
+
+  if (!L || !R) {
+    return;
+  }
+
+  switch (Stmt->GetOperation()) {
+  case frontEnd::TokenType::PLUS:
+    LastEmitted = CodeBuilder.CreateAdd(L, R, "addtmp");
+    break;
+  case frontEnd::TokenType::MINUS:
+    LastEmitted = CodeBuilder.CreateSub(L, R, "subtmp");
+    break;
+  case frontEnd::TokenType::STAR:
+    LastEmitted = CodeBuilder.CreateMul(L, R, "multmp");
+    break;
+  case frontEnd::TokenType::SLASH:
+    LastEmitted = CodeBuilder.CreateSDiv(L, R, "divtmp");
+    break;
+  case frontEnd::TokenType::LT:
+    LastEmitted = CodeBuilder.CreateSDiv(L, R, "lttmp");
+    LastEmitted = CodeBuilder.CreateUIToFP(
+        LastEmitted, llvm::Type::getDoubleTy(LLVMCtx), "booltmp");
+    break;
+  default:
+    LogLLVMError("Invalid binary operator");
+    LastEmitted = nullptr;
+    break;
+  }
+}
+
+void CodeGen::Visit(const frontEnd::ASTVarDecl *Decl) const {
+  Decl->GetDeclareBody()->Accept(this);
+  VariablesMapping.emplace(Decl->GetSymbolName(), LastEmitted);
+}
+
+void CodeGen::Visit(const frontEnd::ASTFunctionDecl *Decl) const {
+  /// \todo: Resolve types.
+  llvm::SmallVector<llvm::Type *, 16> ArgTypes;
+  for (unsigned I{0U}; I < Decl->GetArguments().size(); ++I)
+    // All arguments temporarily are signed integers.
+    ArgTypes.push_back(llvm::Type::getInt32Ty(LLVMCtx));
+
+  llvm::FunctionType *Signature = llvm::FunctionType::get(
+      // Return type.
+      llvm::Type::getInt32Ty(LLVMCtx),
+      // Arguments.
+      ArgTypes,
+      // Variadic parameters?
+      false);
+
+  llvm::Function *Func = llvm::Function::Create(
+      Signature, llvm::Function::ExternalLinkage, Decl->GetName(), &LLVMModule);
+
+  auto GetSymbol = [](const frontEnd::ASTNode *Node) -> const std::string & {
+    return static_cast<const frontEnd::ASTVarDecl *>(Node)->GetSymbolName();
+  };
+
+  unsigned Idx{0U};
+  for (llvm::Argument &Arg : Func->args())
+    Arg.setName(GetSymbol(Decl->GetArguments()[Idx++].get()));
+
+  llvm::BasicBlock *CFGBlock = llvm::BasicBlock::Create(LLVMCtx, "entry", Func);
+  CodeBuilder.SetInsertPoint(CFGBlock);
+
+  VariablesMapping.clear();
+  for (auto &Arg : Func->args())
+    VariablesMapping.emplace(Arg.getName(), &Arg);
+
+  Decl->GetBody()->Accept(this);
+
+  if (IsReturnValue) {
+    CodeBuilder.CreateRet(LastEmitted);
+    llvm::verifyFunction(*Func);
+    LastEmitted = Func;
+    IsReturnValue = false;
+  } else {
+    Func->eraseFromParent();
+    LastEmitted = nullptr;
+  }
+}
+
+void CodeGen::Visit(const frontEnd::ASTReturnStmt *Stmt) const {
+  Stmt->GetOperand()->Accept(this);
+  IsReturnValue = true;
+}
+
+void CodeGen::Visit(const frontEnd::ASTFunctionCall *Stmt) const {
+  llvm::Function *Callee = LLVMModule.getFunction(Stmt->GetName());
+  if (!Callee) {
+    LogLLVMError("Unknown function: " + Stmt->GetName());
+    return;
+  }
+
+  const auto &FunArgs = Stmt->GetArguments();
+
+  if (Callee->arg_size() != FunArgs.size()) {
+    LogLLVMError("Arguments size mismatch");
+    return;
+  }
+
+  llvm::SmallVector<llvm::Value *, 16> Args;
+  for (size_t I = 0; I < FunArgs.size(); ++I) {
+    FunArgs.at(I)->Accept(this);
+    Args.push_back(LastEmitted);
+    if (!Args.back())
+      return;
+  }
+
+  LastEmitted = CodeBuilder.CreateCall(Callee, Args, "calltmp");
+}
+
+} // namespace middleEnd
+} // namespace weak

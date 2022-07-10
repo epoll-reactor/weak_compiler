@@ -4,7 +4,7 @@ project(
     Weak_Compiler
     DESCRIPTION "The compiler for unnamed programming language"
     HOMEPAGE_URL "https://github.com/epoll-reactor/weak_compiler"
-    LANGUAGES CXX
+    LANGUAGES C CXX
 )
 
 set(CMAKE_C_COMPILER /bin/gcc)

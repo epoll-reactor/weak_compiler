@@ -1,5 +1,4 @@
 var searchData=
 [
-  ['ssaform_0',['SSAForm',['../classweak_1_1middleEnd_1_1SSAForm.html',1,'weak::middleEnd']]],
-  ['storage_1',['Storage',['../classweak_1_1middleEnd_1_1Storage.html',1,'weak::middleEnd']]]
+  ['token_0',['Token',['../structweak_1_1frontEnd_1_1Token.html',1,'weak::frontEnd']]]
 ];

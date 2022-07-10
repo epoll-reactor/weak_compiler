@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['tokentype_0',['TokenType',['../namespaceweak_1_1frontEnd.html#a7999f2df7361fe8f6c75e1e68f25b649',1,'weak::frontEnd']]]
+  ['unarytype_0',['UnaryType',['../classweak_1_1frontEnd_1_1ASTUnaryOperator.html#abcbbe57723f76f2982e69820edc870a1',1,'weak::frontEnd::ASTUnaryOperator']]]
 ];

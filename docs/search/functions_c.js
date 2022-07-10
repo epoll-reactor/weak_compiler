@@ -1,4 +1,7 @@
 var searchData=
 [
-  ['require_0',['Require',['../classweak_1_1frontEnd_1_1Parser.html#ac79effbd0b8f6020ab847081d16ab1f8',1,'weak::frontEnd::Parser::Require(const std::vector&lt; TokenType &gt; &amp;Expected)'],['../classweak_1_1frontEnd_1_1Parser.html#a3ca31d26f3e6951385895627e5a6b200',1,'weak::frontEnd::Parser::Require(TokenType Expected)']]]
+  ['scopebegin_0',['ScopeBegin',['../classweak_1_1middleEnd_1_1Storage.html#a181769915f108bab337c5350a1ce5a07',1,'weak::middleEnd::Storage']]],
+  ['scopeend_1',['ScopeEnd',['../classweak_1_1middleEnd_1_1Storage.html#abcb8d9a8aad0dfa6699f6a55a0720c24',1,'weak::middleEnd::Storage']]],
+  ['setssaindex_2',['SetSSAIndex',['../classweak_1_1frontEnd_1_1ASTSymbol.html#a2026b6ba6189dc91eaa0c4095f0fab63',1,'weak::frontEnd::ASTSymbol']]],
+  ['setsymboltype_3',['SetSymbolType',['../classweak_1_1middleEnd_1_1Storage.html#a74dc28f45849d3a46a909d6f6782d728',1,'weak::middleEnd::Storage']]]
 ];

@@ -8,5 +8,6 @@ var searchData=
   ['return_5fstmt_5',['RETURN_STMT',['../namespaceweak_1_1frontEnd.html#a0a382c2a6f386a8773b485076c2f2abba9eeeea6ff7f6f2e3a6b03baf772e159e',1,'weak::frontEnd']]],
   ['returntype_6',['ReturnType',['../classweak_1_1frontEnd_1_1ASTFunctionDecl.html#ab050fa0109f7631bb0d3b727767b1baf',1,'weak::frontEnd::ASTFunctionDecl']]],
   ['rhs_7',['RHS',['../classweak_1_1frontEnd_1_1ASTBinaryOperator.html#a967e7792b7d4837e9193ea2248ba733f',1,'weak::frontEnd::ASTBinaryOperator']]],
-  ['rootnode_8',['RootNode',['../classweak_1_1middleEnd_1_1IRNodePrinter.html#a1961996ecf01585c171e7557e9161932',1,'weak::middleEnd::IRNodePrinter::RootNode()'],['../classanonymous__namespace_02ASTPrettyPrint_8cpp_03_1_1ASTPrintVisitor.html#ac57bbb8488269b12dde4c6e133645e87',1,'anonymous_namespace{ASTPrettyPrint.cpp}::ASTPrintVisitor::RootNode()']]]
+  ['root_8',['Root',['../classweak_1_1middleEnd_1_1CodeGen.html#affc1ea552c969c94b3af8e19dc18a463',1,'weak::middleEnd::CodeGen']]],
+  ['rootnode_9',['RootNode',['../classanonymous__namespace_02ASTPrettyPrint_8cpp_03_1_1ASTPrintVisitor.html#ac57bbb8488269b12dde4c6e133645e87',1,'anonymous_namespace{ASTPrettyPrint.cpp}::ASTPrintVisitor']]]
 ];

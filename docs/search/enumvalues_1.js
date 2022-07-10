@@ -8,7 +8,6 @@ var searchData=
   ['bit_5for_5fassign_5',['BIT_OR_ASSIGN',['../namespaceweak_1_1frontEnd.html#a7999f2df7361fe8f6c75e1e68f25b649af8409d40ae131d82cb84a08374654c23',1,'weak::frontEnd']]],
   ['boolean_6',['BOOLEAN',['../namespaceweak_1_1frontEnd.html#a7999f2df7361fe8f6c75e1e68f25b649ac48d5da12d702e73d6966069f2687376',1,'weak::frontEnd']]],
   ['boolean_5fliteral_7',['BOOLEAN_LITERAL',['../namespaceweak_1_1frontEnd.html#a0a382c2a6f386a8773b485076c2f2abba7e84be69d68b803821c8d1af14149321',1,'weak::frontEnd']]],
-  ['branch_8',['BRANCH',['../classweak_1_1middleEnd_1_1IRNode.html#ae2a6bffdf463b49a71b816da3f5a9624a5008d53f7415a1bcad64cc4cf4dac65f',1,'weak::middleEnd::IRNode']]],
-  ['break_9',['BREAK',['../namespaceweak_1_1frontEnd.html#a7999f2df7361fe8f6c75e1e68f25b649a14d6a3e0201f58bfe7c01e775973e80e',1,'weak::frontEnd']]],
-  ['break_5fstmt_10',['BREAK_STMT',['../namespaceweak_1_1frontEnd.html#a0a382c2a6f386a8773b485076c2f2abba50e2e173829592be93e1b1fb86c82dc1',1,'weak::frontEnd']]]
+  ['break_8',['BREAK',['../namespaceweak_1_1frontEnd.html#a7999f2df7361fe8f6c75e1e68f25b649a14d6a3e0201f58bfe7c01e775973e80e',1,'weak::frontEnd']]],
+  ['break_5fstmt_9',['BREAK_STMT',['../namespaceweak_1_1frontEnd.html#a0a382c2a6f386a8773b485076c2f2abba50e2e173829592be93e1b1fb86c82dc1',1,'weak::frontEnd']]]
 ];

@@ -69,7 +69,6 @@ $(function() {
   <div class="summary">
 <a href="#nested-classes">Classes</a> &#124;
 <a href="#namespaces">Namespaces</a> &#124;
-<a href="#typedef-members">Typedefs</a> &#124;
 <a href="#func-members">Functions</a> &#124;
 <a href="#var-members">Variables</a>  </div>
   <div class="headertitle"><div class="title">Lexer.cpp File Reference</div></div>
@@ -79,29 +78,25 @@ $(function() {
 <code>#include &quot;<a class="el" href="Storage_8hpp_source.html">MiddleEnd/Symbols/Storage.hpp</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="Diagnostic_8hpp_source.html">Utility/Diagnostic.hpp</a>&quot;</code><br />
 <code>#include &lt;algorithm&gt;</code><br />
+<code>#include &lt;array&gt;</code><br />
 <code>#include &lt;cassert&gt;</code><br />
 <code>#include &lt;unordered_map&gt;</code><br />
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="nested-classes" name="nested-classes"></a>
 Classes</h2></td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classanonymous__namespace_02Lexer_8cpp_03_1_1LexStringLiteralCheck.html">anonymous_namespace{Lexer.cpp}::LexStringLiteralCheck</a></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classweak_1_1frontEnd_1_1anonymous__namespace_02Lexer_8cpp_03_1_1LexStringLiteralCheck.html">weak::frontEnd::anonymous_namespace{Lexer.cpp}::LexStringLiteralCheck</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classanonymous__namespace_02Lexer_8cpp_03_1_1LexDigitCheck.html">anonymous_namespace{Lexer.cpp}::LexDigitCheck</a></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classweak_1_1frontEnd_1_1anonymous__namespace_02Lexer_8cpp_03_1_1LexDigitCheck.html">weak::frontEnd::anonymous_namespace{Lexer.cpp}::LexDigitCheck</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="namespaces" name="namespaces"></a>
 Namespaces</h2></td></tr>
-<tr class="memitem:namespaceanonymous__namespace_02Lexer_8cpp_03"><td class="memItemLeft" align="right" valign="top">namespace &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceanonymous__namespace_02Lexer_8cpp_03.html">anonymous_namespace{Lexer.cpp}</a></td></tr>
-<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:namespaceweak"><td class="memItemLeft" align="right" valign="top">namespace &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceweak.html">weak</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:namespaceweak_1_1frontEnd"><td class="memItemLeft" align="right" valign="top">namespace &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceweak_1_1frontEnd.html">weak::frontEnd</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-</table><table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="typedef-members" name="typedef-members"></a>
-Typedefs</h2></td></tr>
-<tr class="memitem:a91b4731cc2cbb2bec396a45349943611"><td class="memItemLeft" align="right" valign="top">using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="Lexer_8cpp.html#a91b4731cc2cbb2bec396a45349943611">TokenType</a> = <a class="el" href="namespaceweak_1_1frontEnd.html#a7999f2df7361fe8f6c75e1e68f25b649">weak::frontEnd::TokenType</a></td></tr>
-<tr class="separator:a91b4731cc2cbb2bec396a45349943611"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:namespaceweak_1_1frontEnd_1_1anonymous__namespace_02Lexer_8cpp_03"><td class="memItemLeft" align="right" valign="top">namespace &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceweak_1_1frontEnd_1_1anonymous__namespace_02Lexer_8cpp_03.html">weak::frontEnd::anonymous_namespace{Lexer.cpp}</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
@@ -112,26 +107,11 @@ Functions</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="var-members" name="var-members"></a>
 Variables</h2></td></tr>
-<tr class="memitem:aa3a1ecae2d7b27d38952249f48df1809"><td class="memItemLeft" align="right" valign="top">static const std::unordered_map&lt; std::string_view, <a class="el" href="namespaceweak_1_1frontEnd.html#a7999f2df7361fe8f6c75e1e68f25b649">TokenType</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="Lexer_8cpp.html#aa3a1ecae2d7b27d38952249f48df1809">LexKeywords</a></td></tr>
-<tr class="separator:aa3a1ecae2d7b27d38952249f48df1809"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a427e638ad266200805b8f962a3c10fa0"><td class="memItemLeft" align="right" valign="top">static const std::unordered_map&lt; std::string_view, <a class="el" href="namespaceweak_1_1frontEnd.html#a7999f2df7361fe8f6c75e1e68f25b649">TokenType</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="Lexer_8cpp.html#a427e638ad266200805b8f962a3c10fa0">LexOperators</a></td></tr>
-<tr class="separator:a427e638ad266200805b8f962a3c10fa0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4066c73ecff64cd5bf9eb0f5d5b2b74c"><td class="memItemLeft" align="right" valign="top">static const std::unordered_map&lt; std::string_view, TokenType &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceweak_1_1frontEnd_1_1anonymous__namespace_02Lexer_8cpp_03.html#a4066c73ecff64cd5bf9eb0f5d5b2b74c">weak::frontEnd::anonymous_namespace{Lexer.cpp}::LexKeywords</a></td></tr>
+<tr class="separator:a4066c73ecff64cd5bf9eb0f5d5b2b74c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae681c10fd8bea7b094e9a56357cb31c9"><td class="memItemLeft" align="right" valign="top">static const std::unordered_map&lt; std::string_view, TokenType &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceweak_1_1frontEnd_1_1anonymous__namespace_02Lexer_8cpp_03.html#ae681c10fd8bea7b094e9a56357cb31c9">weak::frontEnd::anonymous_namespace{Lexer.cpp}::LexOperators</a></td></tr>
+<tr class="separator:ae681c10fd8bea7b094e9a56357cb31c9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
-<h2 class="groupheader">Typedef Documentation</h2>
-<a id="a91b4731cc2cbb2bec396a45349943611" name="a91b4731cc2cbb2bec396a45349943611"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a91b4731cc2cbb2bec396a45349943611">&#9670;&nbsp;</a></span>TokenType</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">using <a class="el" href="namespaceweak_1_1frontEnd.html#a7999f2df7361fe8f6c75e1e68f25b649">TokenType</a> =  <a class="el" href="namespaceweak_1_1frontEnd.html#a7999f2df7361fe8f6c75e1e68f25b649">weak::frontEnd::TokenType</a></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
 <h2 class="groupheader">Function Documentation</h2>
 <a id="a0364c44b3e411507644a1b1954192fdc" name="a0364c44b3e411507644a1b1954192fdc"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a0364c44b3e411507644a1b1954192fdc">&#9670;&nbsp;</a></span>IsAlphanumeric()</h2>
@@ -190,60 +170,6 @@ Variables</h2></td></tr>
           <td></td>
           <td>)</td>
           <td></td><td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">static</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<h2 class="groupheader">Variable Documentation</h2>
-<a id="aa3a1ecae2d7b27d38952249f48df1809" name="aa3a1ecae2d7b27d38952249f48df1809"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aa3a1ecae2d7b27d38952249f48df1809">&#9670;&nbsp;</a></span>LexKeywords</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">const std::unordered_map&lt;std::string_view, <a class="el" href="namespaceweak_1_1frontEnd.html#a7999f2df7361fe8f6c75e1e68f25b649">TokenType</a>&gt; LexKeywords</td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">static</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-<b>Initial value:</b><div class="fragment"><div class="line">= {</div>
-<div class="line">    {<span class="stringliteral">&quot;bool&quot;</span>, TokenType::BOOLEAN},  {<span class="stringliteral">&quot;break&quot;</span>, TokenType::BREAK},</div>
-<div class="line">    {<span class="stringliteral">&quot;char&quot;</span>, TokenType::CHAR},     {<span class="stringliteral">&quot;continue&quot;</span>, TokenType::CONTINUE},</div>
-<div class="line">    {<span class="stringliteral">&quot;do&quot;</span>, TokenType::DO},         {<span class="stringliteral">&quot;else&quot;</span>, TokenType::ELSE},</div>
-<div class="line">    {<span class="stringliteral">&quot;false&quot;</span>, TokenType::FALSE},   {<span class="stringliteral">&quot;float&quot;</span>, TokenType::FLOAT},</div>
-<div class="line">    {<span class="stringliteral">&quot;for&quot;</span>, TokenType::FOR},       {<span class="stringliteral">&quot;if&quot;</span>, TokenType::IF},</div>
-<div class="line">    {<span class="stringliteral">&quot;int&quot;</span>, TokenType::INT},       {<span class="stringliteral">&quot;return&quot;</span>, TokenType::RETURN},</div>
-<div class="line">    {<span class="stringliteral">&quot;string&quot;</span>, TokenType::STRING}, {<span class="stringliteral">&quot;true&quot;</span>, TokenType::TRUE},</div>
-<div class="line">    {<span class="stringliteral">&quot;void&quot;</span>, TokenType::VOID},     {<span class="stringliteral">&quot;while&quot;</span>, TokenType::WHILE}}</div>
-</div><!-- fragment -->
-</div>
-</div>
-<a id="a427e638ad266200805b8f962a3c10fa0" name="a427e638ad266200805b8f962a3c10fa0"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a427e638ad266200805b8f962a3c10fa0">&#9670;&nbsp;</a></span>LexOperators</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">const std::unordered_map&lt;std::string_view, <a class="el" href="namespaceweak_1_1frontEnd.html#a7999f2df7361fe8f6c75e1e68f25b649">TokenType</a>&gt; LexOperators</td>
         </tr>
       </table>
   </td>

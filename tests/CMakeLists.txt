@@ -1,6 +1,10 @@
 include_directories(../compiler/include)
 include_directories(../tests)
 
+find_package(LLVM REQUIRED CONFIG)
+
+include_directories(${LLVM_INCLUDE_DIRS})
+
 find_library(Compiler PATHS "../compiler")
 
 function(add_compiler_test bin_name path)

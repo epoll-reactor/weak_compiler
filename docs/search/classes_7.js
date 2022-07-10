@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['record_0',['Record',['../structweak_1_1middleEnd_1_1Storage_1_1Record.html',1,'weak::middleEnd::Storage']]]
+  ['storage_0',['Storage',['../classweak_1_1middleEnd_1_1Storage.html',1,'weak::middleEnd']]]
 ];
