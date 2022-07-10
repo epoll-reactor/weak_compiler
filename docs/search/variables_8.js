@@ -1,4 +1,6 @@
 var searchData=
 [
-  ['name_0',['Name',['../classweak_1_1frontEnd_1_1ASTFunctionCall.html#ab66b92b480ae5c84ce25cf3b02fce2d3',1,'weak::frontEnd::ASTFunctionCall::Name()'],['../classweak_1_1frontEnd_1_1ASTFunctionDecl.html#a0f598c10152223387126cf1f52ecead1',1,'weak::frontEnd::ASTFunctionDecl::Name()'],['../structweak_1_1middleEnd_1_1Storage_1_1Record.html#ab1d65e8d9d99107570348ad168c37855',1,'weak::middleEnd::Storage::Record::Name()']]]
+  ['operand_0',['Operand',['../classweak_1_1frontEnd_1_1ASTReturnStmt.html#ae32ea37fa8df28c28cc533f0072fffc6',1,'weak::frontEnd::ASTReturnStmt::Operand()'],['../classweak_1_1frontEnd_1_1ASTUnaryOperator.html#ab5bf5bff224a01d4b43ef0c48e89b9a7',1,'weak::frontEnd::ASTUnaryOperator::Operand()']]],
+  ['operation_1',['Operation',['../classweak_1_1frontEnd_1_1ASTBinaryOperator.html#aa2a1b534ee3bbe5fae98f6e3c2c6c63b',1,'weak::frontEnd::ASTBinaryOperator::Operation()'],['../classweak_1_1frontEnd_1_1ASTUnaryOperator.html#a2949bff83136c8b3475f9ab69f3975b9',1,'weak::frontEnd::ASTUnaryOperator::Operation()']]],
+  ['outstream_2',['OutStream',['../classanonymous__namespace_02ASTPrettyPrint_8cpp_03_1_1ASTPrintVisitor.html#a23a90e3428ab33000a25003082cd4fdd',1,'anonymous_namespace{ASTPrettyPrint.cpp}::ASTPrintVisitor']]]
 ];
