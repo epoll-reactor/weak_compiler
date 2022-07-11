@@ -56,18 +56,18 @@ int main() {
             "        ReturnStmt <line:2, col:3>\n");
   }
   SECTION(NonVoidReturn) {
-    TestAST("int f() {\n"
-            "  return 0;\n"
+    TestAST("float f() {\n"
+            "  return 0.0;\n"
             "}\n",
             "CompoundStmt <line:0, col:0>\n"
             "  FunctionDecl <line:1, col:1>\n"
-            "    FunctionRetType <line:1, col:1> <INT>\n"
+            "    FunctionRetType <line:1, col:1> <FLOAT>\n"
             "    FunctionName <line:1, col:1> f\n"
             "    FunctionArgs <line:1, col:1>\n"
             "    FunctionBody <line:1, col:1>\n"
-            "      CompoundStmt <line:1, col:9>\n"
+            "      CompoundStmt <line:1, col:11>\n"
             "        ReturnStmt <line:2, col:3>\n"
-            "          IntegerLiteral <line:2, col:10> 0\n");
+            "          FloatingPointLiteral <line:2, col:10> 0\n");
   }
   SECTION(EmptyFunctionCall) {
     TestAST("void f() {\n"
