@@ -83,6 +83,39 @@ int main() {
             "        FunctionCall <line:2, col:3> empty_function_call\n"
             "          FunctionArgs <line:2, col:3>\n");
   }
+  SECTION(ReturnEmptyFunctionCall) {
+    TestAST("int f() {\n"
+            "  return call();\n"
+            "}\n",
+            "CompoundStmt <line:0, col:0>\n"
+            "  FunctionDecl <line:1, col:1>\n"
+            "    FunctionRetType <line:1, col:1> <INT>\n"
+            "    FunctionName <line:1, col:1> f\n"
+            "    FunctionArgs <line:1, col:1>\n"
+            "    FunctionBody <line:1, col:1>\n"
+            "      CompoundStmt <line:1, col:9>\n"
+            "        ReturnStmt <line:2, col:3>\n"
+            "          FunctionCall <line:2, col:10> call\n"
+            "            FunctionArgs <line:2, col:10>\n");
+  }
+  SECTION(ReturnEmptyFunctionCall) {
+      TestAST("int f() {\n"
+              "  return call(1, 2, 3);\n"
+              "}\n",
+              "CompoundStmt <line:0, col:0>\n"
+              "  FunctionDecl <line:1, col:1>\n"
+              "    FunctionRetType <line:1, col:1> <INT>\n"
+              "    FunctionName <line:1, col:1> f\n"
+              "    FunctionArgs <line:1, col:1>\n"
+              "    FunctionBody <line:1, col:1>\n"
+              "      CompoundStmt <line:1, col:9>\n"
+              "        ReturnStmt <line:2, col:3>\n"
+              "          FunctionCall <line:2, col:10> call\n"
+              "            FunctionArgs <line:2, col:10>\n"
+              "              IntegerLiteral <line:2, col:15> 1\n"
+              "              IntegerLiteral <line:2, col:18> 2\n"
+              "              IntegerLiteral <line:2, col:21> 3\n");
+  }
   SECTION(ParametrizedFunctionCall) {
     TestAST("void f() {\n"
             "  do_work(1, a + b * c << 3);\n"
