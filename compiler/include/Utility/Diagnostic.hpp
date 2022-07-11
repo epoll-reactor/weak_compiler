@@ -9,14 +9,14 @@
 
 #include <ostream>
 
+class Diagnostic;
+
 namespace weak {
 
 /// This requires the string as first argument in diagnostic messages.
 struct OstreamRAII {
-  bool IsError;
-  static constexpr bool ShouldTerminate = true;
-  static constexpr bool ShouldContinue = false;
-  ~OstreamRAII();
+  ::Diagnostic *DiagImpl;
+  ~OstreamRAII() noexcept(false);
   std::ostream &operator<<(const char *);
 };
 
