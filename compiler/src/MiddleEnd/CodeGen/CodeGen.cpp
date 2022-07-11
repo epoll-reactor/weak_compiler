@@ -31,24 +31,16 @@
 #include "llvm/IR/Constants.h"
 #include "llvm/IR/DerivedTypes.h"
 #include "llvm/IR/Function.h"
-#include "llvm/IR/IRBuilder.h"
-#include "llvm/IR/LLVMContext.h"
-#include "llvm/IR/Module.h"
 #include "llvm/IR/Type.h"
 #include "llvm/IR/Verifier.h"
-
-#include <map>
-
-static llvm::LLVMContext LLVMCtx;
-static llvm::Module LLVMModule("LLVM Module", LLVMCtx);
-static llvm::IRBuilder<> CodeBuilder(LLVMCtx);
-static std::map<std::string, llvm::Value *> VariablesMapping;
 
 namespace weak {
 namespace middleEnd {
 
 CodeGen::CodeGen(frontEnd::ASTNode *TheRoot)
-    : Root(TheRoot), LastEmitted(nullptr), IsReturnValue(false) {}
+    : Root(TheRoot), LastEmitted(nullptr), LLVMCtx(),
+      LLVMModule("LLVM Module", LLVMCtx), CodeBuilder(LLVMCtx),
+      IsReturnValue(false) {}
 
 void CodeGen::CreateCode() {
   Root->Accept(this);
@@ -181,8 +173,8 @@ void CodeGen::Visit(const frontEnd::ASTFunctionCall *Stmt) const {
   const auto &FunArgs = Stmt->GetArguments();
 
   if (Callee->arg_size() != FunArgs.size()) {
-    weak::CompileError() << "Arguments size mismatch (" << Callee->arg_size() << " vs "
-      << FunArgs.size() << ")";
+    weak::CompileError() << "Arguments size mismatch (" << Callee->arg_size()
+                         << " vs " << FunArgs.size() << ")";
     return;
   }
 
