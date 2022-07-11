@@ -396,7 +396,7 @@ std::unique_ptr<ASTNode> Parser::ParseJumpStatement() {
   // We want to forbid expressions like int var = var = var, so we
   // expect the first expression to have the precedence is lower than
   // the assignment operator.
-  return std::make_unique<ASTReturnStmt>(ParseLogicalOr(), ReturnStmt.LineNo,
+  return std::make_unique<ASTReturnStmt>(ParseExpression(), ReturnStmt.LineNo,
                                          ReturnStmt.ColumnNo);
 }
 
