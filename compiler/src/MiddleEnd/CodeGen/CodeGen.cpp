@@ -18,6 +18,7 @@
 #include "FrontEnd/AST/ASTUnaryOperator.hpp"
 #include "FrontEnd/AST/ASTVarDecl.hpp"
 #include "FrontEnd/AST/ASTWhileStmt.hpp"
+#include "Utility/Diagnostic.hpp"
 
 #include "llvm/ADT/APFloat.h"
 #include "llvm/IR/BasicBlock.h"
@@ -36,10 +37,6 @@ static llvm::LLVMContext LLVMCtx;
 static llvm::Module LLVMModule("LLVM Module", LLVMCtx);
 static llvm::IRBuilder<> CodeBuilder(LLVMCtx);
 static std::map<std::string, llvm::Value *> VariablesMapping;
-
-static void LogLLVMError(std::string &&Msg) {
-  fprintf(stderr, "Error: %s\n", Msg.c_str());
-}
 
 namespace weak {
 namespace middleEnd {
@@ -69,7 +66,7 @@ void CodeGen::Visit(const frontEnd::ASTIntegerLiteral *Stmt) const {
 void CodeGen::Visit(const frontEnd::ASTSymbol *Stmt) const {
   llvm::Value *V = VariablesMapping[Stmt->GetName()];
   if (!V) {
-    LogLLVMError("Unknown variable name: " + Stmt->GetName());
+    weak::CompileError() << "Unknown variable name: " << Stmt->GetName();
     return;
   }
   LastEmitted = V;
@@ -106,8 +103,8 @@ void CodeGen::Visit(const frontEnd::ASTBinaryOperator *Stmt) const {
         LastEmitted, llvm::Type::getDoubleTy(LLVMCtx), "booltmp");
     break;
   default:
-    LogLLVMError("Invalid binary operator");
     LastEmitted = nullptr;
+    weak::CompileError() << "Invalid binary operator";
     break;
   }
 }
@@ -171,14 +168,15 @@ void CodeGen::Visit(const frontEnd::ASTReturnStmt *Stmt) const {
 void CodeGen::Visit(const frontEnd::ASTFunctionCall *Stmt) const {
   llvm::Function *Callee = LLVMModule.getFunction(Stmt->GetName());
   if (!Callee) {
-    LogLLVMError("Unknown function: " + Stmt->GetName());
+    weak::CompileError() << "Unknown function: " << Stmt->GetName();
     return;
   }
 
   const auto &FunArgs = Stmt->GetArguments();
 
   if (Callee->arg_size() != FunArgs.size()) {
-    LogLLVMError("Arguments size mismatch");
+    weak::CompileError() << "Arguments size mismatch (" << Callee->arg_size() << " vs "
+      << FunArgs.size() << ")";
     return;
   }
 
