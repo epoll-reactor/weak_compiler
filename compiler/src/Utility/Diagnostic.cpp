@@ -6,8 +6,8 @@
 
 #include "Utility/Diagnostic.hpp"
 
-#include <sstream>
 #include <iostream>
+#include <sstream>
 
 class Diagnostic {
 public:
@@ -18,21 +18,16 @@ public:
     EmitLabel(LineNo, ColumnNo);
   }
 
-  Diagnostic(enum DiagLevel TheLevel) : Level(TheLevel) {
-    EmitEmptyLabel();
-  }
+  Diagnostic(enum DiagLevel TheLevel) : Level(TheLevel) { EmitEmptyLabel(); }
 
-  static void ClearErrBuf() {
-    std::ostringstream().swap(ErrBuf);
-  }
+  static void ClearErrBuf() { std::ostringstream().swap(ErrBuf); }
 
 private:
   friend struct weak::OstreamRAII;
 
   void EmitLabel(unsigned LineNo, unsigned ColumnNo) {
     ErrBuf << ((Level == DiagLevel::ERROR) ? "ERROR" : "WARN");
-    ErrBuf << " at line " << LineNo + 1 << ", column " << ColumnNo + 1
-              << ": ";
+    ErrBuf << " at line " << LineNo + 1 << ", column " << ColumnNo + 1 << ": ";
   }
 
   void EmitEmptyLabel() {

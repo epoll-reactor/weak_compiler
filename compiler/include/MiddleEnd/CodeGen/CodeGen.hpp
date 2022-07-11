@@ -8,8 +8,11 @@
 #define WEAK_COMPILER_MIDDLE_END_CODEGEN_HPP
 
 #include "FrontEnd/AST/ASTVisitor.hpp"
-
+#include "llvm/IR/IRBuilder.h"
+#include "llvm/IR/LLVMContext.h"
+#include "llvm/IR/Module.h"
 #include "llvm/IR/Value.h"
+#include <map>
 
 namespace weak {
 namespace frontEnd {
@@ -77,6 +80,10 @@ private:
 
   frontEnd::ASTNode *Root;
   mutable llvm::Value *LastEmitted;
+  mutable llvm::LLVMContext LLVMCtx;
+  mutable llvm::Module LLVMModule;
+  mutable llvm::IRBuilder<> CodeBuilder;
+  mutable std::map<std::string, llvm::Value *> VariablesMapping;
   mutable bool IsReturnValue;
 };
 
