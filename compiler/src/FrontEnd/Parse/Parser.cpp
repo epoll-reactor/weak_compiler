@@ -46,6 +46,7 @@ std::unique_ptr<ASTCompoundStmt> Parser::Parse() {
     case TokenType::INT:
     case TokenType::CHAR:
     case TokenType::STRING:
+    case TokenType::FLOAT:
     case TokenType::BOOLEAN: // Fall through.
       GlobalEntities.push_back(ParseFunctionDecl());
       break;
