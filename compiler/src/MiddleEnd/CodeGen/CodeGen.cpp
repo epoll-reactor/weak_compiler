@@ -84,21 +84,21 @@ void CodeGen::Visit(const frontEnd::ASTBinaryOperator *Stmt) const {
 
   switch (Stmt->GetOperation()) {
   case frontEnd::TokenType::PLUS:
-    LastEmitted = CodeBuilder.CreateAdd(L, R, "addtmp");
+    LastEmitted = CodeBuilder.CreateAdd(L, R);
     break;
   case frontEnd::TokenType::MINUS:
-    LastEmitted = CodeBuilder.CreateSub(L, R, "subtmp");
+    LastEmitted = CodeBuilder.CreateSub(L, R);
     break;
   case frontEnd::TokenType::STAR:
-    LastEmitted = CodeBuilder.CreateMul(L, R, "multmp");
+    LastEmitted = CodeBuilder.CreateMul(L, R);
     break;
   case frontEnd::TokenType::SLASH:
-    LastEmitted = CodeBuilder.CreateSDiv(L, R, "divtmp");
+    LastEmitted = CodeBuilder.CreateSDiv(L, R);
     break;
   case frontEnd::TokenType::LT:
-    LastEmitted = CodeBuilder.CreateSDiv(L, R, "lttmp");
-    LastEmitted = CodeBuilder.CreateUIToFP(
-        LastEmitted, llvm::Type::getDoubleTy(LLVMCtx), "booltmp");
+    LastEmitted = CodeBuilder.CreateSDiv(L, R);
+    LastEmitted =
+        CodeBuilder.CreateUIToFP(LastEmitted, llvm::Type::getDoubleTy(LLVMCtx));
     break;
   default:
     LastEmitted = nullptr;
@@ -186,7 +186,7 @@ void CodeGen::Visit(const frontEnd::ASTFunctionCall *Stmt) const {
       return;
   }
 
-  LastEmitted = CodeBuilder.CreateCall(Callee, Args, "calltmp");
+  LastEmitted = CodeBuilder.CreateCall(Callee, Args);
 }
 
 } // namespace middleEnd
