@@ -112,6 +112,22 @@ void CodeGen::Visit(const frontEnd::ASTVarDecl *Decl) const {
   VariablesMapping.emplace(Decl->GetSymbolName(), LastEmitted);
 }
 
+/// \todo: Organize file "TypeMatchers" or something else.
+static llvm::Type *ResolveReturnType(llvm::LLVMContext &LLVMCtx,
+                                     frontEnd::TokenType T) {
+  using frontEnd::TokenType;
+  switch (T) {
+  case TokenType::VOID:
+    return llvm::Type::getVoidTy(LLVMCtx);
+  case TokenType::INT:
+    return llvm::Type::getInt32Ty(LLVMCtx);
+  case TokenType::FLOAT:
+    return llvm::Type::getFloatTy(LLVMCtx);
+  default:
+    weak::UnreachablePoint("Wrong function return type.");
+  }
+}
+
 void CodeGen::Visit(const frontEnd::ASTFunctionDecl *Decl) const {
   /// \todo: Resolve types.
   llvm::SmallVector<llvm::Type *, 16> ArgTypes;
@@ -121,7 +137,7 @@ void CodeGen::Visit(const frontEnd::ASTFunctionDecl *Decl) const {
 
   llvm::FunctionType *Signature = llvm::FunctionType::get(
       // Return type.
-      llvm::Type::getInt32Ty(LLVMCtx),
+      ResolveReturnType(LLVMCtx, Decl->GetReturnType()),
       // Arguments.
       ArgTypes,
       // Variadic parameters?
@@ -148,7 +164,6 @@ void CodeGen::Visit(const frontEnd::ASTFunctionDecl *Decl) const {
   Decl->GetBody()->Accept(this);
 
   if (IsReturnValue) {
-    CodeBuilder.CreateRet(LastEmitted);
     llvm::verifyFunction(*Func);
     LastEmitted = Func;
     IsReturnValue = false;
@@ -160,6 +175,7 @@ void CodeGen::Visit(const frontEnd::ASTFunctionDecl *Decl) const {
 
 void CodeGen::Visit(const frontEnd::ASTReturnStmt *Stmt) const {
   Stmt->GetOperand()->Accept(this);
+  CodeBuilder.CreateRet(LastEmitted);
   IsReturnValue = true;
 }
 

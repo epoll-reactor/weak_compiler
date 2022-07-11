@@ -18,9 +18,18 @@ void CreateCode(std::string_view Program) {
 }
 
 int main() {
+  SECTION(BasicNoReturn) {
+    CreateCode("float f(int lhs, int rhs) {\n"
+               "  int res = 1 + 2 * lhs * rhs / lhs * rhs;\n"
+               "}\n");
+  }
   SECTION(Basic) {
     CreateCode("int f(int lhs, int rhs) {\n"
                "  return 1 + 2 * lhs * rhs / lhs * rhs;\n"
                "}\n");
+  }
+  SECTION(Call) {
+    CreateCode("int f1(int arg) { return arg + 1 + 2 + 3; }\n"
+               "int f2(int arg) { return f1(arg + 2 + arg); }\n");
   }
 }
