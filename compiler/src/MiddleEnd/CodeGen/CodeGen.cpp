@@ -24,8 +24,8 @@
 #include "FrontEnd/AST/ASTUnaryOperator.hpp"
 #include "FrontEnd/AST/ASTVarDecl.hpp"
 #include "FrontEnd/AST/ASTWhileStmt.hpp"
+#include "MiddleEnd/CodeGen/TypeResolver.hpp"
 #include "Utility/Diagnostic.hpp"
-
 #include "llvm/ADT/APFloat.h"
 #include "llvm/IR/BasicBlock.h"
 #include "llvm/IR/Constants.h"
@@ -44,7 +44,8 @@ CodeGen::CodeGen(frontEnd::ASTNode *TheRoot)
 
 void CodeGen::CreateCode() {
   Root->Accept(this);
-  LastEmitted->print(llvm::errs());
+  if (LastEmitted)
+    LastEmitted->print(llvm::errs());
 }
 
 void CodeGen::Visit(const frontEnd::ASTCompoundStmt *Stmts) const {
@@ -112,32 +113,16 @@ void CodeGen::Visit(const frontEnd::ASTVarDecl *Decl) const {
   VariablesMapping.emplace(Decl->GetSymbolName(), LastEmitted);
 }
 
-/// \todo: Organize file "TypeMatchers" or something else.
-static llvm::Type *ResolveReturnType(llvm::LLVMContext &LLVMCtx,
-                                     frontEnd::TokenType T) {
-  using frontEnd::TokenType;
-  switch (T) {
-  case TokenType::VOID:
-    return llvm::Type::getVoidTy(LLVMCtx);
-  case TokenType::INT:
-    return llvm::Type::getInt32Ty(LLVMCtx);
-  case TokenType::FLOAT:
-    return llvm::Type::getFloatTy(LLVMCtx);
-  default:
-    weak::UnreachablePoint("Wrong function return type.");
-  }
-}
-
 void CodeGen::Visit(const frontEnd::ASTFunctionDecl *Decl) const {
-  /// \todo: Resolve types.
+  middleEnd::TypeResolver TypeResolver(LLVMCtx);
   llvm::SmallVector<llvm::Type *, 16> ArgTypes;
-  for (unsigned I{0U}; I < Decl->GetArguments().size(); ++I)
-    // All arguments temporarily are signed integers.
-    ArgTypes.push_back(llvm::Type::getInt32Ty(LLVMCtx));
+
+  for (const auto &Arg : Decl->GetArguments())
+    ArgTypes.push_back(TypeResolver.ResolveFunctionParam(Arg.get()));
 
   llvm::FunctionType *Signature = llvm::FunctionType::get(
       // Return type.
-      ResolveReturnType(LLVMCtx, Decl->GetReturnType()),
+      TypeResolver.ResolveReturnType(Decl->GetReturnType()),
       // Arguments.
       ArgTypes,
       // Variadic parameters?
