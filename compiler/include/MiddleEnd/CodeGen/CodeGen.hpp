@@ -50,33 +50,49 @@ public:
   void CreateCode();
 
 private:
+  // Literals.
+  virtual void
+  Visit(const frontEnd::ASTBooleanLiteral *) const override; // Implemented.
+  virtual void
+  Visit(const frontEnd::ASTIntegerLiteral *) const override; // Implemented.
+  virtual void Visit(
+      const frontEnd::ASTFloatingPointLiteral *) const override; // Implemented.
+  virtual void Visit(const frontEnd::ASTStringLiteral *) const override {}
+
+  // Operators.
   virtual void
   Visit(const frontEnd::ASTBinaryOperator *) const override; // Implemented.
-  virtual void Visit(const frontEnd::ASTBooleanLiteral *) const override {}
-  virtual void Visit(const frontEnd::ASTBreakStmt *) const override {}
   virtual void
-  Visit(const frontEnd::ASTCompoundStmt *) const override; // Implemented.
+  Visit(const frontEnd::ASTUnaryOperator *) const override; // Implemented.
+
+  // Inside-loop statements.
+  virtual void Visit(const frontEnd::ASTBreakStmt *) const override {}
   virtual void Visit(const frontEnd::ASTContinueStmt *) const override {}
+
+  // Loop statements.
   virtual void Visit(const frontEnd::ASTDoWhileStmt *) const override {}
-  virtual void Visit(const frontEnd::ASTFloatingPointLiteral *) const override {
-  }
   virtual void Visit(const frontEnd::ASTForStmt *) const override {}
+  virtual void Visit(const frontEnd::ASTWhileStmt *) const override {}
+
+  // Condition statements.
+  virtual void
+  Visit(const frontEnd::ASTIfStmt *) const override; // Implemented.
+
+  // Function statements.
   virtual void
   Visit(const frontEnd::ASTFunctionDecl *) const override; // Implemented.
   virtual void
   Visit(const frontEnd::ASTFunctionCall *) const override; // Implemented.
-  virtual void Visit(const frontEnd::ASTIfStmt *) const override {}
-  virtual void
-  Visit(const frontEnd::ASTIntegerLiteral *) const override; // Implemented.
-  virtual void
-  Visit(const frontEnd::ASTReturnStmt *) const override; // Implemented.
-  virtual void Visit(const frontEnd::ASTStringLiteral *) const override {}
+
+  // The rest.
   virtual void
   Visit(const frontEnd::ASTSymbol *) const override; // Implemented.
-  virtual void Visit(const frontEnd::ASTUnaryOperator *) const override; // Implemented.
+  virtual void
+  Visit(const frontEnd::ASTCompoundStmt *) const override; // Implemented.
+  virtual void
+  Visit(const frontEnd::ASTReturnStmt *) const override; // Implemented.
   virtual void
   Visit(const frontEnd::ASTVarDecl *) const override; // Implemented.
-  virtual void Visit(const frontEnd::ASTWhileStmt *) const override {}
 
   frontEnd::ASTNode *Root;
   mutable llvm::Value *LastEmitted;

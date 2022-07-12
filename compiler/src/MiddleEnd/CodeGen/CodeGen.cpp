@@ -30,7 +30,6 @@
 #include "llvm/IR/BasicBlock.h"
 #include "llvm/IR/Constants.h"
 #include "llvm/IR/DerivedTypes.h"
-#include "llvm/IR/IntrinsicInst.h"
 #include "llvm/IR/Function.h"
 #include "llvm/IR/Type.h"
 #include "llvm/IR/Verifier.h"
@@ -49,27 +48,19 @@ void CodeGen::CreateCode() {
     LastEmitted->print(llvm::errs());
 }
 
-void CodeGen::Visit(const frontEnd::ASTCompoundStmt *Stmts) const {
-  for (const auto &Stmt : Stmts->GetStmts()) {
-    Stmt->Accept(this);
-  }
-}
-
-void CodeGen::Visit(const frontEnd::ASTIntegerLiteral *Stmt) const {
-  llvm::APInt Int(
-      /*numBits=*/32,
-      /*val=*/Stmt->GetValue(),
-      /*isSigned=*/false);
+void CodeGen::Visit(const frontEnd::ASTBooleanLiteral *Stmt) const {
+  llvm::APInt Int(8, Stmt->GetValue(), false);
   LastEmitted = llvm::ConstantInt::get(LLVMCtx, Int);
 }
 
-void CodeGen::Visit(const frontEnd::ASTSymbol *Stmt) const {
-  llvm::Value *V = VariablesMapping[Stmt->GetName()];
-  if (!V) {
-    weak::CompileError() << "Unknown variable name: " << Stmt->GetName();
-    return;
-  }
-  LastEmitted = V;
+void CodeGen::Visit(const frontEnd::ASTIntegerLiteral *Stmt) const {
+  llvm::APInt Int(32, Stmt->GetValue(), false);
+  LastEmitted = llvm::ConstantInt::get(LLVMCtx, Int);
+}
+
+void CodeGen::Visit(const frontEnd::ASTFloatingPointLiteral *Stmt) const {
+  llvm::APFloat Float(Stmt->GetValue());
+  LastEmitted = llvm::ConstantFP::get(LLVMCtx, Float);
 }
 
 void CodeGen::Visit(const frontEnd::ASTBinaryOperator *Stmt) const {
@@ -113,9 +104,9 @@ void CodeGen::Visit(const frontEnd::ASTUnaryOperator *Stmt) const {
   Stmt->GetOperand()->Accept(this);
 
   llvm::APInt Int(
-    /*numBits=*/32,
-    /*val=*/1,
-    /*isSigned=*/false);
+      /*numBits=*/32,
+      /*val=*/1,
+      /*isSigned=*/false);
   llvm::Value *Step = llvm::ConstantInt::get(LLVMCtx, Int);
 
   using frontEnd::TokenType;
@@ -135,13 +126,42 @@ void CodeGen::Visit(const frontEnd::ASTUnaryOperator *Stmt) const {
   } // switch
 }
 
-void CodeGen::Visit(const frontEnd::ASTVarDecl *Decl) const {
-  Decl->GetDeclareBody()->Accept(this);
-  VariablesMapping.emplace(Decl->GetSymbolName(), LastEmitted);
+void CodeGen::Visit(const frontEnd::ASTIfStmt *Stmt) const {
+  Stmt->GetCondition()->Accept(this);
+  llvm::Value *Condition = LastEmitted;
+
+  Condition = CodeBuilder.CreateICmpNE(
+      Condition, llvm::ConstantInt::get(LLVMCtx, llvm::APInt(32, 0, false)),
+      "condition");
+
+  llvm::Function *Func = CodeBuilder.GetInsertBlock()->getParent();
+
+  llvm::BasicBlock *ThenBB = llvm::BasicBlock::Create(LLVMCtx, "then", Func);
+  llvm::BasicBlock *ElseBB = llvm::BasicBlock::Create(LLVMCtx, "else");
+  llvm::BasicBlock *MergeBB = llvm::BasicBlock::Create(LLVMCtx, "ifContinue");
+
+  CodeBuilder.CreateCondBr(Condition, ThenBB, ElseBB);
+
+  CodeBuilder.SetInsertPoint(ThenBB);
+  Stmt->GetThenBody()->Accept(this);
+  CodeBuilder.CreateBr(MergeBB);
+
+  if (!Stmt->GetElseBody())
+    return;
+
+  Func->getBasicBlockList().push_back(ElseBB);
+  CodeBuilder.SetInsertPoint(ElseBB);
+
+  Stmt->GetElseBody()->Accept(this);
+  CodeBuilder.CreateBr(MergeBB);
+
+  Func->getBasicBlockList().push_back(MergeBB);
+  CodeBuilder.SetInsertPoint(MergeBB);
 }
 
 namespace {
 
+/// Create part (without body and return type) of function IR from AST.
 class FunctionBuilder {
 public:
   FunctionBuilder(llvm::LLVMContext &TheCtx, llvm::Module &TheModule,
@@ -214,12 +234,6 @@ void CodeGen::Visit(const frontEnd::ASTFunctionDecl *Decl) const {
   }
 }
 
-void CodeGen::Visit(const frontEnd::ASTReturnStmt *Stmt) const {
-  Stmt->GetOperand()->Accept(this);
-  CodeBuilder.CreateRet(LastEmitted);
-  IsReturnValue = true;
-}
-
 void CodeGen::Visit(const frontEnd::ASTFunctionCall *Stmt) const {
   llvm::Function *Callee = LLVMModule.getFunction(Stmt->GetName());
   if (!Callee) {
@@ -244,6 +258,32 @@ void CodeGen::Visit(const frontEnd::ASTFunctionCall *Stmt) const {
   }
 
   LastEmitted = CodeBuilder.CreateCall(Callee, Args);
+}
+
+void CodeGen::Visit(const frontEnd::ASTSymbol *Stmt) const {
+  llvm::Value *V = VariablesMapping[Stmt->GetName()];
+  if (!V) {
+    weak::CompileError() << "Unknown variable name: " << Stmt->GetName();
+    return;
+  }
+  LastEmitted = V;
+}
+
+void CodeGen::Visit(const frontEnd::ASTCompoundStmt *Stmts) const {
+  for (const auto &Stmt : Stmts->GetStmts()) {
+    Stmt->Accept(this);
+  }
+}
+
+void CodeGen::Visit(const frontEnd::ASTReturnStmt *Stmt) const {
+  Stmt->GetOperand()->Accept(this);
+  CodeBuilder.CreateRet(LastEmitted);
+  IsReturnValue = true;
+}
+
+void CodeGen::Visit(const frontEnd::ASTVarDecl *Decl) const {
+  Decl->GetDeclareBody()->Accept(this);
+  VariablesMapping.emplace(Decl->GetSymbolName(), LastEmitted);
 }
 
 } // namespace middleEnd

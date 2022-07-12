@@ -61,8 +61,43 @@ int main() {
                "}\n");
   }
   SECTION(UnaryDec) {
-  CreateCode("int f(int arg) {\n"
-              "  return --arg;\n"
-              "}\n");
-}
+    CreateCode("int f(int arg) {\n"
+               "  return --arg;\n"
+               "}\n");
+  }
+  SECTION(If) {
+    CreateCode("int f(int arg) {\n"
+               "  if (arg) {\n"
+               "    return 0;\n"
+               "  }\n"
+               "  return 1;\n"
+               "}\n");
+  }
+  SECTION(IfElse) {
+    CreateCode("int f(int arg) {\n"
+               "  if (arg) {\n"
+               "    return 0;\n"
+               "  } else {\n"
+               "    return 1;\n"
+               "  }\n"
+               "  return 2;\n"
+               "}\n");
+  }
+  SECTION(NestedIfElse) {
+    CreateCode("int main(int arg) {"
+               "  if (arg) {"
+               "    if (arg + 1) {"
+               "      return 0;"
+               "    } else {"
+               "      return 1;"
+               "    }"
+               "  } else {"
+               "    if (arg + 2) {"
+               "      return 2;"
+               "    } else {"
+               "      return 3;"
+               "    }"
+               "  }"
+               "}");
+  }
 }
