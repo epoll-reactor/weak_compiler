@@ -33,8 +33,36 @@ int main() {
                "  return 1 + 2 * lhs * rhs / lhs * rhs;\n"
                "}\n");
   }
+  SECTION(ComplexArithmetic) {
+    CreateCode("int compute(\n"
+               "  int arg1, int arg2, int arg3, int arg4,\n"
+               "  int arg5, int arg6, int arg7, int arg8) {\n"
+               "\n"
+               "  int add = arg1 + arg2 + arg3 + arg4 + arg5 + arg6 + arg7 + arg8;\n"
+               "  int sub = arg1 - arg2 - arg3 - arg4 - arg5 - arg6 - arg7 - arg8;\n"
+               "  int mul = arg1 + arg2 * arg3 + arg4 * arg5 + arg6 * arg7 + arg8;\n"
+               "  int div = arg1 + arg2 / arg3 + arg4 / arg5 + arg6 / arg7 + arg8;\n"
+               "  int res = add + sub * mul - div;\n"
+               "  return res;\n"
+               "}\n");
+  }
   SECTION(Call) {
     CreateCode("int f1(int arg) { return arg + 1 + 2 + 3; }\n"
                "int f2(int arg) { return f1(arg + 2 + arg); }\n");
   }
+  SECTION(UnaryInc) {
+    CreateCode("int f(int arg) {\n"
+               "  return ++arg;\n"
+               "}\n");
+  }
+  SECTION(UnaryDoubleInc) {
+    CreateCode("int f(int arg) {\n"
+               "  return (++arg)++;\n"
+               "}\n");
+  }
+  SECTION(UnaryDec) {
+  CreateCode("int f(int arg) {\n"
+              "  return --arg;\n"
+              "}\n");
+}
 }

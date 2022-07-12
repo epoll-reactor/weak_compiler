@@ -30,6 +30,7 @@
 #include "llvm/IR/BasicBlock.h"
 #include "llvm/IR/Constants.h"
 #include "llvm/IR/DerivedTypes.h"
+#include "llvm/IR/IntrinsicInst.h"
 #include "llvm/IR/Function.h"
 #include "llvm/IR/Type.h"
 #include "llvm/IR/Verifier.h"
@@ -108,10 +109,38 @@ void CodeGen::Visit(const frontEnd::ASTBinaryOperator *Stmt) const {
   }
 }
 
+void CodeGen::Visit(const frontEnd::ASTUnaryOperator *Stmt) const {
+  Stmt->GetOperand()->Accept(this);
+
+  llvm::APInt Int(
+    /*numBits=*/32,
+    /*val=*/1,
+    /*isSigned=*/false);
+  llvm::Value *Step = llvm::ConstantInt::get(LLVMCtx, Int);
+
+  using frontEnd::TokenType;
+  switch (Stmt->GetOperation()) {
+  case TokenType::INC:
+    LastEmitted = CodeBuilder.CreateAdd(LastEmitted, Step);
+    break;
+  case TokenType::DEC:
+    LastEmitted = CodeBuilder.CreateSub(LastEmitted, Step);
+    break;
+  default: {
+    unsigned LineNo = Stmt->GetLineNo();
+    unsigned ColumnNo = Stmt->GetColumnNo();
+    weak::CompileError(LineNo, ColumnNo) << "Unknown unary operator.";
+    break;
+  }
+  } // switch
+}
+
 void CodeGen::Visit(const frontEnd::ASTVarDecl *Decl) const {
   Decl->GetDeclareBody()->Accept(this);
   VariablesMapping.emplace(Decl->GetSymbolName(), LastEmitted);
 }
+
+namespace {
 
 class FunctionBuilder {
 public:
@@ -159,6 +188,8 @@ private:
   llvm::Module &Module;
   const frontEnd::ASTFunctionDecl *Decl;
 };
+
+} // namespace
 
 void CodeGen::Visit(const frontEnd::ASTFunctionDecl *Decl) const {
   FunctionBuilder FunctionBuilder(LLVMCtx, LLVMModule, Decl);

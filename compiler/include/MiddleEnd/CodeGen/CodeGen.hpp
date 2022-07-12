@@ -73,7 +73,7 @@ private:
   virtual void Visit(const frontEnd::ASTStringLiteral *) const override {}
   virtual void
   Visit(const frontEnd::ASTSymbol *) const override; // Implemented.
-  virtual void Visit(const frontEnd::ASTUnaryOperator *) const override {}
+  virtual void Visit(const frontEnd::ASTUnaryOperator *) const override; // Implemented.
   virtual void
   Visit(const frontEnd::ASTVarDecl *) const override; // Implemented.
   virtual void Visit(const frontEnd::ASTWhileStmt *) const override {}
