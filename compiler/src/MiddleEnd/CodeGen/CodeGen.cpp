@@ -113,32 +113,57 @@ void CodeGen::Visit(const frontEnd::ASTVarDecl *Decl) const {
   VariablesMapping.emplace(Decl->GetSymbolName(), LastEmitted);
 }
 
+class FunctionBuilder {
+public:
+  FunctionBuilder(llvm::LLVMContext &TheCtx, llvm::Module &TheModule,
+                  const frontEnd::ASTFunctionDecl *TheDecl)
+      : Ctx(TheCtx), Module(TheModule), Decl(TheDecl) {}
+
+  llvm::Function *Build() {
+    llvm::FunctionType *Signature = CreateSignature();
+    llvm::Function *Func = llvm::Function::Create(
+        Signature, llvm::Function::ExternalLinkage, Decl->GetName(), &Module);
+
+    unsigned Idx{0U};
+    for (llvm::Argument &Arg : Func->args())
+      Arg.setName(ExtractSymbol(Decl->GetArguments()[Idx++].get()));
+
+    return Func;
+  }
+
+private:
+  llvm::FunctionType *CreateSignature() {
+    middleEnd::TypeResolver TypeResolver(Ctx);
+    llvm::SmallVector<llvm::Type *, 16> ArgTypes;
+
+    for (const auto &Arg : Decl->GetArguments())
+      ArgTypes.push_back(TypeResolver.ResolveFunctionParam(Arg.get()));
+
+    llvm::FunctionType *Signature = llvm::FunctionType::get(
+        // Return type.
+        TypeResolver.ResolveReturnType(Decl->GetReturnType()),
+        // Arguments.
+        ArgTypes,
+        // Variadic parameters?
+        false);
+
+    return Signature;
+  }
+
+  static const std::string &ExtractSymbol(const frontEnd::ASTNode *Node) {
+    const auto *VarDecl = static_cast<const frontEnd::ASTVarDecl *>(Node);
+    return VarDecl->GetSymbolName();
+  }
+
+  llvm::LLVMContext &Ctx;
+  llvm::Module &Module;
+  const frontEnd::ASTFunctionDecl *Decl;
+};
+
 void CodeGen::Visit(const frontEnd::ASTFunctionDecl *Decl) const {
-  middleEnd::TypeResolver TypeResolver(LLVMCtx);
-  llvm::SmallVector<llvm::Type *, 16> ArgTypes;
+  FunctionBuilder FunctionBuilder(LLVMCtx, LLVMModule, Decl);
 
-  for (const auto &Arg : Decl->GetArguments())
-    ArgTypes.push_back(TypeResolver.ResolveFunctionParam(Arg.get()));
-
-  llvm::FunctionType *Signature = llvm::FunctionType::get(
-      // Return type.
-      TypeResolver.ResolveReturnType(Decl->GetReturnType()),
-      // Arguments.
-      ArgTypes,
-      // Variadic parameters?
-      false);
-
-  llvm::Function *Func = llvm::Function::Create(
-      Signature, llvm::Function::ExternalLinkage, Decl->GetName(), &LLVMModule);
-
-  auto GetSymbol = [](const frontEnd::ASTNode *Node) -> const std::string & {
-    return static_cast<const frontEnd::ASTVarDecl *>(Node)->GetSymbolName();
-  };
-
-  unsigned Idx{0U};
-  for (llvm::Argument &Arg : Func->args())
-    Arg.setName(GetSymbol(Decl->GetArguments()[Idx++].get()));
-
+  llvm::Function *Func = FunctionBuilder.Build();
   llvm::BasicBlock *CFGBlock = llvm::BasicBlock::Create(LLVMCtx, "entry", Func);
   CodeBuilder.SetInsertPoint(CFGBlock);
 
