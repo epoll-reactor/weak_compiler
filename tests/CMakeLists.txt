@@ -23,6 +23,28 @@ function(add_compiler_test bin_name path)
     )
 endfunction()
 
+function(DeleteOldInputFiles)
+    file(GLOB_RECURSE input_files "${CMAKE_CURRENT_BINARY_DIR}/*.wl")
+    foreach (file ${input_files})
+        file(REMOVE ${file})
+    endforeach()
+endfunction()
+
+function(CopyInputFiles)
+    file(GLOB_RECURSE input_files "*.wl")
+    foreach (file ${input_files})
+        get_filename_component(name ${file} NAME_WE)
+        message(STATUS "Put test file to: ${CMAKE_CURRENT_BINARY_DIR}/${name}")
+        file(
+            COPY ${file}
+            DESTINATION ${CMAKE_CURRENT_BINARY_DIR}
+        )
+    endforeach()
+endfunction()
+
+DeleteOldInputFiles()
+CopyInputFiles()
+
 file(GLOB_RECURSE test_files "*.cpp")
 foreach(file ${test_files})
     get_filename_component(name ${file} NAME_WE)

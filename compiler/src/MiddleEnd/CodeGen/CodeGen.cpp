@@ -44,8 +44,6 @@ CodeGen::CodeGen(frontEnd::ASTNode *TheRoot)
 
 void CodeGen::CreateCode() {
   Root->Accept(this);
-  if (LastEmitted)
-    LastEmitted->print(llvm::errs());
 }
 
 void CodeGen::Visit(const frontEnd::ASTBooleanLiteral *Stmt) const {
@@ -223,6 +221,10 @@ void CodeGen::Visit(const frontEnd::ASTFunctionDecl *Decl) const {
     VariablesMapping.emplace(Arg.getName(), &Arg);
 
   Decl->GetBody()->Accept(this);
+
+  // \todo: Organize available externally function
+  //        dumps for viewing and testing.
+  Func->print(llvm::errs());
 
   if (IsReturnValue) {
     llvm::verifyFunction(*Func);
