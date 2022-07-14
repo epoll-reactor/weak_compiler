@@ -47,7 +47,8 @@ class CodeGen : private frontEnd::ASTVisitor {
 public:
   CodeGen(frontEnd::ASTNode *TheRoot);
 
-  void CreateCode();
+  /// \todo: Move object file formation somewhere else.
+  void CreateCode(std::string_view ObjectFilePath);
 
 private:
   // Literals.

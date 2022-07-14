@@ -24,6 +24,7 @@
 #include "FrontEnd/AST/ASTUnaryOperator.hpp"
 #include "FrontEnd/AST/ASTVarDecl.hpp"
 #include "FrontEnd/AST/ASTWhileStmt.hpp"
+#include "MiddleEnd/CodeGen/TargetCodeBuilder.hpp"
 #include "MiddleEnd/CodeGen/TypeResolver.hpp"
 #include "Utility/Diagnostic.hpp"
 #include "llvm/ADT/APFloat.h"
@@ -42,8 +43,11 @@ CodeGen::CodeGen(frontEnd::ASTNode *TheRoot)
       LLVMModule("LLVM Module", LLVMCtx), CodeBuilder(LLVMCtx),
       IsReturnValue(false) {}
 
-void CodeGen::CreateCode() {
+void CodeGen::CreateCode(std::string_view ObjectFilePath) {
   Root->Accept(this);
+
+  TargetCodeBuilder TargetBuilder(LLVMModule, ObjectFilePath);
+  TargetBuilder.Build();
 }
 
 void CodeGen::Visit(const frontEnd::ASTBooleanLiteral *Stmt) const {

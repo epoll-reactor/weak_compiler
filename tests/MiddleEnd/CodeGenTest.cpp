@@ -10,7 +10,7 @@ namespace fe = weak::frontEnd;
 namespace me = weak::middleEnd;
 
 void RunFromFile(std::string_view Path) {
-  std::cerr << "Testing file " << Path << "...\n";
+  llvm::outs() << "Testing file " << Path << "...\n";
   std::ifstream File(Path.data());
   std::string Program(
     (std::istreambuf_iterator<char>(File)),
@@ -21,7 +21,10 @@ void RunFromFile(std::string_view Path) {
   fe::Parser Parser(&*Tokens.begin(), &*Tokens.end());
   auto AST = Parser.Parse();
   me::CodeGen CodeGen(AST.get());
-  CodeGen.CreateCode();
+
+  std::string TargetPath(Path.substr(Path.find_last_of('/') + 1));
+  TargetPath = TargetPath.substr(0, TargetPath.find_first_of('.'));
+  CodeGen.CreateCode(TargetPath);
 }
 
 int main() {
