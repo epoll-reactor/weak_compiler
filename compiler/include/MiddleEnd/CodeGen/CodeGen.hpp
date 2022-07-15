@@ -50,6 +50,8 @@ public:
   /// \todo: Move object file formation somewhere else.
   void CreateCode(std::string_view ObjectFilePath);
 
+  std::string ToString();
+
 private:
   // Literals.
   virtual void

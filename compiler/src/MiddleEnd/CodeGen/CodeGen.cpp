@@ -226,10 +226,6 @@ void CodeGen::Visit(const frontEnd::ASTFunctionDecl *Decl) const {
 
   Decl->GetBody()->Accept(this);
 
-  // \todo: Organize available externally function
-  //        dumps for viewing and testing.
-  Func->print(llvm::errs());
-
   if (IsReturnValue) {
     llvm::verifyFunction(*Func);
     LastEmitted = Func;
@@ -290,6 +286,19 @@ void CodeGen::Visit(const frontEnd::ASTReturnStmt *Stmt) const {
 void CodeGen::Visit(const frontEnd::ASTVarDecl *Decl) const {
   Decl->GetDeclareBody()->Accept(this);
   VariablesMapping.emplace(Decl->GetSymbolName(), LastEmitted);
+}
+
+std::string CodeGen::ToString() {
+  std::string Result;
+
+  for (const auto &F : LLVMModule.getFunctionList()) {
+    llvm::raw_string_ostream Stream(Result);
+    Stream << F;
+    Stream << '\n';
+    Stream.flush();
+  }
+
+  return Result;
 }
 
 } // namespace middleEnd
