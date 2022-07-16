@@ -1,22 +1,14 @@
 #include "FrontEnd/Parse/Parser.hpp"
 #include "FrontEnd/AST/ASTPrettyPrint.hpp"
 #include "FrontEnd/Lex/Lexer.hpp"
-#include "MiddleEnd/Symbols/Storage.hpp"
 #include "../TestHelpers.hpp"
 #include <sstream>
 #include <iostream>
 
 using namespace weak::frontEnd;
-using namespace weak::middleEnd;
-
-static Lexer CreateLexer(Storage *S, std::string_view Input) {
-  Lexer Lex(S, Input.begin(), Input.end());
-  return Lex;
-}
 
 static void TestAST(std::string_view String, std::string_view Expected) {
-  Storage Storage;
-  auto Tokens = CreateLexer(&Storage, String).Analyze();
+  auto Tokens = Lexer(String.begin(), String.end()).Analyze();
   Parser Parse(&*Tokens.begin(), &*Tokens.end());
   std::ostringstream OutStream;
   ASTPrettyPrint(Parse.Parse(), OutStream);

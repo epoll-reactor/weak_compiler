@@ -1,14 +1,7 @@
 #include "FrontEnd/Lex/Lexer.hpp"
-#include "MiddleEnd/Symbols/Storage.hpp"
 #include "TestHelpers.hpp"
 
 using namespace weak::frontEnd;
-using namespace weak::middleEnd;
-
-static Lexer CreateLexer(Storage *S, std::string_view Input) {
-  Lexer Lex(S, Input.begin(), Input.end());
-  return Lex;
-}
 
 static Token MakeToken(std::string_view Data, TokenType Type) {
   return {Data, Type, 0U, 0U};
@@ -16,8 +9,7 @@ static Token MakeToken(std::string_view Data, TokenType Type) {
 
 static void RunLexerTest(std::string_view Input,
                          const std::vector<Token> &ExpectedTokens) {
-  Storage S;
-  auto Tokens = CreateLexer(&S, Input).Analyze();
+  auto Tokens = Lexer(Input.begin(), Input.end()).Analyze();
   if (Tokens.size() != ExpectedTokens.size()) {
     std::cerr << "Output size mismatch: got " << Tokens.size()
               << " but expected " << ExpectedTokens.size();

@@ -85,7 +85,7 @@ const char *TokenToString(TokenType Type);
 
 struct Token {
   Token(std::string_view TheData, TokenType TheType, unsigned TheLineNo,
-        unsigned TheColumnNo, unsigned TheAttribute = 0U);
+        unsigned TheColumnNo);
 
   bool operator==(const Token &rhs) const;
 
@@ -102,10 +102,6 @@ struct Token {
 
   /// Position in source text.
   unsigned ColumnNo;
-
-  /// Integer value used to represent variable in symbol table.
-  /// Used by CFG builder/analyzer and code generator.
-  unsigned Attribute;
 };
 
 } // namespace frontEnd

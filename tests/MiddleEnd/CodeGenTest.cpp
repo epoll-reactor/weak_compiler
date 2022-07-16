@@ -1,7 +1,6 @@
 #include "FrontEnd/Lex/Lexer.hpp"
 #include "FrontEnd/Parse/Parser.hpp"
 #include "MiddleEnd/CodeGen/CodeGen.hpp"
-#include "MiddleEnd/Symbols/Storage.hpp"
 #include "TestHelpers.hpp"
 #include <fstream>
 #include <filesystem>
@@ -15,8 +14,7 @@ void RunFromFile(std::string_view Path) {
   std::string Program(
     (std::istreambuf_iterator<char>(File)),
     (std::istreambuf_iterator<char>()));
-  me::Storage Storage;
-  fe::Lexer Lex(&Storage, &*Program.begin(), &*Program.end());
+  fe::Lexer Lex(&*Program.begin(), &*Program.end());
   auto Tokens = Lex.Analyze();
   fe::Parser Parser(&*Tokens.begin(), &*Tokens.end());
   auto AST = Parser.Parse();
