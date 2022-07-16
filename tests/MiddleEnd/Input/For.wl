@@ -1,6 +1,6 @@
-int main(int count) {
+int main() {
 	int result = 0;
-	for (int i = count; i < 1000; ++i) {
+	for (int i = 0; i < 1000; ++i) {
 		--result;
 	}
 	return result;
