@@ -25,14 +25,14 @@ public:
   TypeResolver(llvm::LLVMContext &);
 
   /// Convert given parameter (including void) to corresponding LLVM type.
-  llvm::Type *ResolveReturnType(frontEnd::TokenType);
-  /// \copydoc TypeResolver::ResolveReturnType(frontEnd::TokenType)
-  llvm::Type *ResolveReturnType(const frontEnd::ASTNode *);
+  llvm::Type *Resolve(frontEnd::TokenType);
+  /// \copydoc TypeResolver::Resolve(frontEnd::TokenType)
+  llvm::Type *Resolve(const frontEnd::ASTNode *);
 
   /// Convert given parameter (excluding void) to corresponding LLVM type.
-  llvm::Type *ResolveFunctionParam(frontEnd::TokenType);
-  /// \copydoc TypeResolver::ResolveFunctionParam(frontEnd::TokenType)
-  llvm::Type *ResolveFunctionParam(const frontEnd::ASTNode *);
+  llvm::Type *ResolveExceptVoid(frontEnd::TokenType);
+  /// \copydoc TypeResolver::ResolveExceptVoid(frontEnd::TokenType)
+  llvm::Type *ResolveExceptVoid(const frontEnd::ASTNode *);
 
 private:
   /// Convert frontEnd::ASTNode to frontEnd::ASTVarDecl, or

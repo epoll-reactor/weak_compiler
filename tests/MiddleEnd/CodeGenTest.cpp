@@ -25,8 +25,6 @@ void RunFromFile(std::string_view Path) {
   std::string TargetPath(Path.substr(Path.find_last_of('/') + 1));
   TargetPath = TargetPath.substr(0, TargetPath.find_first_of('.'));
   CodeGen.CreateCode(TargetPath);
-
-  llvm::outs() << "Compiled code:\n" << CodeGen.ToString();
 }
 
 int main() {

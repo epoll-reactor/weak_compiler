@@ -30,7 +30,7 @@ TypeResolver::GetVarDecl(const frontEnd::ASTNode *Node) {
   return Decl;
 }
 
-llvm::Type *TypeResolver::ResolveReturnType(frontEnd::TokenType T) {
+llvm::Type *TypeResolver::Resolve(frontEnd::TokenType T) {
   using frontEnd::TokenType;
   switch (T) {
   case TokenType::VOID:
@@ -44,12 +44,12 @@ llvm::Type *TypeResolver::ResolveReturnType(frontEnd::TokenType T) {
   }
 }
 
-llvm::Type *TypeResolver::ResolveReturnType(const frontEnd::ASTNode *Node) {
+llvm::Type *TypeResolver::Resolve(const frontEnd::ASTNode *Node) {
   const frontEnd::ASTVarDecl *Decl = GetVarDecl(Node);
-  return ResolveReturnType(Decl->GetDataType());
+  return Resolve(Decl->GetDataType());
 }
 
-llvm::Type *TypeResolver::ResolveFunctionParam(frontEnd::TokenType T) {
+llvm::Type *TypeResolver::ResolveExceptVoid(frontEnd::TokenType T) {
   using frontEnd::TokenType;
   switch (T) {
   case TokenType::INT:
@@ -61,9 +61,9 @@ llvm::Type *TypeResolver::ResolveFunctionParam(frontEnd::TokenType T) {
   }
 }
 
-llvm::Type *TypeResolver::ResolveFunctionParam(const frontEnd::ASTNode *Node) {
+llvm::Type *TypeResolver::ResolveExceptVoid(const frontEnd::ASTNode *Node) {
   const frontEnd::ASTVarDecl *Decl = GetVarDecl(Node);
-  return ResolveFunctionParam(Decl->GetDataType());
+  return ResolveExceptVoid(Decl->GetDataType());
 }
 
 } // namespace middleEnd
