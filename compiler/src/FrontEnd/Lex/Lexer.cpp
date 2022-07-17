@@ -318,21 +318,14 @@ void Lexer::ProcessComment() {
 }
 
 void Lexer::ProcessOneLineComment() {
-  printf("Lexer::ProcessOneLineComment\n");
   PeekNext();
 
-  while (PeekNext() != '\n') {
-    printf("Current: %c, == \\n?: %d\n", PeekCurrent(),
-           (PeekCurrent() == '\n'));
+  while (PeekNext() != '\n')
     if (PeekCurrent() == '\n')
       break;
-  }
-  printf("After: current: %c, == \\n?: %d\n", PeekCurrent(),
-         (PeekCurrent() == '\n'));
 }
 
 void Lexer::ProcessMultiLineComment() {
-  printf("Lexer::ProcessMultiLineComment\n");
   PeekNext();
 
   while (true) {
