@@ -22,13 +22,19 @@ public:
   Lexer(const char *TheBufferStart, const char *TheBufferEnd);
 
   /// Walk through input text and generate stream of tokens.
-  std::vector<Token> Analyze();
+  const std::vector<Token> &Analyze();
 
 private:
   Token AnalyzeDigit();
   Token AnalyzeStringLiteral();
   Token AnalyzeSymbol();
   Token AnalyzeOperator();
+
+  /// Ignore C-style one-line and multi-line comments.
+  void ProcessComment();
+
+  void ProcessOneLineComment();
+  void ProcessMultiLineComment();
 
   /// Get current character from input range and move forward.
   char PeekNext();
@@ -37,6 +43,9 @@ private:
   char PeekCurrent() const;
 
   Token MakeToken(std::string_view Data, TokenType Type) const;
+
+  /// Internal buffer.
+  std::vector<Token> ProcessedTokens;
 
   /// First symbol in buffer.
   const char *BufferStart;

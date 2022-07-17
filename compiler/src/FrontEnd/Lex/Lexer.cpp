@@ -160,8 +160,8 @@ Lexer::Lexer(const char *TheBufferStart, const char *TheBufferEnd)
   assert(BufferStart <= BufferEnd);
 }
 
-std::vector<Token> Lexer::Analyze() {
-  std::vector<Token> ProcessedTokens;
+const std::vector<Token> &Lexer::Analyze() {
+  ProcessedTokens.clear();
 
   long InputSize = std::distance(BufferStart, BufferEnd);
   ProcessedTokens.reserve(InputSize / 2);
@@ -173,6 +173,8 @@ std::vector<Token> Lexer::Analyze() {
       ProcessedTokens.push_back(AnalyzeSymbol());
     } else if (Atom == '\"') {
       ProcessedTokens.push_back(AnalyzeStringLiteral());
+    } else if (Atom == '/') {
+      ProcessComment();
     } else if (std::isspace(Atom)) {
       PeekNext();
       continue;
@@ -298,6 +300,54 @@ Token Lexer::AnalyzeOperator() {
   CompileError(CurrentLineNo, CurrentColumnNo)
       << "Unknown character sequence: " << WrongOperator;
   UnreachablePoint();
+}
+
+void Lexer::ProcessComment() {
+  assert(PeekCurrent() == '/');
+  PeekNext();
+  char Atom = PeekCurrent();
+
+  if (Atom == '/') {
+    ProcessOneLineComment();
+  } else if (Atom == '*') {
+    ProcessMultiLineComment();
+  } else {
+    --CurrentBufferPtr;
+    ProcessedTokens.push_back(AnalyzeOperator());
+  }
+}
+
+void Lexer::ProcessOneLineComment() {
+  printf("Lexer::ProcessOneLineComment\n");
+  PeekNext();
+
+  while (PeekNext() != '\n') {
+    printf("Current: %c, == \\n?: %d\n", PeekCurrent(), (PeekCurrent() == '\n'));
+    if (PeekCurrent() == '\n')
+      break;
+  }
+  printf("After: current: %c, == \\n?: %d\n", PeekCurrent(), (PeekCurrent() == '\n'));
+}
+
+void Lexer::ProcessMultiLineComment() {
+  printf("Lexer::ProcessMultiLineComment\n");
+  PeekNext();
+
+  while (true) {
+    char Next = PeekCurrent();
+
+    if (Next == '*') {
+      PeekNext();
+      Next = PeekCurrent();
+
+      if (Next == '/') {
+        PeekNext();
+        break;
+      }
+    }
+
+    PeekNext();
+  }
 }
 
 char Lexer::PeekNext() {

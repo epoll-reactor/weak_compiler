@@ -28,6 +28,38 @@ static void RunLexerTest(std::string_view Input,
 }
 
 int main() {
+  // This should not be correctly processed, since
+  // there is no newline symbol at the end of comment.
+  // SECTION(LexingEmptyOneLineComment) {
+  //   std::vector<Token> Assertion = {};
+  //   RunLexerTest("//", Assertion);
+  // }
+  SECTION(LexingEmptyOneLineCommentExplicitlyTerminated) {
+    std::vector<Token> Assertion = {};
+    RunLexerTest("//\n", Assertion);
+  }
+  SECTION(LexingOneLineComment) {
+    std::vector<Token> Assertion = {
+        MakeToken("1", TokenType::INTEGRAL_LITERAL),
+        MakeToken("22", TokenType::INTEGRAL_LITERAL),
+        MakeToken("333", TokenType::INTEGRAL_LITERAL),
+        MakeToken("", TokenType::SLASH)};
+    RunLexerTest("// Free text.\n1 22 333 /", Assertion);
+  }
+  SECTION(LexingEmptyMultiLineComment) {
+    std::vector<Token> Assertion = {};
+    RunLexerTest("/**/", Assertion);
+  }
+  SECTION(LexingMultiLineComment) {
+    std::vector<Token> Assertion = {
+        MakeToken("1", TokenType::INTEGRAL_LITERAL),
+        MakeToken("22", TokenType::INTEGRAL_LITERAL),
+        MakeToken("333", TokenType::INTEGRAL_LITERAL),
+        MakeToken("", TokenType::SLASH),
+        MakeToken("", TokenType::SLASH),
+        MakeToken("", TokenType::SLASH)};
+    RunLexerTest("/* Free // text. */1 22 333 / / /", Assertion);
+  }
   SECTION(LexingIntegralConstant) {
     std::vector<Token> Assertion = {
         MakeToken("1", TokenType::INTEGRAL_LITERAL),
@@ -131,7 +163,6 @@ int main() {
                  Assertion);
   }
   SECTION(LexerSpeedTest) {
-    Storage S;
     std::string Body = "1.1 1.1 1.1 1.1 1.1 1.1 1.1 1.1 1.1 1.1 1.1 1.1 1.1 1.1"
                        "+++++++++++++++++++++++++++++++++++++++++++++++++++++++"
                        "\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\""
@@ -139,6 +170,6 @@ int main() {
     for (size_t It = 0; It < 16; ++It)
       Body += std::string(Body);
     printf("Body size: %zu\n", Body.size());
-    CreateLexer(&S, Body).Analyze();
+    Lexer(&*Body.begin(), &*Body.end()).Analyze();
   }
 }
