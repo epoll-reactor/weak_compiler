@@ -37,10 +37,13 @@ llvm::Type *TypeResolver::Resolve(frontEnd::TokenType T) {
     return llvm::Type::getVoidTy(LLVMCtx);
   case TokenType::INT:
     return llvm::Type::getInt32Ty(LLVMCtx);
+  case TokenType::BOOLEAN:
+    return llvm::Type::getInt32Ty(LLVMCtx);
   case TokenType::FLOAT:
     return llvm::Type::getFloatTy(LLVMCtx);
   default:
-    weak::UnreachablePoint("Wrong function return type.");
+    weak::CompileError() << "Wrong type: " << frontEnd::TokenToString(T);
+    weak::UnreachablePoint("");
   }
 }
 
@@ -56,8 +59,11 @@ llvm::Type *TypeResolver::ResolveExceptVoid(frontEnd::TokenType T) {
     return llvm::Type::getInt32Ty(LLVMCtx);
   case TokenType::FLOAT:
     return llvm::Type::getFloatTy(LLVMCtx);
+  case TokenType::BOOLEAN:
+    return llvm::Type::getInt32Ty(LLVMCtx);
   default:
-    weak::UnreachablePoint("Wrong function parameter type.");
+    weak::CompileError() << "Wrong type: " << frontEnd::TokenToString(T);
+    weak::UnreachablePoint("");
   }
 }
 

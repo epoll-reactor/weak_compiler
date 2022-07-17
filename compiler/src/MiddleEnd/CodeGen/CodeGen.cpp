@@ -80,7 +80,7 @@ void CodeGen::Visit(const frontEnd::ASTBinaryOperator *Stmt) const {
   }
 
   using frontEnd::TokenType;
-  switch (Stmt->GetOperation()) {
+  switch (auto T = Stmt->GetOperation()) {
   case TokenType::ASSIGN: {
     auto *Assignment =
         static_cast<const frontEnd::ASTSymbol *>(Stmt->GetLHS().get());
@@ -99,12 +99,49 @@ void CodeGen::Visit(const frontEnd::ASTBinaryOperator *Stmt) const {
   case TokenType::SLASH:
     LastEmitted = CodeBuilder.CreateSDiv(L, R);
     break;
+  case TokenType::LE:
+    LastEmitted = CodeBuilder.CreateICmpSLE(L, R);
+    break;
   case TokenType::LT:
     LastEmitted = CodeBuilder.CreateICmpSLT(L, R);
     break;
+  case TokenType::GE:
+    LastEmitted = CodeBuilder.CreateICmpSGE(L, R);
+    break;
+  case TokenType::GT:
+    LastEmitted = CodeBuilder.CreateICmpSGT(L, R);
+    break;
+  case TokenType::EQ:
+    LastEmitted = CodeBuilder.CreateICmpEQ(L, R);
+    break;
+  case TokenType::NEQ:
+    LastEmitted = CodeBuilder.CreateICmpNE(L, R);
+    break;
+  case TokenType::OR:
+    LastEmitted = CodeBuilder.CreateLogicalOr(L, R);
+    break;
+  case TokenType::AND:
+    LastEmitted = CodeBuilder.CreateLogicalAnd(L, R);
+    break;
+  case TokenType::BIT_OR:
+    LastEmitted = CodeBuilder.CreateOr(L, R);
+    break;
+  case TokenType::BIT_AND:
+    LastEmitted = CodeBuilder.CreateAnd(L, R);
+    break;
+  case TokenType::XOR:
+    LastEmitted = CodeBuilder.CreateXor(L, R);
+    break;
+  case TokenType::SHL:
+    LastEmitted = CodeBuilder.CreateShl(L, R);
+    break;
+  case TokenType::SHR:
+    LastEmitted = CodeBuilder.CreateAShr(L, R);
+    break;
   default:
     LastEmitted = nullptr;
-    weak::CompileError() << "Invalid binary operator";
+    weak::CompileError() << "Invalid binary operator: "
+                         << frontEnd::TokenToString(T);
     break;
   }
 }
