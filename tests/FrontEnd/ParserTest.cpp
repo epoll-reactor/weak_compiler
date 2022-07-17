@@ -90,7 +90,7 @@ int main() {
             "          FunctionCall <line:2, col:10> call\n"
             "            FunctionArgs <line:2, col:10>\n");
   }
-  SECTION(ReturnEmptyFunctionCall) {
+  SECTION(ReturnParametrizedFunctionCall) {
       TestAST("int f() {\n"
               "  return call(1, 2, 3);\n"
               "}\n",
@@ -107,6 +107,52 @@ int main() {
               "              IntegerLiteral <line:2, col:15> 1\n"
               "              IntegerLiteral <line:2, col:18> 2\n"
               "              IntegerLiteral <line:2, col:21> 3\n");
+  }
+  SECTION(ReturnFunctionCallExpression) {
+      TestAST("int f() {"
+              "  return x + y(z, q);"
+              "}",
+              "CompoundStmt <line:0, col:0>\n"
+              "  FunctionDecl <line:1, col:1>\n"
+              "    FunctionRetType <line:1, col:1> <INT>\n"
+              "    FunctionName <line:1, col:1> f\n"
+              "    FunctionArgs <line:1, col:1>\n"
+              "    FunctionBody <line:1, col:1>\n"
+              "      CompoundStmt <line:1, col:9>\n"
+              "        ReturnStmt <line:1, col:12>\n"
+              "          BinaryOperator <line:1, col:21> +\n"
+              "            Symbol <line:1, col:19> x\n"
+              "            FunctionCall <line:1, col:23> y\n"
+              "              FunctionArgs <line:1, col:23>\n"
+              "                Symbol <line:1, col:25> z\n"
+              "                Symbol <line:1, col:28> q\n");
+  }
+  SECTION(ReturnNestedFunctionCallExpression) {
+    TestAST("int f() {"
+            "  return a + b(c(1 + d(e) + 1), f);"
+            "}",
+            "CompoundStmt <line:0, col:0>\n"
+            "  FunctionDecl <line:1, col:1>\n"
+            "    FunctionRetType <line:1, col:1> <INT>\n"
+            "    FunctionName <line:1, col:1> f\n"
+            "    FunctionArgs <line:1, col:1>\n"
+            "    FunctionBody <line:1, col:1>\n"
+            "      CompoundStmt <line:1, col:9>\n"
+            "        ReturnStmt <line:1, col:12>\n"
+            "          BinaryOperator <line:1, col:21> +\n"
+            "            Symbol <line:1, col:19> a\n"
+            "            FunctionCall <line:1, col:23> b\n"
+            "              FunctionArgs <line:1, col:23>\n"
+            "                FunctionCall <line:1, col:25> c\n"
+            "                  FunctionArgs <line:1, col:25>\n"
+            "                    BinaryOperator <line:1, col:29> +\n"
+            "                      IntegerLiteral <line:1, col:27> 1\n"
+            "                      BinaryOperator <line:1, col:36> +\n"
+            "                        FunctionCall <line:1, col:31> d\n"
+            "                          FunctionArgs <line:1, col:31>\n"
+            "                            Symbol <line:1, col:33> e\n"
+            "                        IntegerLiteral <line:1, col:38> 1\n"
+            "                Symbol <line:1, col:42> f\n");
   }
   SECTION(ParametrizedFunctionCall) {
     TestAST("void f() {\n"
