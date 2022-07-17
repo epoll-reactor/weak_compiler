@@ -20,7 +20,7 @@
 	
 	\maketitle
 	\tableofcontents
-	
+
 	\newpage
 	
 	\section{Scope}
@@ -49,14 +49,25 @@
 				\tt{[}   & \tt{]}      & \tt{(}   & \tt{)}   & \tt{\{}  & \tt{\}}   \\
 			\end{tabular}
 		
+		\subsection{Comments}
+			Comments are not involved into the parsing and should be processed at the
+			lexical analysis stage.
+		
+			\begin{itemize}
+				\item All text starting with // should be ignored until the end of line.
+				
+				\item All text after /*  and before */ character sequences should be
+				ignored.
+			\end{itemize}
+
 	\section{Grammar summary}
 		\itshape
 		\setlength{\grammarindent}{12em}
 
 		\begin{grammar}
-			<program> ::= <function-declaration>*
-			
-			<function-declaration> ::= <ret-type> <id> \textbf{(} <parameter-list-opt> \textbf{)} \textbf{\{} <stmt>* \textbf{\}}
+			<program> ::= <function-decl>*
+
+			<function-decl> ::= <ret-type> <id> \textbf{(} <parameter-list-opt> \textbf{)} \textbf{\{} <stmt>* \textbf{\}}
 
 			<ret-type> ::= <type>
 			\alt <void-type>
@@ -66,14 +77,14 @@
 			\alt \textbf{char}
 			\alt \textbf{string}
 			\alt \textbf{boolean}
-			
+
 			<void-type> ::= \textbf{void}
-						
+
 			<constant> ::= <integral-literal>
 			\alt <floating-literal>
 			\alt <string-literal>
 			\alt <boolean-literal>
-			
+
 			<integral-literal> ::= <digit>*
 			
 			<floating-literal> ::= <digit>* \textbf{.} <digit>*
@@ -100,7 +111,9 @@
 			<stmt> ::= <selection-stmt>
 			\alt <iteration-stmt>
 			\alt <jump-stmt>
+			\alt <var-decl>
 			\alt <expr>
+			\alt <unary-expr>
 			
 			<iteration-stmt> ::= <stmt>
 			\alt \textbf{break};
@@ -114,6 +127,8 @@
 			\alt \textbf{do} \textbf{\{} <iteration-stmt>* \textbf{\}} \textbf{while} \textbf{(} <expr> \textbf{)} 
 			
 			<jump-stmt> ::= \textbf{return} <expr>? \textbf{;}
+			
+			<var-decl> ::= <type> <id> \tt{=} <logical-or-expr>
 			
 			<assignment-op> ::= \tt{"="}
 			\alt \tt{"*="}
@@ -190,6 +205,10 @@
 	\section{Environment}
 		\upshape
 		
+		\subsection{Backend}
+			The language use the LLVM backend, although another backend can be implemented
+			(including self-written one).
+
 		\subsection{Data types}
 			The language must implement static strong typing. All casts must
 			be explicit.
@@ -228,6 +247,8 @@
 	  					\item \textbf{Incremental} part with the some statement, that
 	  						should change assigned variable.
 	  				\end{itemize}
+	  				
+	  				All parts are optional.
 			\end{itemize}
 			
 		\subsection{Conditional statements}
@@ -243,40 +264,9 @@
 				value, may not (void functions).
 			\end{itemize}
 			
-		\subsection{Translation environment}
-			The whole program must be placed in one file to simplify translation
-			and linking (lack of it as such).
-			
-	\section{Implementation}
-	
-		\subsection{Intermediate representation format}
-			The IR has three-address format, which consists of following instructions:
-			
-			\begin{itemize}
-				\item \textit{\textbf{res} = \textbf{arg} op \textbf{arg}};
-				
-				\item \textit{\textbf{if} \textbf{arg} op \textbf{arg} goto 
-				\textbf{L}};
+	\section{FFI}
+		\subsection{Linking with C}
+			The language should have FFI with the GNU C Library and with other C
+			libraries in general.
 
-				\item \textit{\textbf{L}:} (label);
-
-				\item \textit{goto \textbf{L}}.
-			\end{itemize}
-			
-			\noindent \textbf{NOTE:} \textbf{\textit{arg}} can be either temporary variable
-			or immediate value (integer or float).
-				
-			\bigbreak
-				
-			\noindent \textbf{NOTE:} \textbf{\textit{if}} instruction explicitly has two 
-			operands, so if	we have expression like \[\textbf{\textit{if (condition)}}\],
-			 \textbf{\textit{if}} instruction should be represented as
-			 \[\textbf{\textit{if condition != 0 goto L...}}\].
-			 
-			 \bigbreak
-			 
-			 \noindent \textbf{NOTE:} when \textbf{\textit{if}} instruction argument
-			 cannot explicitly be converted to bool, the result of argument implicitly
-			 converted to bool.
-			
 \end{document}

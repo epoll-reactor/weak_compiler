@@ -128,8 +128,8 @@ std::unique_ptr<ASTNode> Parser::ParseVarDecl() {
 const Token &Parser::ParseType() {
   switch (const Token &Current = PeekCurrent(); Current.Type) {
   case TokenType::INT:
-  case TokenType::CHAR:
   case TokenType::FLOAT:
+  case TokenType::CHAR:
   case TokenType::STRING:
   case TokenType::BOOLEAN: // Fall through.
     PeekNext();
