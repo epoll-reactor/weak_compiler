@@ -673,9 +673,14 @@ std::unique_ptr<ASTNode> Parser::ParsePostfixUnary() {
 
 std::unique_ptr<ASTNode> Parser::ParsePrimary() {
   switch (const Token &Current = PeekNext(); Current.Type) {
-  case TokenType::SYMBOL:
+  case TokenType::SYMBOL: {
+    if (PeekCurrent().Type == TokenType::OPEN_PAREN) {
+      --CurrentBufferPtr;
+      return ParseFunctionCall();
+    }
     return std::make_unique<ASTSymbol>(Current.Data, Current.LineNo,
                                        Current.ColumnNo);
+  }
   case TokenType::OPEN_PAREN: {
     /// We expect all binary/unary/constant statements expect assignment.
     auto Expr = ParseLogicalOr();
