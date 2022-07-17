@@ -179,6 +179,44 @@ void CodeGen::Visit(const frontEnd::ASTForStmt *Stmt) const {
   CodeBuilder.SetInsertPoint(ForEndBB);
 }
 
+void CodeGen::Visit(const frontEnd::ASTWhileStmt *Stmt) const {
+  llvm::Function *Func = CodeBuilder.GetInsertBlock()->getParent();
+
+  llvm::BasicBlock *WhileCondBB =
+      llvm::BasicBlock::Create(LLVMCtx, "while.cond", Func);
+  llvm::BasicBlock *WhileBodyBB =
+      llvm::BasicBlock::Create(LLVMCtx, "while.body", Func);
+  llvm::BasicBlock *WhileEndBB =
+      llvm::BasicBlock::Create(LLVMCtx, "while.end", Func);
+
+  CodeBuilder.CreateBr(WhileCondBB);
+  CodeBuilder.SetInsertPoint(WhileCondBB);
+
+  Stmt->GetCondition()->Accept(this);
+  CodeBuilder.CreateCondBr(LastEmitted, WhileBodyBB, WhileEndBB);
+  CodeBuilder.SetInsertPoint(WhileBodyBB);
+  Stmt->GetBody()->Accept(this);
+  CodeBuilder.CreateBr(WhileCondBB);
+  CodeBuilder.SetInsertPoint(WhileEndBB);
+}
+
+void CodeGen::Visit(const frontEnd::ASTDoWhileStmt *Stmt) const {
+  llvm::Function *Func = CodeBuilder.GetInsertBlock()->getParent();
+
+  llvm::BasicBlock *DoWhileBodyBB =
+      llvm::BasicBlock::Create(LLVMCtx, "do.while.body", Func);
+  llvm::BasicBlock *DoWhileEndBB =
+      llvm::BasicBlock::Create(LLVMCtx, "do.while.end", Func);
+
+  CodeBuilder.CreateBr(DoWhileBodyBB);
+  CodeBuilder.SetInsertPoint(DoWhileBodyBB);
+
+  Stmt->GetBody()->Accept(this);
+  Stmt->GetCondition()->Accept(this);
+  CodeBuilder.CreateCondBr(LastEmitted, DoWhileBodyBB, DoWhileEndBB);
+  CodeBuilder.SetInsertPoint(DoWhileEndBB);
+}
+
 void CodeGen::Visit(const frontEnd::ASTIfStmt *Stmt) const {
   Stmt->GetCondition()->Accept(this);
   llvm::Value *Condition = LastEmitted;

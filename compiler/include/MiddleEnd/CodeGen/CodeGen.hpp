@@ -73,10 +73,10 @@ private:
   virtual void Visit(const frontEnd::ASTContinueStmt *) const override {}
 
   // Loop statements.
-  virtual void Visit(const frontEnd::ASTDoWhileStmt *) const override {}
   virtual void
   Visit(const frontEnd::ASTForStmt *) const override; // Implemented.
-  virtual void Visit(const frontEnd::ASTWhileStmt *) const override {}
+  virtual void Visit(const frontEnd::ASTWhileStmt *) const override; // Implemented.
+  virtual void Visit(const frontEnd::ASTDoWhileStmt *) const override; // Implemented.
 
   // Condition statements.
   virtual void
