@@ -75,9 +75,8 @@ void CodeGen::Visit(const frontEnd::ASTBinaryOperator *Stmt) const {
   Stmt->GetRHS()->Accept(this);
   llvm::Value *R = LastEmitted;
 
-  if (!L || !R) {
+  if (!L || !R)
     return;
-  }
 
   using frontEnd::TokenType;
   switch (auto T = Stmt->GetOperation()) {
@@ -258,8 +257,10 @@ void CodeGen::Visit(const frontEnd::ASTIfStmt *Stmt) const {
   Stmt->GetCondition()->Accept(this);
   llvm::Value *Condition = LastEmitted;
 
+  /// \todo: I am not sure if we should always compare with 0.
+  unsigned sizeBits = Condition->getType()->getPrimitiveSizeInBits();
   Condition = CodeBuilder.CreateICmpNE(
-      Condition, llvm::ConstantInt::get(LLVMCtx, llvm::APInt(32, 0, false)),
+      Condition, llvm::ConstantInt::get(LLVMCtx, llvm::APInt(sizeBits, 0, false)),
       "condition");
 
   llvm::Function *Func = CodeBuilder.GetInsertBlock()->getParent();
@@ -404,7 +405,7 @@ void CodeGen::Visit(const frontEnd::ASTSymbol *Stmt) const {
   llvm::AllocaInst *Alloca = llvm::dyn_cast<llvm::AllocaInst>(V);
   if (Alloca)
     // Variable.
-    LastEmitted = CodeBuilder.CreateLoad(llvm::Type::getInt32Ty(LLVMCtx),
+    LastEmitted = CodeBuilder.CreateLoad(Alloca->getAllocatedType(),
                                          Alloca, Stmt->GetName());
   else
     // Function Parameter.
