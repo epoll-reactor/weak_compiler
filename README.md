@@ -15,79 +15,100 @@ which uses LLVM.
 
 The program
 ```c
-int main() {
-    int result = 0;
-    for (int i = 0; i < 1000; ++i) {
-        --result;
+int fact(int n) {
+    if ((n == 0) || (n == 1)) {
+        return 1;
     }
-    return result;
+    return n * fact(n - 1);
+}
+
+int main() {
+    return fact(5);
 }
 ```
 compiled to LLVM IR
 ```asm
+define i32 @fact(i32 %n) {
+entry:
+  %0 = icmp eq i32 %n, 0
+  %1 = icmp eq i32 %n, 1
+  %2 = select i1 %0, i1 true, i1 %1
+  %condition = icmp ne i1 %2, false
+  br i1 %condition, label %if.then, label %if.end
+
+if.then:                                          ; preds = %entry
+  ret i32 1
+  br label %if.end
+
+if.end:                                           ; preds = %if.then, %entry
+  %4 = sub i32 %n, 1
+  %5 = call i32 @fact(i32 %4)
+  %6 = mul i32 %n, %5
+  ret i32 %6
+}
+
 define i32 @main() {
 entry:
-  %result = alloca i32, align 4
-  store i32 0, i32* %result, align 4
-  %i = alloca i32, align 4
-  store i32 0, i32* %i, align 4
-  br label %for.cond
-
-for.cond:                                         ; preds = %for.body, %entry
-  %i1 = load i32, i32* %i, align 4
-  %0 = icmp slt i32 %i1, 1000
-  br i1 %0, label %for.body, label %for.end
-
-for.body:                                         ; preds = %for.cond
-  %result2 = load i32, i32* %result, align 4
-  %1 = sub i32 %result2, 1
-  store i32 %1, i32* %result, align 4
-  %i3 = load i32, i32* %i, align 4
-  %2 = add i32 %i3, 1
-  store i32 %2, i32* %i, align 4
-  br label %for.cond
-
-for.end:                                          ; preds = %for.cond
-  %result4 = load i32, i32* %result, align 4
-  ret i32 %result4
+  %0 = call i32 @fact(i32 5)
+  ret i32 %0
 }
+
 ```
 and next can be compiled to target assembly
 ```asm
-    .text
-    .file     "ir.ll"
-    .globl    main                      # -- Begin function main
-    .p2align  4, 0x90
-    .type     main,@function
-main:                                   # @main
-    .cfi_startproc
+	.text
+	.file	"factorial.ll"
+	.globl	fact                    # -- Begin function fact
+	.p2align	4, 0x90
+	.type	fact,@function
+fact:                                   # @fact
+	.cfi_startproc
 # %bb.0:                                # %entry
-    movl      $0, -4(%rsp)
-    movl      $0, -8(%rsp)
-    cmpl      $999, -8(%rsp)            # imm = 0x3E7
-    jg        .LBB0_3
-    .p2align  4, 0x90
-.LBB0_2:                                # %for.body
-                                        # =>This Inner Loop Header: Depth=1
-    decl      -4(%rsp)
-    incl      -8(%rsp)
-    cmpl      $999, -8(%rsp)            # imm = 0x3E7
-    jle       .LBB0_2
-.LBB0_3:                                # %for.end
-    movl      -4(%rsp), %eax
-    retq
+	testl	$-2, %edi
+	jne	.LBB0_2
+# %bb.1:                                # %if.then
+	movl	$1, %eax
+	retq
+.LBB0_2:                                # %if.end
+	pushq	%rbx
+	.cfi_def_cfa_offset 16
+	.cfi_offset %rbx, -16
+	movl	%edi, %ebx
+	leal	-1(%rbx), %edi
+	callq	fact@PLT
+	imull	%ebx, %eax
+	popq	%rbx
+	.cfi_def_cfa_offset 8
+	retq
 .Lfunc_end0:
-    .size     main, .Lfunc_end0-main
-    .cfi_endproc
+	.size	fact, .Lfunc_end0-fact
+	.cfi_endproc
                                         # -- End function
-    .section  ".note.GNU-stack","",@progbits
+	.globl	main                    # -- Begin function main
+	.p2align	4, 0x90
+	.type	main,@function
+main:                                   # @main
+	.cfi_startproc
+# %bb.0:                                # %entry
+	pushq	%rax
+	.cfi_def_cfa_offset 16
+	movl	$5, %edi
+	callq	fact@PLT
+	popq	%rcx
+	.cfi_def_cfa_offset 8
+	retq
+.Lfunc_end1:
+	.size	main, .Lfunc_end1-main
+	.cfi_endproc
+                                        # -- End function
+	.section	".note.GNU-stack","",@progbits
 ```
 which successfully runs as executable file
 ```
 $ strace ./binary
 ...
-brk(NULL)                               = 0x55aa1373a000
-brk(0x55aa1375b000)                     = 0x55aa1375b000
-exit_group(-1000)                       = ?
-+++ exited with 24 +++
+brk(NULL)                               = 0x55e086f32000
+brk(0x55e086f53000)                     = 0x55e086f53000
+exit_group(120)                         = ?
++++ exited with 120 +++
 ```
